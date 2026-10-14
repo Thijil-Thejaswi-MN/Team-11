@@ -1,6 +1,6 @@
 # P3 Contract Draft (P3-01)
 
-**Owner:** Person 3 | **Status:** Draft v0.2, 14 Oct 2026 | **For:** contract sign-off meeting, 15 Oct
+**Owner:** Person 3 | **Status:** Draft v0.3, 14 Oct 2026 | **For:** contract sign-off meeting, 15 Oct
 **Source of truth:** SAD v1.0 (3.4, 4.1.2, 4.1.5, 4.1.6, 4.3.3, 4.3.4, 4.3.7, 4.4) and SRS v1.0.
 Anything that differs from the SAD is marked **PROPOSED** and must go into `DEVIATIONS.md` if accepted.
 
@@ -20,6 +20,7 @@ Not in this contract (owned by others): `/quotes/*`, `/applications/referred`, `
 ## 2. Conventions
 
 - Base path `/api/v1`, JSON over HTTPS, Bearer JWT. Identity comes from `CurrentUser { userId, role, insurerId }` (P2-01); use the test stub until real login exists.
+- The `CurrentUser` test stub is for development and automated testing only. It must never be enabled in production: it is active only under the `dev`/`test` profile, and the production profile must fail startup if the stub bean is present.
 - Roles: C = Customer, IA = Insurer Admin, UW = Underwriter.
 - Amounts in rupees, rounded down to a whole rupee. Dates are ISO `YYYY-MM-DD`.
 - Errors use `{ timestamp, status, errorCode, message, details[], correlationId }` with the codes VALID-422, AUTH-401, ACCESS-403, NOTFOUND-404, STATE-409, PAY-402, SYS-500.
@@ -35,16 +36,28 @@ Request:
   "details": { "vehicleRegNo": "KA22AB1234", "...": "..." },
   "documentIds": [301, 302] }
 ```
-Success `201`:
+Success `201` (application Approved or Referred only):
 ```json
 { "applicationId": 7001, "status": "Approved" }
 ```
-(status is `Approved` or `Referred`.)
+(status is `Approved` or `Referred`. `Rejected` is never returned with `201`.)
 
-Errors: `403 ACCESS-403` KYC not verified; `422 VALID-422` Rejected, with `details: [{ reason }]`; `404` quote not found or not the caller's.
+Errors:
+- `403 ACCESS-403` KYC not verified (nothing is persisted).
+- `404 NOTFOUND-404` quote not found or not the caller's (nothing is persisted).
+- `422 VALID-422` application Rejected by underwriting (see below).
+
+Rejected response (exact): HTTP `422`, body:
+```json
+{ "timestamp": "...", "status": 422, "errorCode": "VALID-422",
+  "message": "Application rejected",
+  "details": [{ "reason": "<underwriting reason>" }],
+  "correlationId": "..." }
+```
 
 Rules:
 - Save the application as **Submitted** (with a history entry) before underwriting runs, then call `IUnderwriting.evaluate(application)` and move to Approved, Referred or Rejected (SAD 4.1.2).
+- A Rejected application **is persisted**: it is saved as Submitted first, then moved to Rejected (final state, with history entry and reason) and kept for audit. It is not deleted or rolled back, so returning the `422` must not roll back the transaction. It cannot be paid or resubmitted; the customer starts a new application.
 - KYC check: `IKycStatus.isVerified(userId)`.
 - Notify: `APPLICATION_APPROVED`, `APPLICATION_REFERRED` or `APPLICATION_REJECTED`.
 
@@ -119,7 +132,7 @@ void retryPendingIssuance();             // issues policies for Paid application
 | Referred | Approved / Rejected | UW decision | UW |
 | Approved | Paid | payment SUCCESS | system |
 
-Rejected and Paid are final. Anything else returns `STATE-409`. Payment is allowed only in Approved.
+Rejected and Paid are final. Rejected applications stay persisted (see 3.1). Anything else returns `STATE-409`. Payment is allowed only in Approved.
 
 **Policy**
 
