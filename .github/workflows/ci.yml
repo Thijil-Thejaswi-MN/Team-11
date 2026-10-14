@@ -1,0 +1,35 @@
+
+name: Repository CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-check:
+    name: Validate repository structure
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify project documents
+        run: |
+          test -f README.md
+          test -f CONTRIBUTING.md
+          test -f SRS.docx
+          test -f SAD.docx
+          test -f STP.docx
+          echo "All required project documents are present."
+
+      - name: Verify workflow configuration
+        run: |
+          test -f .github/workflows/ci.yml
+          echo "CI workflow configuration exists."
