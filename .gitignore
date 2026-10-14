@@ -1,0 +1,48 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.pnpm-debug.log*
+frontend/coverage/
+
+# Java / Maven / Backend
+backend/target/
+backend/*.jar
+backend/*.war
+backend/*.nar
+backend/*.ear
+backend/*.log
+backend/coverage/
+
+# IDE and Editor Files
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.classpath
+.project
+.settings/
+
+# Environment Variables & Local Secrets
+.env
+.env.local
+.env.*.local
+*.local
+
+# Temporary / Scratch Files
+scratch/
+temp/
+tmp/
