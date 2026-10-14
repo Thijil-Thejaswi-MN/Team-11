@@ -1,0 +1,15 @@
+# Test Configuration: In-Memory H2 with MySQL Compatibility Mode
+# Ensures all JUnit 5 & Mockito tests run isolated without live MySQL credentials.
+spring:
+  datasource:
+    url: jdbc:h2:mem:insurance_testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
