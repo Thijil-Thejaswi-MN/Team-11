@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "claimNo": "CL-1",
+    "policyId": 2,
+    "policyNo": "POL-M-1",
+    "customerId": 1,
+    "insurerId": 1,
+    "incidentDate": "2026-05-10",
+    "claimAmount": 25000.00,
+    "settledAmount": null,
+    "status": "SUBMITTED",
+    "reason": "Accidental damage to bumper"
+  },
+  {
+    "id": 2,
+    "claimNo": "CL-2",
+    "policyId": 1,
+    "policyNo": "POL-H-1",
+    "customerId": 1,
+    "insurerId": 1,
+    "incidentDate": "2026-06-15",
+    "claimAmount": 50000.00,
+    "settledAmount": 45000.00,
+    "status": "SETTLED",
+    "reason": "Hospitalization for acute illness"
+  },
+  {
+    "id": 3,
+    "claimNo": "CL-3",
+    "policyId": 3,
+    "policyNo": "POL-M-2",
+    "customerId": 1,
+    "insurerId": 1,
+    "incidentDate": "2026-08-01",
+    "claimAmount": 15000.00,
+    "settledAmount": 15000.00,
+    "status": "SETTLED",
+    "reason": "Windshield replacement"
+  }
+]
