@@ -75,4 +75,21 @@ class AuditLogServiceTest {
         List<AuditLog> timeWindowLogs = auditLogRepository.findByTimestampBetween(before, after);
         assertTrue(timeWindowLogs.size() >= 2);
     }
+
+    @Test
+    void rejectsNullUserOrEntityParameters() {
+        // SAD §3.9 and IAuditLog contract require non-null userId for non-repudiation.
+        assertThrows(NullPointerException.class, () ->
+                new AuditLog(null, "LOGIN_FAILED", "User", 101L, null));
+        assertThrows(NullPointerException.class, () ->
+                new AuditLog(101L, null, "User", 101L, null));
+        assertThrows(NullPointerException.class, () ->
+                new AuditLog(101L, "LOGIN_SUCCESS", null, 101L, null));
+        assertThrows(NullPointerException.class, () ->
+                new AuditLog(101L, "LOGIN_SUCCESS", "User", null, null));
+        assertThrows(NullPointerException.class, () ->
+                auditLogService.record(101L, null, "User", 101L));
+        assertThrows(NullPointerException.class, () ->
+                auditLogService.record(101L, "LOGIN_SUCCESS", null, 101L));
+    }
 }
