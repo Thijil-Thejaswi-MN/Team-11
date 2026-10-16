@@ -33,12 +33,12 @@ This security baseline covers:
 | Req ID | Requirement Title | STP Test Case(s) | GitHub Issue(s) | Status | Risk |
 |--------|------------------|-------------------|-----------------|--------|------|
 | INS-SR-001 | HTTPS and TLS 1.2+ | TC-Sec-01 | #103 | 🔲 Not Implemented | Medium — local dev uses HTTP; production will require reverse proxy |
-| INS-SR-002 | Salted password hashing | TC-Sec-02 | #104, #22 | 🔲 Not Implemented | High — backend auth not yet built |
-| INS-SR-003 | Role-based access control and insurer isolation | TC-Sec-03, TC-Dash-01 | #105, #95, #23 | ⚠️ Partial — `RoleSecurity` + `CurrentUser` guards on P2-02 branch (PR #118) | High |
+| INS-SR-002 | Salted password hashing | TC-Sec-02 | #104, #22 | ✅ Implemented | Low — BCrypt factor 12 implemented in PasswordService; verified by unit/integration tests |
+| INS-SR-003 | Role-based access control and insurer isolation | TC-Sec-03, TC-Dash-01 | #105, #95, #23 | ✅ Implemented | Low — RoleSecurity + CurrentUser + JwtAuthenticationFilter + staff insurer linkage |
 | INS-SR-004 | Encryption at rest | TC-Sec-04 | #106 | 🔲 Not Implemented | Medium — depends on database/infra decisions |
-| INS-SR-005 | Account lockout and session timeout | TC-Sec-05, TC-Sec-10 | #107, #112, #24 | 🔲 Not Implemented | Medium — lockout logic depends on auth module |
-| INS-SR-006 | Input validation and injection defence | TC-Sec-06 | #108, #25 | 🔲 Not Implemented | High — requires Spring validation + parameterised queries |
-| INS-SR-007 | Secure file upload | TC-Sec-07 | #109, #27 | 🔲 Not Implemented | Medium — KYC upload not yet available |
+| INS-SR-005 | Account lockout and session timeout | TC-Sec-05, TC-Sec-10 | #107, #112, #24 | ✅ Implemented | Low — 5-attempt lockout (15 min) + 15 min server session idle timeout in UserSession |
+| INS-SR-006 | Input validation and injection defence | TC-Sec-06 | #108, #25 | ✅ Implemented | Low — Jakarta Bean Validation on all DTOs + JPA parameterized queries |
+| INS-SR-007 | Secure file upload | TC-Sec-07 | #109, #27 | ⚠️ Partial — KycRecord & IKycStatus implemented; file multipart storage in Sprint 2 | Medium |
 | INS-SR-008 | Append-only audit log | TC-Sec-08 | #110, #28 | 🔲 Not Implemented | Medium — IAuditLog interface defined on P1-05 branch |
 
 ---

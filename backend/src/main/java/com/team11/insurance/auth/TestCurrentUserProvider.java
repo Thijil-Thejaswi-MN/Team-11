@@ -64,6 +64,15 @@ public class TestCurrentUserProvider implements ICurrentUserProvider {
 
     @Override
     public CurrentUser getCurrentUser() {
+        org.springframework.web.context.request.RequestAttributes attribs =
+                org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+        if (attribs instanceof org.springframework.web.context.request.ServletRequestAttributes servletAttribs) {
+            jakarta.servlet.http.HttpServletRequest request = servletAttribs.getRequest();
+            Object userObj = request.getAttribute(ProductionCurrentUserProvider.CURRENT_USER_ATTRIBUTE);
+            if (userObj instanceof CurrentUser currentUser) {
+                return currentUser;
+            }
+        }
         CurrentUser override = SYNTHETIC_OVERRIDE.get();
         if (override != null) {
             return override;
