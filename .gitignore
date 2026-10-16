@@ -3,8 +3,10 @@
 Thumbs.db
 desktop.ini
 
-# Node / Frontend
+# Node / Frontend / Tests
+node_modules/
 frontend/node_modules/
+tests/node_modules/
 frontend/dist/
 frontend/.vite/
 frontend/*.log
@@ -13,6 +15,14 @@ frontend/yarn-debug.log*
 frontend/yarn-error.log*
 frontend/.pnpm-debug.log*
 frontend/coverage/
+
+# Python / Pytest / Selenium
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
 
 # Java / Maven / Backend
 backend/target/
