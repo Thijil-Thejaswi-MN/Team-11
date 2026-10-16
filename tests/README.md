@@ -39,7 +39,7 @@ npx newman run tests/postman/insurance-workflow-api.postman_collection.json \
   --folder "01 - Authentication, KYC and Plans (Contract 02)"
 ```
 
-See the full [Newman API Test Guide](file:///c:/Users/prath/OneDrive/Desktop/Team-11/docs/guides/newman-api-test-guide.md) for details on adding endpoints and contract dependencies.
+See the full [Newman API Test Guide](../docs/guides/newman-api-test-guide.md) for details on adding endpoints and contract dependencies.
 
 ---
 
@@ -68,4 +68,4 @@ See the full [Newman API Test Guide](file:///c:/Users/prath/OneDrive/Desktop/Tea
    pytest tests/selenium -v --headed
    ```
 
-See the full [Selenium Smoke Test Guide](file:///c:/Users/prath/OneDrive/Desktop/Team-11/docs/guides/selenium-smoke-test-guide.md).
+See the full [Selenium Smoke Test Guide](../docs/guides/selenium-smoke-test-guide.md).
