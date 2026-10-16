@@ -1,0 +1,521 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+    "name": "Insurance Workflow Automation System API",
+    "description": "Functional API Test Collection for Team 11 Insurance Workflow Automation System.\n\nWork Item: P2-04\nOwner: Person 2 (Sharana - Functional Test Engineer)\nReference: SAD §4.3, API Contracts 01 & 02, SRS requirements.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Authentication, KYC and Plans (Contract 02)",
+      "description": "Endpoints owned by Person 2 (Auth, KYC, CurrentUser, Plans).",
+      "item": [
+        {
+          "name": "Actuator Health Check (Real Endpoint)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Application health status is UP\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql(\"UP\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "Real live actuator health check endpoint implemented in Spring Boot backend skeleton."
+          },
+          "response": []
+        },
+        {
+          "name": "Register Customer (Contract INS-F-001)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created or expected contract validation\", function () {",
+                  "    if (pm.response) {",
+                  "        pm.expect(pm.response.code).to.be.oneOf([201, 400, 409]);",
+                  "    }",
+                  "});",
+                  "pm.test(\"Password is never exposed in response body\", function () {",
+                  "    if (pm.response && pm.response.text) {",
+                  "        var text = pm.response.text();",
+                  "        pm.expect(text).to.not.include(\"SyntheticPassword123!\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Asha Verma\",\n  \"email\": \"asha.verma.test@example.invalid\",\n  \"phone\": \"+919876543210\",\n  \"password\": \"SyntheticPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "auth", "register"]
+            },
+            "description": "Contract example: POST /api/v1/auth/register for creating customer accounts."
+          },
+          "response": []
+        },
+        {
+          "name": "Login Customer (Contract INS-F-001)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 or 401\", function () {",
+                  "    if (pm.response) {",
+                  "        pm.expect(pm.response.code).to.be.oneOf([200, 401]);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"asha.verma.test@example.invalid\",\n  \"password\": \"SyntheticPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "auth", "login"]
+            },
+            "description": "Contract example: POST /api/v1/auth/login returning JWT token and role."
+          },
+          "response": []
+        },
+        {
+          "name": "Submit KYC Details (Contract INS-F-002)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "panNumber",
+                  "value": "TESTPAN1234F",
+                  "type": "text"
+                },
+                {
+                  "key": "aadhaarNumber",
+                  "value": "123456789012",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/kyc",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "kyc"]
+            },
+            "description": "Contract example: POST /api/v1/kyc multipart form data submission."
+          },
+          "response": []
+        },
+        {
+          "name": "Get KYC Status (Contract INS-F-002)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/kyc/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "kyc", "status"]
+            },
+            "description": "Contract example: GET /api/v1/kyc/status for authenticated customer."
+          },
+          "response": []
+        },
+        {
+          "name": "Browse Plans (Public, Contract INS-F-004, INS-F-022)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/plans?type=HEALTH&premiumMax=10000",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "plans"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "HEALTH"
+                },
+                {
+                  "key": "premiumMax",
+                  "value": "10000"
+                }
+              ]
+            },
+            "description": "Contract example: GET /api/v1/plans public browse with filters."
+          },
+          "response": []
+        },
+        {
+          "name": "Compare Plans (Public, Contract INS-F-004)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/plans/compare?ids=1,2",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "plans", "compare"],
+              "query": [
+                {
+                  "key": "ids",
+                  "value": "1,2"
+                }
+              ]
+            },
+            "description": "Contract example: GET /api/v1/plans/compare for side-by-side plan comparison."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Plan (Insurer Admin, Contract INS-F-003)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{insurerAdminToken}}"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"HEALTH\",\n  \"name\": \"Test Gold Health\",\n  \"coverage\": 500000,\n  \"deductible\": 0,\n  \"waitingPeriodMonths\": 24,\n  \"premiumRules\": [],\n  \"uwRules\": [],\n  \"addOns\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "plans"]
+            },
+            "description": "Contract example: POST /api/v1/plans for Insurer Admin."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - Quoting and Underwriting (Contract 01)",
+      "description": "Endpoints owned by Person 1 (Quotes, Underwriting decisions).",
+      "item": [
+        {
+          "name": "Generate Motor Quote (Contract INS-F-005)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"TWO_WHEELER\",\n  \"idv\": 75000,\n  \"vehicleAge\": 2,\n  \"city\": \"Bengaluru\",\n  \"selectedAddOnCodes\": [\"ZERO_DEP\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/quotes/motor",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "quotes", "motor"]
+            },
+            "description": "Contract example: POST /api/v1/quotes/motor."
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Health Quote (Contract INS-F-006)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": 3,\n  \"age\": 29,\n  \"sumInsured\": 500000,\n  \"hasPreExisting\": false,\n  \"isSmoker\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/quotes/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "quotes", "health"]
+            },
+            "description": "Contract example: POST /api/v1/quotes/health."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Referred Applications (Underwriter, Contract INS-F-011)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{underwriterToken}}"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/applications/referred",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "applications", "referred"]
+            },
+            "description": "Contract example: GET /api/v1/applications/referred."
+          },
+          "response": []
+        },
+        {
+          "name": "Underwriter Decision (Contract INS-F-011)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{underwriterToken}}"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"APPROVE\",\n  \"reason\": \"Medical declaration verified against underwriting guidelines.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/applications/7001/decision",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "applications", "7001", "decision"]
+            },
+            "description": "Contract example: POST /api/v1/applications/{id}/decision."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 - Claims and Audit (Contract 01 / SAD)",
+      "description": "Endpoints owned by Person 3 & shared modules (Claims, Audit logging).",
+      "item": [
+        {
+          "name": "File Insurance Claim (Contract INS-F-012)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"policyId\": 101,\n  \"incidentDate\": \"2026-10-10\",\n  \"claimAmount\": 15000,\n  \"description\": \"Synthetic test claim for minor repair.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/claims",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "claims"]
+            },
+            "description": "Contract example: POST /api/v1/claims."
+          },
+          "response": []
+        },
+        {
+          "name": "Track Claim Status (Contract INS-F-015)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/claims/9001",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "claims", "9001"]
+            },
+            "description": "Contract example: GET /api/v1/claims/{id}."
+          },
+          "response": []
+        },
+        {
+          "name": "Assess Claim (Claims Officer, Contract INS-F-014)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{claimsOfficerToken}}"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"APPROVE\",\n  \"approvedAmount\": 14000,\n  \"reason\": \"Repair estimate verified by authorized surveyor.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/claims/9001/assess",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "claims", "9001", "assess"]
+            },
+            "description": "Contract example: POST /api/v1/claims/{id}/assess."
+          },
+          "response": []
+        },
+        {
+          "name": "Query Audit Logs (Admin, Contract INS-F-018)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{systemAdminToken}}"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/audit/logs?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "audit", "logs"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Contract example: GET /api/v1/audit/logs for System Admin audit queries."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
