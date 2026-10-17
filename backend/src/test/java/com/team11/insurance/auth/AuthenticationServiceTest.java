@@ -179,4 +179,112 @@ class AuthenticationServiceTest {
         assertThrows(AuthenticationException.class,
                 () -> authService.validateTokenAndSession(loginRes.getAccessToken(), Instant.now()));
     }
+
+    @Test
+    @DisplayName("Finding 4: Validly signed token with subject differing from session owner is rejected (ownership invariant)")
+    void testSessionOwnershipMismatchRejected() {
+        // Register and login legitimate User A (victim)
+        RegisterRequest reqA = new RegisterRequest("User A", "usera@test.invalid", "111", "Pass12345!");
+        RegisterResponse resA = authService.register(reqA);
+        LoginResponse loginResA = authService.login(new LoginRequest("usera@test.invalid", "Pass12345!"), "127.0.0.1", "Agent");
+
+        // Attacker generates/has a validly signed token with subject = User B (9999), but sessionId = User A's session
+        UserSession sessionA = sessionRepository.findAll().get(0);
+        String spoofedToken = jwtService.generateToken(9999L, "attacker@test.invalid", "CUSTOMER", null, sessionA.getSessionId(), Instant.now());
+
+        // Token is cryptographically valid, but session belongs to User A (resA.getUserId()), NOT 9999
+        AuthenticationException ex = assertThrows(AuthenticationException.class,
+                () -> authService.validateTokenAndSession(spoofedToken, Instant.now()));
+
+        assertTrue(ex.getMessage().contains("Session ownership mismatch"),
+                "Must reject when token subject does not match referenced session owner");
+        assertEquals("AUTH-401", ex.getErrorCode().getCode());
+    }
+
+    @Test
+    @DisplayName("Finding 4: Failed ownership validation DOES NOT touch or mutate the victim's session")
+    void testSessionOwnershipMismatchDoesNotMutateVictimSession() {
+        RegisterRequest reqA = new RegisterRequest("Victim User", "victim@test.invalid", "111", "Pass12345!");
+        authService.register(reqA);
+        authService.login(new LoginRequest("victim@test.invalid", "Pass12345!"), "127.0.0.1", "Agent");
+
+        UserSession sessionA = sessionRepository.findAll().get(0);
+        Instant originalLastAccessed = sessionA.getLastAccessedAt();
+
+        // Advance clock by 100 seconds and attempt spoofed token usage
+        Instant later = originalLastAccessed.plusSeconds(100);
+        String spoofedToken = jwtService.generateToken(8888L, "attacker@test.invalid", "CUSTOMER", null, sessionA.getSessionId(), later);
+
+        assertThrows(AuthenticationException.class,
+                () -> authService.validateTokenAndSession(spoofedToken, later));
+
+        // Verify victim's session was NOT refreshed or mutated
+        UserSession reloaded = sessionRepository.findBySessionId(sessionA.getSessionId()).orElseThrow();
+        assertEquals(originalLastAccessed, reloaded.getLastAccessedAt(),
+                "Victim session lastAccessedAt must remain unchanged after rejected ownership check");
+    }
+
+    @Test
+    @DisplayName("Finding 4: Token referencing nonexistent session is rejected with AUTH-401")
+    void testNonexistentSessionRejected() {
+        String tokenWithBadSession = jwtService.generateToken(1001L, "user@test.invalid", "CUSTOMER", null, "nonexistent-sess-uuid", Instant.now());
+
+        AuthenticationException ex = assertThrows(AuthenticationException.class,
+                () -> authService.validateTokenAndSession(tokenWithBadSession, Instant.now()));
+        assertTrue(ex.getMessage().contains("Session not found"));
+    }
+
+    @Test
+    @DisplayName("Finding 4: Malformed or non-numeric token subject is rejected safely with AUTH-401")
+    void testMalformedSubjectRejected() {
+        Instant now = Instant.now();
+        AuthenticationException ex = assertThrows(AuthenticationException.class,
+                () -> authService.validateTokenAndSession(null, now));
+        assertNotNull(ex);
+    }
+
+    @Test
+    @DisplayName("Finding 4: Token with non-numeric or negative subject is rejected safely")
+    void testNonNumericOrNegativeSubRejected() throws Exception {
+        Instant now = Instant.now();
+        // Create session
+        UserSession session = new UserSession("test-sess-sub", 500L, now, 900, "127.0.0.1", "Agent");
+        sessionRepository.save(session);
+
+        // 1. Non-numeric sub
+        java.util.Map<String, Object> header = java.util.Map.of("alg", "HS256", "typ", "JWT");
+        java.util.Map<String, Object> badSubClaims = new java.util.LinkedHashMap<>();
+        badSubClaims.put("iss", JwtService.ISSUER);
+        badSubClaims.put("sub", "not-a-number");
+        badSubClaims.put(JwtService.CLAIM_SESSION_ID, "test-sess-sub");
+        badSubClaims.put(JwtService.CLAIM_ROLE, "CUSTOMER");
+        badSubClaims.put("iat", now.getEpochSecond());
+        badSubClaims.put("exp", now.getEpochSecond() + 900);
+
+        ObjectMapper mapper = new ObjectMapper();
+        String encHeader = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(mapper.writeValueAsBytes(header));
+        String encPayload = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(mapper.writeValueAsBytes(badSubClaims));
+        String sigInput = encHeader + "." + encPayload;
+
+        // Sign using reflection or package method if private, or let's use javax.crypto.Mac with test key
+        javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+        mac.init(new javax.crypto.spec.SecretKeySpec("dev-insecure-secret-insurance-workflow-team11-test-key-256-bits-long!!".getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+        String sig = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(mac.doFinal(sigInput.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        String tokenWithBadSub = sigInput + "." + sig;
+
+        AuthenticationException ex1 = assertThrows(AuthenticationException.class,
+                () -> authService.validateTokenAndSession(tokenWithBadSub, now));
+        assertTrue(ex1.getMessage().contains("Token subject is not a valid user identifier"));
+
+        // 2. Negative sub
+        badSubClaims.put("sub", "-99");
+        encPayload = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(mapper.writeValueAsBytes(badSubClaims));
+        sigInput = encHeader + "." + encPayload;
+        sig = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(mac.doFinal(sigInput.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        String tokenWithNegSub = sigInput + "." + sig;
+
+        AuthenticationException ex2 = assertThrows(AuthenticationException.class,
+                () -> authService.validateTokenAndSession(tokenWithNegSub, now));
+        assertTrue(ex2.getMessage().contains("non-positive user identifier"));
+    }
 }

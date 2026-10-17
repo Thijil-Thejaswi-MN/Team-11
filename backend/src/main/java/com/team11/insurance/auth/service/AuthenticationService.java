@@ -181,19 +181,41 @@ public class AuthenticationService {
         }
 
         String sub = (String) claims.get("sub");
-        Long userId = Long.valueOf(sub);
+        if (sub == null || sub.trim().isEmpty()) {
+            throw new AuthenticationException("Token missing subject identifier");
+        }
 
-        // Verify server-side session persistence and 15-minute inactivity timeout
-        UserSession session = sessionRepository.findBySessionId(sessionId)
+        Long userId;
+        try {
+            userId = Long.valueOf(sub.trim());
+        } catch (NumberFormatException nfe) {
+            throw new AuthenticationException("Token subject is not a valid user identifier");
+        }
+
+        if (userId <= 0) {
+            throw new AuthenticationException("Token subject contains an invalid non-positive user identifier");
+        }
+
+        // 2 & 3. Retrieve referenced server-side session and verify it exists
+        UserSession session = sessionRepository.findBySessionId(sessionId.trim())
                 .orElseThrow(() -> new AuthenticationException("Session not found or has been terminated"));
 
+        // 4. Verify session is valid, not revoked, not expired, and not beyond inactivity timeout
         if (!session.isValid(now)) {
             session.revoke(now);
             sessionRepository.save(session);
             throw new AuthenticationException("Session expired due to inactivity or revocation");
         }
 
-        // Touch session to record activity
+        // 5 & 6. Enforce session-to-user ownership: verify session belongs to token subject
+        if (session.getUserId() == null || !session.getUserId().equals(userId)) {
+            log.warn("Security violation: session-to-user ownership mismatch. session.userId={}, token.sub={}",
+                    session.getUserId(), userId);
+            // Fail closed immediately. Do NOT touch or mutate the victim user's session!
+            throw new AuthenticationException("Session ownership mismatch: token subject does not match session owner");
+        }
+
+        // 7. Only after ownership and session checks succeed, touch session to record activity
         session.touch(now);
         sessionRepository.save(session);
 

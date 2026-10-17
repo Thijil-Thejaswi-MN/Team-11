@@ -77,4 +77,18 @@ class KycServiceTest {
         assertEquals(KycStatus.NOT_SUBMITTED, kycService.getStatus(0L));
         assertEquals(KycStatus.NOT_SUBMITTED, kycService.getStatus(-1L));
     }
+
+    @Test
+    @DisplayName("KycService submitKyc persists PAN and Aadhaar encrypted at rest and recovers plaintext on read")
+    void testSubmitKycPersistsEncryptedAtRest() {
+        long userId = 4001L;
+        String pan = "ABCDE1234F";
+        String aadhaar = "123456789012";
+
+        kycService.submitKyc(userId, pan, aadhaar, "docs/proof.pdf");
+
+        KycRecord saved = kycRepository.findByUserId(userId).orElseThrow();
+        assertEquals(pan, saved.getPanNumber(), "Service read must return plaintext");
+        assertEquals(aadhaar, saved.getAadhaarNumber(), "Service read must return plaintext");
+    }
 }

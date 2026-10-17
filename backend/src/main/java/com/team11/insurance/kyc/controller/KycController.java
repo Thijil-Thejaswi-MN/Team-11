@@ -5,14 +5,11 @@ import com.team11.insurance.auth.RoleSecurity;
 import com.team11.insurance.auth.UserRole;
 import com.team11.insurance.kyc.KycStatus;
 import com.team11.insurance.kyc.dto.KycStatusResponse;
-import com.team11.insurance.kyc.entity.KycRecord;
 import com.team11.insurance.kyc.service.KycService;
-import com.team11.insurance.common.exception.ValidationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * REST controller for KYC verification endpoints (INS-F-002, SAD §4.3.1, API Contract §3).
@@ -30,38 +27,20 @@ public class KycController {
     }
 
     /**
-     * Retrieves the authenticated customer's KYC verification status (API Contract §3.2).
+     * Retrieves the authenticated customer's KYC verification status (API Contract 02 §3.2).
+     * Strictly restricted to CUSTOMER role; staff and system admins are prohibited.
+     * Derives identity strictly from trusted server-side authenticated CurrentUser context.
      */
     @GetMapping("/status")
     public ResponseEntity<KycStatusResponse> getKycStatus(CurrentUser currentUser) {
-        RoleSecurity.assertRole(currentUser,
-                UserRole.CUSTOMER, UserRole.INSURER_ADMIN, UserRole.UNDERWRITER, UserRole.CLAIMS_OFFICER, UserRole.SYSTEM_ADMIN);
+        RoleSecurity.assertRole(currentUser, UserRole.CUSTOMER);
 
         KycStatus status = kycService.getStatus(currentUser.getUserId());
         return ResponseEntity.ok(new KycStatusResponse(status.getDisplayValue()));
     }
 
-    /**
-     * Submits KYC verification details for the authenticated customer (API Contract §3.1).
-     */
-    @PostMapping
-    public ResponseEntity<Map<String, String>> submitKyc(@RequestBody(required = false) Map<String, String> payload,
-                                                        CurrentUser currentUser) {
-        RoleSecurity.assertRole(currentUser, UserRole.CUSTOMER);
-
-        String panNumber = payload != null ? payload.get("panNumber") : null;
-        String aadhaarNumber = payload != null ? payload.get("aadhaarNumber") : null;
-
-        if (panNumber == null || panNumber.trim().isEmpty()) {
-            throw new ValidationException("panNumber", "panNumber is required");
-        }
-        if (aadhaarNumber == null || aadhaarNumber.trim().isEmpty()) {
-            throw new ValidationException("aadhaarNumber", "aadhaarNumber is required");
-        }
-
-        KycRecord record = kycService.submitKyc(currentUser.getUserId(), panNumber.trim(), aadhaarNumber.trim(), null);
-
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(Map.of("kycStatus", record.getStatus().getDisplayValue()));
-    }
+    // NOTE: POST /api/v1/kyc (multipart document submission per API Contract 02 §3.1 and INS-SR-007)
+    // is safely deferred pending merge and availability of the agreed IFileStore storage contract
+    // (Component C12 / Person 4, PR #127 / issue #127). The prior incomplete stub accepting JSON
+    // map and storing null documentPath was removed to prevent security vulnerabilities and contract violations.
 }

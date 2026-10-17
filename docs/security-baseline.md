@@ -35,7 +35,7 @@ This security baseline covers:
 | INS-SR-001 | HTTPS and TLS 1.2+ | TC-Sec-01 | #103 | 🔲 Not Implemented | Medium — local dev uses HTTP; production will require reverse proxy |
 | INS-SR-002 | Salted password hashing | TC-Sec-02 | #104, #22 | ✅ Implemented | Low — BCrypt factor 12 implemented in PasswordService; verified by unit/integration tests |
 | INS-SR-003 | Role-based access control and insurer isolation | TC-Sec-03, TC-Dash-01 | #105, #95, #23 | ✅ Implemented | Low — RoleSecurity + CurrentUser + JwtAuthenticationFilter + staff insurer linkage |
-| INS-SR-004 | Encryption at rest | TC-Sec-04 | #106 | 🔲 Not Implemented | Medium — depends on database/infra decisions |
+| INS-SR-004 | Encryption at rest | TC-Sec-04 | #106 | ⚠️ Partial — AES-256-GCM field encryption implemented for PAN/Aadhaar in DB; file encryption in Sprint 2 | Low (database) / Medium (file store) |
 | INS-SR-005 | Account lockout and session timeout | TC-Sec-05, TC-Sec-10 | #107, #112, #24 | ✅ Implemented | Low — 5-attempt lockout (15 min) + 15 min server session idle timeout in UserSession |
 | INS-SR-006 | Input validation and injection defence | TC-Sec-06 | #108, #25 | ✅ Implemented | Low — Jakarta Bean Validation on all DTOs + JPA parameterized queries |
 | INS-SR-007 | Secure file upload | TC-Sec-07 | #109, #27 | ⚠️ Partial — KycRecord & IKycStatus implemented; file multipart storage in Sprint 2 | Medium |
@@ -116,19 +116,22 @@ This security baseline covers:
 **SRS Requirement:** Sensitive data (PAN, Aadhaar, KYC documents) must be encrypted at rest in the database and file storage.
 
 **Current State:**
-- Database schema not yet finalized (P3-02 data model merged but focuses on entities)
-- No column-level encryption configured
-- No encrypted file storage for KYC documents
+- ✅ AES-256-GCM authenticated field encryption implemented in `FieldEncryptionService` with 96-bit random IV, 128-bit authentication tag, and versioned ciphertext (`v1:...`).
+- ✅ JPA AttributeConverter (`EncryptedStringConverter`) applied to `KycRecord.panNumber` and `KycRecord.aadhaarNumber`.
+- ✅ Database columns store only ciphertext; native SQL inspection confirms no plaintext PAN or Aadhaar in persistent storage.
+- ✅ Key management: External configuration via `insurance.security.encryption-key` with fail-secure validation refusing startup in production if missing, malformed, or insecure.
+- ✅ Data compatibility and migration plan: Unencrypted legacy data cannot be read without migration (fails fast); data migration procedure documented for legacy database migration prior to cutover.
+- ⚠️ Encrypted file storage for KYC document binaries is scheduled for Sprint 2 with `IFileStore` (Person 4 / issue #127).
 
 **Implementation Plan:**
-- [ ] Evaluate JPA `@Convert` with AES-256 encryption for sensitive columns
-- [ ] Configure encrypted storage volume or application-level encryption for KYC file uploads
-- [ ] Key management approach to be decided with team (environment variable vs. vault)
-- [ ] Verify with TC-Sec-04: direct database query to confirm encrypted storage
+- [x] Implement JPA `@Convert` with AES-256-GCM authenticated encryption for sensitive columns (`panNumber`, `aadhaarNumber`)
+- [x] Enforce fail-secure startup in production profile for encryption key configuration
+- [x] Verify tamper-evident decryption failure (`AEADBadTagException`) and unique nonces
+- [ ] Configure encrypted storage volume or application-level encryption for KYC binary uploads via `IFileStore` (Sprint 2)
 
-**Verification:** TC-Sec-04 — Database inspection for encrypted column values
+**Verification:** TC-Sec-04 — Automated tests in `FieldEncryptionServiceTest` and `KycServiceTest` verifying ciphertext persistence, tampering defense, unique IVs, and production key fail-secure startup.
 
-**Risk Level:** Medium — no real sensitive data in dev; critical for any production-like deployment
+**Risk Level:** Low for database fields (mitigated by AES-256-GCM); Medium for binary file storage until `IFileStore` lands in Sprint 2.
 
 ---
 
@@ -241,10 +244,9 @@ This security baseline covers:
 |---------|--------|-------|---------------------|
 | Auth module not implemented | TC-Sec-02, TC-Sec-05, TC-Sec-10, FC-01 through FC-06 | Person 4 (backend) | Sprint 2 |
 | PR #118 awaiting review | RBAC guards on main branch | Team reviewer | ASAP |
-| KYC upload not implemented | TC-Sec-07, FC-09 through FC-11 | Person 4 + Person 2 | Sprint 2 |
+| KYC upload and document storage | TC-Sec-07, FC-09 through FC-11, INS-SR-004 (files) | Person 4 (IFileStore / PR #127) | Sprint 2 |
 | Audit log implementation | TC-Sec-08, FC-16 | Person 1 (IAuditLog) | Sprint 2 |
 | Nginx/TLS not configured | TC-Sec-01 | Person 4 (infra) | Sprint 3 |
-| Encryption at rest | TC-Sec-04 | Team decision | Sprint 3 |
 
 ---
 

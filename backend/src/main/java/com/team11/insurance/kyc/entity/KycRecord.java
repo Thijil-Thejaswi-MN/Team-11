@@ -28,10 +28,12 @@ public class KycRecord {
     @Column(name = "user_id", nullable = false, unique = true)
     private Long userId;
 
-    @Column(name = "pan_number", length = 30)
+    @Convert(converter = com.team11.insurance.common.crypto.EncryptedStringConverter.class)
+    @Column(name = "pan_number", length = 512)
     private String panNumber;
 
-    @Column(name = "aadhaar_number", length = 30)
+    @Convert(converter = com.team11.insurance.common.crypto.EncryptedStringConverter.class)
+    @Column(name = "aadhaar_number", length = 512)
     private String aadhaarNumber;
 
     @Enumerated(EnumType.STRING)
@@ -127,5 +129,20 @@ public class KycRecord {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "KycRecord{" +
+                "id=" + id +
+                ", userId=" + userId +
+                ", panNumber='" + com.team11.insurance.common.logging.SensitiveDataMasker.maskPan(panNumber) + '\'' +
+                ", aadhaarNumber='" + com.team11.insurance.common.logging.SensitiveDataMasker.maskAadhaar(aadhaarNumber) + '\'' +
+                ", status=" + status +
+                ", documentPath='" + documentPath + '\'' +
+                ", verifiedAt=" + verifiedAt +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
     }
 }
