@@ -23,13 +23,13 @@ public class AuditLogService implements IAuditLog {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(long userId, String action, String entity, long entityId) {
         record(userId, action, entity, entityId, null);
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(long userId, String action, String entity, long entityId, String details) {
         AuditLog auditLog = new AuditLog(userId, action, entity, entityId, details);
         AuditLog saved = auditLogRepository.save(auditLog);

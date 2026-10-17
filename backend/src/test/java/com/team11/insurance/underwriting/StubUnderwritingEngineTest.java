@@ -69,4 +69,26 @@ class StubUnderwritingEngineTest {
         assertTrue(rejected.isRejected());
         assertEquals(UnderwritingOutcome.REJECT, rejected.getOutcome());
     }
+
+    @Test
+    void syntheticOutcomeOverridesAlwaysApproveBehavior() {
+        try {
+            StubUnderwritingEngine.setSyntheticOutcome(UnderwritingResult.refer("Flagged for senior underwriter inspection"));
+            UnderwritingResult referred = underwriting.evaluate(new Application());
+            assertTrue(referred.isReferred());
+            assertEquals("Flagged for senior underwriter inspection", referred.getReason());
+
+            StubUnderwritingEngine.setSyntheticOutcome(UnderwritingResult.reject("High risk postal code"));
+            UnderwritingResult rejected = underwriting.evaluate(new Application());
+            assertTrue(rejected.isRejected());
+            assertEquals("High risk postal code", rejected.getReason());
+
+            StubUnderwritingEngine.clearSyntheticOutcome();
+            UnderwritingResult restored = underwriting.evaluate(new Application());
+            assertTrue(restored.isApproved());
+            assertEquals(StubUnderwritingEngine.STUB_REASON, restored.getReason());
+        } finally {
+            StubUnderwritingEngine.clearSyntheticOutcome();
+        }
+    }
 }
