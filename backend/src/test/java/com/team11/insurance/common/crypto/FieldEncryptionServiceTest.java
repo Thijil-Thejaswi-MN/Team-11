@@ -33,12 +33,18 @@ class FieldEncryptionServiceTest {
 
     @BeforeEach
     void setUp() {
+        FieldEncryptionService.resetDefaultInstance();
         MockEnvironment env = new MockEnvironment();
         env.setActiveProfiles("test");
         encryptionService = new FieldEncryptionService(env);
         encryptionService.validateConfiguration();
         EncryptedStringConverter.setStaticEncryptionService(encryptionService);
         kycRepository.deleteAll();
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    void tearDown() {
+        FieldEncryptionService.resetDefaultInstance();
     }
 
     @Test
@@ -173,5 +179,36 @@ class FieldEncryptionServiceTest {
         assertFalse(toStringOutput.contains("123456789012"), "toString() must never contain plaintext Aadhaar");
         assertTrue(toStringOutput.contains("ABCDE****F"), "toString() must contain masked PAN");
         assertTrue(toStringOutput.contains("********9012"), "toString() must contain masked Aadhaar");
+    }
+
+    @Test
+    @DisplayName("Constructor rejects null Environment immediately with IllegalArgumentException")
+    void testConstructorRejectsNullEnvironment() {
+        assertThrows(IllegalArgumentException.class, () -> new FieldEncryptionService(null));
+        assertThrows(IllegalArgumentException.class, () -> new FieldEncryptionService(null, "some-key"));
+        assertThrows(IllegalArgumentException.class, () -> new FieldEncryptionService(null, FieldEncryptionService.DEFAULT_DEV_KEY));
+    }
+
+    @Test
+    @DisplayName("getDefaultInstance() in production profile throws IllegalStateException and refuses fallback")
+    void testGetDefaultInstanceFailsClosedInProduction() {
+        try {
+            System.setProperty("spring.profiles.active", "prod");
+            FieldEncryptionService.resetDefaultInstance();
+            IllegalStateException ex = assertThrows(IllegalStateException.class, FieldEncryptionService::getDefaultInstance);
+            assertTrue(ex.getMessage().contains("Cannot create default dev FieldEncryptionService instance in production"));
+        } finally {
+            System.clearProperty("spring.profiles.active");
+            FieldEncryptionService.resetDefaultInstance();
+        }
+    }
+
+    @Test
+    @DisplayName("FieldEncryptionService.toString() is safe and does not expose keys or secrets")
+    void testServiceToStringDoesNotExposeKeys() {
+        String serviceString = encryptionService.toString();
+        assertNotNull(serviceString);
+        assertFalse(serviceString.contains(FieldEncryptionService.DEFAULT_DEV_KEY));
+        assertTrue(serviceString.contains("FieldEncryptionService"));
     }
 }

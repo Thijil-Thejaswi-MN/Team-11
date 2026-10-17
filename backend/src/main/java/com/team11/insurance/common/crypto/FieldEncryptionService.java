@@ -3,6 +3,7 @@ package com.team11.insurance.common.crypto;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -51,41 +52,140 @@ public class FieldEncryptionService {
     private final SecureRandom secureRandom = new SecureRandom();
     private SecretKey secretKey;
 
-    public FieldEncryptionService() {
-        this(null);
+    /**
+     * Primary constructor used by Spring Framework for dependency injection and explicit key configuration.
+     * Guaranteed to receive the active Spring {@link Environment} and configured encryption key.
+     *
+     * @param environment   active Spring environment (must not be null)
+     * @param configuredKey encryption key configured via properties, environment variables, or explicit parameter
+     */
+    @Autowired
+    public FieldEncryptionService(
+            Environment environment,
+            @Value("${insurance.security.encryption-key:${insurance.encryption.key:}}") String configuredKey) {
+        if (environment == null) {
+            throw new IllegalArgumentException("Environment must not be null");
+        }
+        this.environment = environment;
+        this.configuredKey = (configuredKey != null && !configuredKey.trim().isEmpty())
+                ? configuredKey.trim()
+                : resolveKeyFromEnvironment(environment);
+        if (this.configuredKey != null && !this.configuredKey.trim().isEmpty()) {
+            initKey(this.configuredKey);
+        }
     }
 
+    /**
+     * Constructor for environment-based initialization (e.g. unit and integration tests).
+     *
+     * @param environment active environment containing configuration properties
+     */
     public FieldEncryptionService(Environment environment) {
-        this.environment = environment;
-    }
-
-    public FieldEncryptionService(Environment environment, String explicitKey) {
-        this.environment = environment;
-        this.configuredKey = explicitKey;
-        initKey(explicitKey);
+        this(environment, (String) null);
     }
 
     @PostConstruct
     public void validateConfiguration() {
-        boolean isProduction = false;
-        if (environment != null) {
-            isProduction = Arrays.stream(environment.getActiveProfiles())
-                    .anyMatch(p -> "prod".equalsIgnoreCase(p) || "production".equalsIgnoreCase(p));
+        if (this.environment == null) {
+            throw new IllegalStateException("CRITICAL SECURITY VIOLATION: FieldEncryptionService environment must not be null!");
         }
 
-        String keyToUse = configuredKey;
+        boolean isProduction = isProductionProfile(this.environment);
+
+        String keyToUse = this.configuredKey;
+        if (keyToUse == null || keyToUse.trim().isEmpty()) {
+            keyToUse = resolveKeyFromEnvironment(this.environment);
+        }
+
         if (keyToUse == null || keyToUse.trim().isEmpty()) {
             if (isProduction) {
-                throw new IllegalStateException("CRITICAL SECURITY VIOLATION: 'insurance.security.encryption-key' MUST be configured in production profile!");
+                throw new IllegalStateException("CRITICAL SECURITY VIOLATION: 'insurance.security.encryption-key' MUST be configured in production profile! Fallback to default dev key is forbidden in production.");
             }
             log.warn("insurance.security.encryption-key is not set. Using default dev encryption key. DO NOT USE IN PRODUCTION.");
             keyToUse = DEFAULT_DEV_KEY;
-        } else if (isProduction && (keyToUse.equals(DEFAULT_DEV_KEY) || getRawKeyBytes(keyToUse).length != 32)) {
-            throw new IllegalStateException("CRITICAL SECURITY VIOLATION: Production encryption key must be 256 bits (32 bytes) and cannot use default dev key!");
+        } else if (isProduction) {
+            if (DEFAULT_DEV_KEY.equals(keyToUse.trim())) {
+                throw new IllegalStateException("CRITICAL SECURITY VIOLATION: Production encryption key cannot use default dev key! Configure a secure AES-256 key via 'insurance.security.encryption-key' or ENCRYPTION_KEY.");
+            }
+            byte[] rawBytes;
+            try {
+                rawBytes = getRawKeyBytes(keyToUse);
+            } catch (Exception ex) {
+                throw new IllegalStateException("CRITICAL SECURITY VIOLATION: Production encryption key is invalid or malformed!", ex);
+            }
+            if (rawBytes.length != 32) {
+                throw new IllegalStateException("CRITICAL SECURITY VIOLATION: Production encryption key must be 256 bits (32 bytes)! Found: " + rawBytes.length + " bytes.");
+            }
         }
 
         initKey(keyToUse);
         defaultInstance = this;
+        EncryptedStringConverter.setStaticEncryptionService(this);
+    }
+
+    private static String resolveKeyFromEnvironment(Environment env) {
+        if (env == null) {
+            return null;
+        }
+        String key = env.getProperty("insurance.security.encryption-key");
+        if (key == null || key.trim().isEmpty()) {
+            key = env.getProperty("insurance.encryption.key");
+        }
+        if (key == null || key.trim().isEmpty()) {
+            key = env.getProperty("ENCRYPTION_KEY");
+        }
+        return (key != null && !key.trim().isEmpty()) ? key.trim() : null;
+    }
+
+    public static boolean isProductionProfile(Environment environment) {
+        if (environment != null) {
+            String[] activeProfiles = environment.getActiveProfiles();
+            if (activeProfiles != null && activeProfiles.length > 0) {
+                for (String p : activeProfiles) {
+                    if ("prod".equalsIgnoreCase(p) || "production".equalsIgnoreCase(p)) {
+                        return true;
+                    }
+                }
+            }
+            String[] defaultProfiles = environment.getDefaultProfiles();
+            if (defaultProfiles != null && defaultProfiles.length > 0) {
+                for (String p : defaultProfiles) {
+                    if ("prod".equalsIgnoreCase(p) || "production".equalsIgnoreCase(p)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        String sysProp = System.getProperty("spring.profiles.active");
+        if (sysProp != null && containsProdProfile(sysProp)) {
+            return true;
+        }
+        String envVar = System.getenv("SPRING_PROFILES_ACTIVE");
+        if (envVar != null && containsProdProfile(envVar)) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean containsProdProfile(String profileString) {
+        if (profileString == null || profileString.trim().isEmpty()) {
+            return false;
+        }
+        for (String part : profileString.split(",")) {
+            String trimmed = part.trim();
+            if ("prod".equalsIgnoreCase(trimmed) || "production".equalsIgnoreCase(trimmed)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Environment getEnvironment() {
+        return this.environment;
+    }
+
+    public boolean isProduction() {
+        return isProductionProfile(this.environment);
     }
 
     private void initKey(String keyString) {
@@ -209,11 +309,12 @@ public class FieldEncryptionService {
         if (defaultInstance == null) {
             synchronized (FieldEncryptionService.class) {
                 if (defaultInstance == null) {
-                    String activeProfiles = System.getProperty("spring.profiles.active", "");
-                    if (activeProfiles.contains("prod") || activeProfiles.contains("production")) {
-                        throw new IllegalStateException("CRITICAL SECURITY VIOLATION: Cannot create default dev FieldEncryptionService instance in production!");
+                    if (isProductionProfile(null)) {
+                        throw new IllegalStateException("CRITICAL SECURITY VIOLATION: Cannot create default dev FieldEncryptionService instance in production profile!");
                     }
-                    FieldEncryptionService devInstance = new FieldEncryptionService(null, DEFAULT_DEV_KEY);
+                    org.springframework.core.env.StandardEnvironment devEnv = new org.springframework.core.env.StandardEnvironment();
+                    FieldEncryptionService devInstance = new FieldEncryptionService(devEnv, DEFAULT_DEV_KEY);
+                    devInstance.validateConfiguration();
                     defaultInstance = devInstance;
                 }
             }
@@ -222,6 +323,21 @@ public class FieldEncryptionService {
     }
 
     public static void setDefaultInstance(FieldEncryptionService instance) {
-        defaultInstance = instance;
+        synchronized (FieldEncryptionService.class) {
+            defaultInstance = instance;
+            EncryptedStringConverter.setStaticEncryptionService(instance);
+        }
+    }
+
+    public static void resetDefaultInstance() {
+        synchronized (FieldEncryptionService.class) {
+            defaultInstance = null;
+            EncryptedStringConverter.setStaticEncryptionService(null);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "FieldEncryptionService[algorithm=" + KEY_ALGORITHM + ", transformation=" + CIPHER_TRANSFORMATION + "]";
     }
 }
