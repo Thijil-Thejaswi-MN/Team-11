@@ -1,0 +1,13 @@
+{
+  "name": "insurance-workflow-tests",
+  "version": "1.0.0",
+  "description": "API (Newman) and E2E Smoke Tests for Insurance Workflow Automation System",
+  "scripts": {
+    "test:api": "newman run postman/insurance-workflow-api.postman_collection.json -e postman/insurance-workflow-environment.postman_environment.json --folder \"01 - Authentication, KYC and Plans (Contract 02)\"",
+    "test:api:all": "newman run postman/insurance-workflow-api.postman_collection.json -e postman/insurance-workflow-environment.postman_environment.json",
+    "test:smoke": "pytest selenium/test_home_smoke.py -v"
+  },
+  "devDependencies": {
+    "newman": "^6.2.1"
+  }
+}
