@@ -42,6 +42,7 @@ public class TestCurrentUserProvider implements ICurrentUserProvider {
     public static final CurrentUser SEEDED_SYSTEM_ADMIN = new CurrentUser(5001L, UserRole.SYSTEM_ADMIN, null);
 
     private static final ThreadLocal<CurrentUser> SYNTHETIC_OVERRIDE = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> UNAUTHENTICATED = new ThreadLocal<>();
 
     private final Environment environment;
 
@@ -64,6 +65,18 @@ public class TestCurrentUserProvider implements ICurrentUserProvider {
 
     @Override
     public CurrentUser getCurrentUser() {
+        if (Boolean.TRUE.equals(UNAUTHENTICATED.get())) {
+            throw new AuthenticationException("Authentication required: no active server-side session or valid token found.");
+        }
+        org.springframework.web.context.request.RequestAttributes attribs =
+                org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+        if (attribs instanceof org.springframework.web.context.request.ServletRequestAttributes servletAttribs) {
+            jakarta.servlet.http.HttpServletRequest request = servletAttribs.getRequest();
+            Object userObj = request.getAttribute(ProductionCurrentUserProvider.CURRENT_USER_ATTRIBUTE);
+            if (userObj instanceof CurrentUser currentUser) {
+                return currentUser;
+            }
+        }
         CurrentUser override = SYNTHETIC_OVERRIDE.get();
         if (override != null) {
             return override;
@@ -74,6 +87,9 @@ public class TestCurrentUserProvider implements ICurrentUserProvider {
 
     @Override
     public boolean isAuthenticated() {
+        if (Boolean.TRUE.equals(UNAUTHENTICATED.get())) {
+            return false;
+        }
         return true;
     }
 
@@ -84,7 +100,16 @@ public class TestCurrentUserProvider implements ICurrentUserProvider {
      * @param user the synthetic user to simulate
      */
     public static void setSyntheticUser(CurrentUser user) {
+        UNAUTHENTICATED.remove();
         SYNTHETIC_OVERRIDE.set(user);
+    }
+
+    /**
+     * Marks the current test thread context as unauthenticated.
+     */
+    public static void setUnauthenticated() {
+        SYNTHETIC_OVERRIDE.remove();
+        UNAUTHENTICATED.set(Boolean.TRUE);
     }
 
     /**
@@ -92,5 +117,6 @@ public class TestCurrentUserProvider implements ICurrentUserProvider {
      */
     public static void clearSyntheticUser() {
         SYNTHETIC_OVERRIDE.remove();
+        UNAUTHENTICATED.remove();
     }
 }
