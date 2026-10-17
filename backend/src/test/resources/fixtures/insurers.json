@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "code": "INS-A",
+    "name": "SafeShield General",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 2,
+    "code": "INS-B",
+    "name": "Bharat Care Insurance",
+    "status": "ACTIVE"
+  }
+]

@@ -1,0 +1,88 @@
+[
+  {
+    "id": 1,
+    "code": "CUST-1",
+    "name": "Asha",
+    "email": "asha@example.test",
+    "role": "CUSTOMER",
+    "kycStatus": "VERIFIED",
+    "pan": "ABCDE1234F",
+    "insurerId": null
+  },
+  {
+    "id": 2,
+    "code": "CUST-2",
+    "name": "Ravi",
+    "email": "ravi@example.test",
+    "role": "CUSTOMER",
+    "kycStatus": "PENDING",
+    "pan": null,
+    "insurerId": null
+  },
+  {
+    "id": 3,
+    "code": "CUST-3",
+    "name": "Meera",
+    "email": "meera@example.test",
+    "role": "CUSTOMER",
+    "kycStatus": "VERIFIED",
+    "pan": "ABCDE5678G",
+    "insurerId": null
+  },
+  {
+    "id": 10,
+    "code": "A-ADM",
+    "name": "Insurer A Admin",
+    "email": "admin.a@safeshield.test",
+    "role": "INSURER_ADMIN",
+    "insurerId": 1
+  },
+  {
+    "id": 11,
+    "code": "A-UW",
+    "name": "Insurer A Underwriter",
+    "email": "uw.a@safeshield.test",
+    "role": "UNDERWRITER",
+    "insurerId": 1
+  },
+  {
+    "id": 12,
+    "code": "A-CO",
+    "name": "Insurer A Claims Officer",
+    "email": "claims.a@safeshield.test",
+    "role": "CLAIMS_OFFICER",
+    "insurerId": 1
+  },
+  {
+    "id": 20,
+    "code": "B-ADM",
+    "name": "Insurer B Admin",
+    "email": "admin.b@bharatcare.test",
+    "role": "INSURER_ADMIN",
+    "insurerId": 2
+  },
+  {
+    "id": 21,
+    "code": "B-UW",
+    "name": "Insurer B Underwriter",
+    "email": "uw.b@bharatcare.test",
+    "role": "UNDERWRITER",
+    "insurerId": 2
+  },
+  {
+    "id": 22,
+    "code": "B-CO",
+    "name": "Insurer B Claims Officer",
+    "email": "claims.b@bharatcare.test",
+    "role": "CLAIMS_OFFICER",
+    "insurerId": 2
+  },
+  {
+    "id": 99,
+    "code": "SYS-ADM",
+    "name": "System Administrator",
+    "email": "sysadmin@insurance.test",
+    "role": "SYSTEM_ADMIN",
+    "insurerId": null
+  }
+]
