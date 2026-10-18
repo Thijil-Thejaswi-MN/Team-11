@@ -109,9 +109,16 @@ The existing `SRS.docx`, `SAD.docx`, and `STP.docx` at the repository root are t
 | P1-03 — Quotes, underwriting, claim decisions and audit | Thijil (Person 1) | Quote/underwriting endpoint request and response shape; rule data format and fixtures; manual decision signature and reason; audit-log query/interface and requirement mapping | Pending team sign-off |
 | P2-01 — Authentication, KYC, CurrentUser and plans | Sharana (Person 2) | Register/login and lockout/session behavior; role names; KYC upload limits and status; plans browse/compare/admin routes; `CurrentUser {userId, role, insurerId}` source; dev/test-only stub safeguards; staff-to-insurer association | Pending team sign-off |
 | P3-01 — Applications, issuance, policies, renewal and cancellation | Samarth (Person 3) | Add `vehicleRegNo` and confirm `existsActivePolicyForVehicle`; whether policy becomes `Cancelled` at approval or refund; whether zero-refund cases skip gateway calls; policy number format; PDF library; whether `/payments` returns `policyNo` directly or the UI polls policies; server-stored renewal quote semantics | Pending team sign-off |
-| P4-03 — Payments, notifications, claims, file store and test clock | Raghunandan (Person 4) | Drafted in `docs/contracts/p4-contract.md` ([#127](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/127)): idempotency/retry behavior; payment/notification interfaces and required events; claim states, `hasPaidClaim()` semantics and transition ownership; allowed files and simulated scanning; `Clock` injection and test endpoint `/api/v1/test/clock` with prod isolation | Pending team sign-off |
+| P4-03 — Payments, notifications, claims, file store and test clock | Raghunandan (Person 4) | Draft v0.2 in `docs/contracts/p4-contract.md` ([#127](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/127), PR [#128](https://github.com/Thijil-Thejaswi-MN/Team-11/pull/128)): server-generated idempotency key (`applicationId-attemptNo`); 16 notification events (SAD §4.1.7); claim states aligned with SAD §4.1.3/SRS §4.7.1; D-09.5 agreed: `hasPaidClaim` checks `SETTLED` claims only; 15-day stale claim closure; file store `put/get/delete` with HTTP 413/415; clock injection with zone preservation and `/api/v1/test/clock` endpoint | Pending team sign-off |
 
 Record the agreed answer, who agreed, date, and rationale. If an answer changes the SRS/SAD/STP, add a deviation entry.
+
+#### D-09.5 — `hasPaidClaim()` Semantics for Cancellation Refunds
+
+- **Status: Agreed by QA Lead review on PR #128; pending final PR sign-off.**
+- **Agreed Rule:** `IClaimService.hasPaidClaim(policyId)` returns `true` only when a claim associated with the policy has status `SETTLED` (`Settled`).
+- **Rationale:** An `Approved` or `Payment Processing` claim that has not completed payout must not count as paid for the cancellation refund oracle. If true, the cancellation refund is Rs 0 (SAD §4.1.5, P3 Contract §3.5).
+- **Other D-09 choices (D-09.1 to D-09.4, D-09.6 to D-09.9):** Remain **Proposed** awaiting team sign-off. Virus scanning is marked **Proposed**.
 
 ## Review and change control
 
@@ -125,3 +132,4 @@ Record the agreed answer, who agreed, date, and rationale. If an answer changes 
 |---|---|
 | 15 October 2026 | Revised after PR review: standardized statuses to Confirmed / Proposed / Provisional; named owners and due/review points; expanded repository-rule evidence, build-tool and migration-tool verification, capacity arithmetic, GitHub tracking source of truth, `tier-b` convention and outstanding contract sign-off questions. |
 | 17 October 2026 | Person 4 prepared draft shared contract specification in `docs/contracts/p4-contract.md` covering IPaymentService, INotify, IClaimService, IFileStore, and injectable test Clock (Issue #127); decision options D-09.1 through D-09.9 submitted for team review. |
+| 18 October 2026 | Person 4 updated P4 contract to v0.2 following PR #128 review: aligned claim states with SAD §4.1.3 (Document Verification, Assessment, Payment Processing), 15-day stale claim closure (SRS §4.7.1), SAD 16-event notification catalogue, HTTP 413/415 file upload errors, P1 claim-decision DTO alignment, settled-only `hasPaidClaim` semantics (D-09.5), clock zone preservation, and SAD Table 3.4b method naming. |
