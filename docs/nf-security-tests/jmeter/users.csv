@@ -1,0 +1,4 @@
+email,password
+load.user001@example.invalid,NotARealPassword-123
+load.user002@example.invalid,NotARealPassword-123
+load.user003@example.invalid,NotARealPassword-123
