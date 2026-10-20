@@ -93,6 +93,24 @@ class UnderwritingControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("GET /applications/referred: Sanitizes detailsJson to expose only risk factors, withholding sensitive PII")
+    void underwriterQueueSanitizesSensitiveFieldsFromDetailsJson() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_UNDERWRITER); // Insurer 1
+
+        referredAppInsurer1.setDetailsJson("{\"age\":62,\"preExisting\":true,\"aadhaar\":\"9999-8888-7777\",\"bankAccount\":\"SBIN0001234\",\"pan\":\"ABCDE1234F\"}");
+        applicationRepository.saveAndFlush(referredAppInsurer1);
+
+        mockMvc.perform(get("/applications/referred"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.containsString("\"age\":62")))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.containsString("\"preExisting\":true")))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("aadhaar"))))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("bankAccount"))))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("pan"))));
+    }
+
+    @Test
     @DisplayName("GET /applications/referred: Customer role is denied (403 ACCESS-403)")
     void customerDeniedReferredQueue() throws Exception {
         TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_CUSTOMER);
