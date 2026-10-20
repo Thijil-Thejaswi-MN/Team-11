@@ -111,6 +111,89 @@ class UnderwritingControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("GET /applications/referred: Valid motor and health underwriting fields remain fully available")
+    void validUnderwritingFieldsPreservedInDetailsJson() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_UNDERWRITER); // Insurer 1
+
+        referredAppInsurer1.setProductType("MOTOR_4W");
+        referredAppInsurer1.setDetailsJson("{\"regYear\":2019,\"vehicleType\":\"4W\",\"make\":\"Maruti\",\"model\":\"Swift\",\"city\":\"Belagavi\",\"idv\":400000,\"addOns\":[\"ZERO_DEP\",\"ENGINE_PROTECT\"]}");
+        applicationRepository.saveAndFlush(referredAppInsurer1);
+
+        mockMvc.perform(get("/applications/referred"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.containsString("\"regYear\":2019")))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.containsString("\"vehicleType\":\"4W\"")))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.containsString("\"make\":\"Maruti\"")))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.containsString("\"model\":\"Swift\"")))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.containsString("\"city\":\"Belagavi\"")))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.containsString("\"idv\":400000")))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.containsString("ZERO_DEP")));
+    }
+
+    @Test
+    @DisplayName("GET /applications/referred: Members array strips sensitive fields from nested member objects")
+    void membersArraySanitizesExtraSensitiveFields() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_UNDERWRITER); // Insurer 1
+
+        referredAppInsurer1.setDetailsJson("{\"members\":[{\"age\":35,\"relation\":\"SPOUSE\",\"preExisting\":false,\"pan\":\"ABCDE1234F\",\"salary\":600000}]}");
+        applicationRepository.saveAndFlush(referredAppInsurer1);
+
+        mockMvc.perform(get("/applications/referred"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.containsString("\"age\":35")))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.containsString("\"relation\":\"SPOUSE\"")))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("pan"))))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("salary"))));
+    }
+
+    @Test
+    @DisplayName("GET /applications/referred: Non-array members object containing PII fails closed and is omitted")
+    void malformedMembersObjectFailsClosed() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_UNDERWRITER); // Insurer 1
+
+        // Attempt bypass by sending members as an object rather than an array
+        referredAppInsurer1.setDetailsJson("{\"age\":45,\"members\":{\"aadhaar\":\"9999-8888-7777\",\"pan\":\"ABCDE1234F\"}}");
+        applicationRepository.saveAndFlush(referredAppInsurer1);
+
+        mockMvc.perform(get("/applications/referred"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.containsString("\"age\":45")))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("members"))))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("aadhaar"))))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("pan"))));
+    }
+
+    @Test
+    @DisplayName("GET /applications/referred: addOns containing nested objects or invalid types fails closed")
+    void addOnsSanitizesNestedObjectsAndInvalidTypes() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_UNDERWRITER); // Insurer 1
+
+        // Attempt bypass with addOns containing non-string nested object
+        referredAppInsurer1.setDetailsJson("{\"regYear\":2020,\"addOns\":[\"ZERO_DEP\",{\"sensitiveDoc\":\"DOC-SECRET-99\"},12345]}");
+        applicationRepository.saveAndFlush(referredAppInsurer1);
+
+        mockMvc.perform(get("/applications/referred"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.containsString("ZERO_DEP")))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("sensitiveDoc"))))
+                .andExpect(jsonPath("$[0].detailsJson").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("DOC-SECRET-99"))));
+    }
+
+    @Test
+    @DisplayName("GET /applications/referred: Malformed JSON and unexpected non-object payloads fail closed")
+    void malformedJsonPayloadFailsClosed() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_UNDERWRITER); // Insurer 1
+
+        // Array JSON instead of object JSON
+        referredAppInsurer1.setDetailsJson("[\"untrusted\", \"payload\"]");
+        applicationRepository.saveAndFlush(referredAppInsurer1);
+
+        mockMvc.perform(get("/applications/referred"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].detailsJson").value("{}"));
+    }
+
+    @Test
     @DisplayName("GET /applications/referred: Customer role is denied (403 ACCESS-403)")
     void customerDeniedReferredQueue() throws Exception {
         TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_CUSTOMER);

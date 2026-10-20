@@ -2,7 +2,6 @@ package com.team11.insurance.underwriting.dto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,19 +32,6 @@ public record ReferredApplicationResponse(
 ) {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    /**
-     * Whitelist of legitimate underwriting risk factors allowed in detailsJson.
-     * Prevents leakage of unnecessary sensitive data (PII, banking, KYC documents).
-     */
-    private static final Set<String> ALLOWED_TOP_LEVEL_FIELDS = Set.of(
-            "regYear", "vehicleAge", "vehicleType", "make", "model", "city", "idv", "addOns",
-            "age", "applicantAge", "members", "preExisting", "hasPreExisting", "sumInsured"
-    );
-
-    private static final Set<String> ALLOWED_MEMBER_FIELDS = Set.of(
-            "age", "memberAge", "relation", "preExisting"
-    );
-
     public static ReferredApplicationResponse from(Application app) {
         if (app == null) {
             return null;
@@ -68,7 +54,8 @@ public record ReferredApplicationResponse(
 
     /**
      * Sanitizes raw application details JSON, keeping only fields strictly required
-     * for underwriting assessment and stripping sensitive personal or financial information.
+     * for underwriting assessment and enforcing documented types and shapes (fail-closed).
+     * Strips all unknown fields, malformed shapes, and sensitive personal or financial information.
      */
     public static String sanitizeDetailsJson(String rawJson) {
         if (rawJson == null) {
@@ -85,23 +72,84 @@ public record ReferredApplicationResponse(
             ObjectNode sanitized = OBJECT_MAPPER.createObjectNode();
             root.fields().forEachRemaining(entry -> {
                 String key = entry.getKey();
-                if (ALLOWED_TOP_LEVEL_FIELDS.contains(key)) {
-                    if ("members".equals(key) && entry.getValue().isArray()) {
-                        ArrayNode sanitizedMembers = OBJECT_MAPPER.createArrayNode();
-                        for (JsonNode member : entry.getValue()) {
-                            if (member.isObject()) {
-                                ObjectNode sanitizedMember = OBJECT_MAPPER.createObjectNode();
-                                member.fields().forEachRemaining(mEntry -> {
-                                    if (ALLOWED_MEMBER_FIELDS.contains(mEntry.getKey())) {
-                                        sanitizedMember.set(mEntry.getKey(), mEntry.getValue());
-                                    }
-                                });
-                                sanitizedMembers.add(sanitizedMember);
-                            }
+                JsonNode val = entry.getValue();
+                if (val == null || val.isNull()) {
+                    return;
+                }
+
+                switch (key) {
+                    case "regYear", "vehicleAge", "age", "applicantAge" -> {
+                        if (val.isIntegralNumber()) {
+                            sanitized.set(key, val);
                         }
-                        sanitized.set("members", sanitizedMembers);
-                    } else {
-                        sanitized.set(key, entry.getValue());
+                    }
+                    case "idv", "sumInsured" -> {
+                        if (val.isNumber()) {
+                            sanitized.set(key, val);
+                        }
+                    }
+                    case "vehicleType", "make", "model", "city" -> {
+                        if (val.isTextual()) {
+                            sanitized.set(key, val);
+                        }
+                    }
+                    case "preExisting", "hasPreExisting" -> {
+                        if (val.isBoolean() || val.isTextual()) {
+                            sanitized.set(key, val);
+                        }
+                    }
+                    case "addOns" -> {
+                        if (val.isArray()) {
+                            ArrayNode sanitizedAddOns = OBJECT_MAPPER.createArrayNode();
+                            for (JsonNode item : val) {
+                                if (item != null && item.isTextual()) {
+                                    sanitizedAddOns.add(item.asText());
+                                }
+                            }
+                            sanitized.set("addOns", sanitizedAddOns);
+                        }
+                    }
+                    case "members" -> {
+                        if (val.isArray()) {
+                            ArrayNode sanitizedMembers = OBJECT_MAPPER.createArrayNode();
+                            for (JsonNode member : val) {
+                                if (member != null && member.isObject()) {
+                                    ObjectNode sanitizedMember = OBJECT_MAPPER.createObjectNode();
+                                    member.fields().forEachRemaining(mEntry -> {
+                                        String mKey = mEntry.getKey();
+                                        JsonNode mVal = mEntry.getValue();
+                                        if (mVal == null || mVal.isNull()) {
+                                            return;
+                                        }
+                                        switch (mKey) {
+                                            case "age", "memberAge" -> {
+                                                if (mVal.isIntegralNumber()) {
+                                                    sanitizedMember.set(mKey, mVal);
+                                                }
+                                            }
+                                            case "relation" -> {
+                                                if (mVal.isTextual()) {
+                                                    sanitizedMember.set(mKey, mVal);
+                                                }
+                                            }
+                                            case "preExisting" -> {
+                                                if (mVal.isBoolean() || mVal.isTextual()) {
+                                                    sanitizedMember.set(mKey, mVal);
+                                                }
+                                            }
+                                            default -> {
+                                                // Fail-closed: ignore unallowed or sensitive member fields
+                                            }
+                                        }
+                                    });
+                                    sanitizedMembers.add(sanitizedMember);
+                                }
+                            }
+                            sanitized.set("members", sanitizedMembers);
+                        }
+                    }
+                    default -> {
+                        // Fail-closed: ignore unallowed or sensitive top-level fields
                     }
                 }
             });
