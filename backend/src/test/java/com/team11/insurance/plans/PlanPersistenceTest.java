@@ -27,8 +27,8 @@ class PlanPersistenceTest {
     void canPersistAndQueryPlanWithRules() {
         Plan plan = new Plan(
                 "TEST-PLAN-01",
-                1L,
-                "MOTOR_FOUR_WHEELER",
+                99L,
+                "TEST_TYPE_01",
                 "Test Car Plan",
                 new BigDecimal("500000.00"),
                 new BigDecimal("2000.00"),
@@ -48,25 +48,25 @@ class PlanPersistenceTest {
         assertTrue(retrieved.isPresent());
         assertEquals("Test Car Plan", retrieved.get().getName());
         assertEquals(new BigDecimal("500000.00"), retrieved.get().getCoverage());
-        assertEquals(1L, retrieved.get().getInsurerId());
+        assertEquals(99L, retrieved.get().getInsurerId());
         assertTrue(retrieved.get().isActive());
     }
 
     @Test
     void queriesByInsurerAndType() {
-        Plan p1 = new Plan("TEST-M1", 1L, "MOTOR_FOUR_WHEELER", "Motor 1",
+        Plan p1 = new Plan("TEST-M1", 99L, "TEST_FILTER_4W", "Motor 1",
                 new BigDecimal("400000.00"), new BigDecimal("1000.00"), 0, BigDecimal.ZERO, null, null, null, true);
-        Plan p2 = new Plan("TEST-H1", 1L, "HEALTH", "Health 1",
+        Plan p2 = new Plan("TEST-H1", 99L, "TEST_FILTER_HEALTH", "Health 1",
                 new BigDecimal("500000.00"), BigDecimal.ZERO, 12, new BigDecimal("8000.00"), null, null, null, true);
-        Plan p3 = new Plan("TEST-M2", 2L, "MOTOR_FOUR_WHEELER", "Motor 2",
+        Plan p3 = new Plan("TEST-M2", 98L, "TEST_FILTER_4W", "Motor 2",
                 new BigDecimal("450000.00"), new BigDecimal("1500.00"), 0, BigDecimal.ZERO, null, null, null, false);
 
         planRepository.saveAll(List.of(p1, p2, p3));
 
-        List<Plan> insurer1Plans = planRepository.findByInsurerId(1L);
+        List<Plan> insurer1Plans = planRepository.findByInsurerId(99L);
         assertEquals(2, insurer1Plans.size());
 
-        List<Plan> activeMotor = planRepository.findByTypeAndActiveTrue("MOTOR_FOUR_WHEELER");
+        List<Plan> activeMotor = planRepository.findByTypeAndActiveTrue("TEST_FILTER_4W");
         assertEquals(1, activeMotor.size());
         assertEquals("TEST-M1", activeMotor.get(0).getCode());
     }
