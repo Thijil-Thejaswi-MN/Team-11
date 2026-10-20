@@ -16,4 +16,8 @@ public class ValidationException extends AppException {
     public ValidationException(String message, List<String> details) {
         super(ErrorCode.VALID_422, message, details);
     }
+
+    public ValidationException(String message, String detail) {
+        super(ErrorCode.VALID_422, message, List.of(detail));
+    }
 }

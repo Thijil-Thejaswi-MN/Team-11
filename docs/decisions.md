@@ -159,6 +159,12 @@ The contract documents define cross-module API payloads, status models, and shar
 ---
 
 ## TEAM-03 Sign-Off Checklist & Pre-Sprint-1 Architecture Agenda
+| Contract | Owner | Topics to confirm | Outcome |
+|---|---|---|---|
+| P1-03 — Quotes, underwriting, claim decisions and audit | Thijil (Person 1) | Quote/underwriting endpoint request and response shape; rule data format and fixtures; manual decision signature and reason; audit-log query/interface and requirement mapping | Pending team sign-off |
+| P2-01 — Authentication, KYC, CurrentUser and plans | Sharana (Person 2) | Register/login and lockout/session behavior; role names; KYC upload limits and status; plans browse/compare/admin routes; `CurrentUser {userId, role, insurerId}` source; dev/test-only stub safeguards; staff-to-insurer association | Pending team sign-off |
+| P3-01 — Applications, issuance, policies, renewal and cancellation | Samarth (Person 3) | Add `vehicleRegNo` and confirm `existsActivePolicyForVehicle`; whether policy becomes `Cancelled` at approval or refund; whether zero-refund cases skip gateway calls; policy number format; PDF library; whether `/payments` returns `policyNo` directly or the UI polls policies; server-stored renewal quote semantics | Pending team sign-off |
+| P4-03 — Payments, notifications, claims, file store and test clock | Raghunandan (Person 4) | Draft v0.2 in `docs/contracts/p4-contract.md` ([#127](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/127), PR [#128](https://github.com/Thijil-Thejaswi-MN/Team-11/pull/128)): server-generated idempotency key (`applicationId-attemptNo`); 16 notification events (SAD §4.1.7); claim states aligned with SAD §4.1.3/SRS §4.7.1; D-09.5 agreed: `hasPaidClaim` checks `SETTLED` claims only; 15-day stale claim closure; file store `put/get/delete` with HTTP 413/415; clock injection with zone preservation and `/api/v1/test/clock` endpoint | Pending team sign-off |
 
 Before beginning Sprint 1 on Monday, 19 October 2026, the team must hold a 15-minute architecture sign-off meeting to address the following outstanding agenda:
 
@@ -170,6 +176,14 @@ Before beginning Sprint 1 on Monday, 19 October 2026, the team must hold a 15-mi
   - **Action:** Sharana (Person 2) addresses the critical Spring constructor injection defect in `FieldEncryptionService` preventing production fail-secure key validation.
 - [ ] **Item 4: API Contracts Final Approval (D-09)**
   - **Action:** Joint sign-off across Person 1, Person 2, Person 3, and Person 4 on unified endpoint signatures, D-09.5 `SETTLED` rule, and data fixtures.
+#### D-09.5 — `hasPaidClaim()` Semantics for Cancellation Refunds
+
+- **Status: Agreed by QA Lead review on PR #128; pending final PR sign-off.**
+- **Agreed Rule:** `IClaimService.hasPaidClaim(policyId)` returns `true` only when a claim associated with the policy has status `SETTLED` (`Settled`).
+- **Rationale:** An `Approved` or `Payment Processing` claim that has not completed payout must not count as paid for the cancellation refund oracle. If true, the cancellation refund is Rs 0 (SAD §4.1.5, P3 Contract §3.5).
+- **Other D-09 choices (D-09.1 to D-09.4, D-09.6 to D-09.9):** Remain **Proposed** awaiting team sign-off. Virus scanning is marked **Proposed**.
+
+## Review and change control
 
 ---
 
@@ -180,3 +194,6 @@ Before beginning Sprint 1 on Monday, 19 October 2026, the team must hold a 15-mi
 | 15 October 2026 | Standardized statuses to Confirmed / Proposed / Provisional; named owners and due/review points. |
 | 17 October 2026 | Updated D-01 (confirmed via live GitHub branch protection audit), D-02 (confirmed via package.json & CI build evidence), D-04 (confirmed via role baseline audit), and D-05 (provisional accounting across 102 items: 31 positive estimates totalling 118 pts, 2 explicit zeros, 69 unestimated). Expanded D-03 with comparative analysis, migration impact assessment, and Sprint 1/2 recommendation (undecided pending formal sign-off). Clarified D-09 contract documents and PR references (P1-03 PR #53, P2-01 PR #54, P3-01 PR #46, P4-03 PR #128) distinguishing drafted contracts from downstream implementations, retaining D-09 as pending formal joint sign-off. Noted PR #115 closure (approved by Samarth, merged into main at `9acef3d`) in D-01, D-09, and agenda checklist. Added TEAM-03 pre-Sprint 1 sign-off checklist and agenda. |
 | 17 October 2026 | Confirmed D-03 (database migration strategy: MySQL 8 with Hibernate ddl-auto: update in dev and create-drop in test for Sprint 1; Flyway versioned migrations planned for Sprint 2; update/create-drop strictly non-production). Confirmed D-09.5 business rule (cancellation-refund eligibility: a claim counts as paid only when SETTLED, not merely APPROVED; contract update and implementation verification pending). Retained D-09 as Proposed pending technical contract alignment across PR #128. |
+| 15 October 2026 | Revised after PR review: standardized statuses to Confirmed / Proposed / Provisional; named owners and due/review points; expanded repository-rule evidence, build-tool and migration-tool verification, capacity arithmetic, GitHub tracking source of truth, `tier-b` convention and outstanding contract sign-off questions. |
+| 17 October 2026 | Person 4 prepared draft shared contract specification in `docs/contracts/p4-contract.md` covering IPaymentService, INotify, IClaimService, IFileStore, and injectable test Clock (Issue #127); decision options D-09.1 through D-09.9 submitted for team review. |
+| 18 October 2026 | Person 4 updated P4 contract to v0.2 following PR #128 review: aligned claim states with SAD §4.1.3 (Document Verification, Assessment, Payment Processing), 15-day stale claim closure (SRS §4.7.1), SAD 16-event notification catalogue, HTTP 413/415 file upload errors, P1 claim-decision DTO alignment, settled-only `hasPaidClaim` semantics (D-09.5), clock zone preservation, and SAD Table 3.4b method naming. |
