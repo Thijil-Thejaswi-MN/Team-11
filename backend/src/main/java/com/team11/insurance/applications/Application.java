@@ -65,6 +65,10 @@ public class Application {
     @Column(name = "rejection_reason", length = 500)
     private String rejectionReason;
 
+    /** Ids of the uploaded supporting documents, comma separated (for example "301,302"). */
+    @Column(name = "document_ids", length = 500)
+    private String documentIds;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -96,6 +100,8 @@ public class Application {
     public void setStatus(ApplicationStatus status) { this.status = status; }
     public String getRejectionReason() { return rejectionReason; }
     public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+    public String getDocumentIds() { return documentIds; }
+    public void setDocumentIds(String documentIds) { this.documentIds = documentIds; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }
