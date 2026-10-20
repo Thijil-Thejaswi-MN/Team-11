@@ -156,4 +156,63 @@ class MotorUnderwritingRuleTest {
         assertThat(result2.getOutcome()).isEqualTo(UnderwritingOutcome.REFER);
         assertThat(result2.getReason()).isEqualTo("Missing rule configuration");
     }
+
+    @Test
+    @DisplayName("Active policy exists even when vehicle age is completely missing results in REJECT (not downgraded to REFER)")
+    void activePolicyRejectionEnforcedWhenVehicleAgeMissing() {
+        Application application = new Application();
+        application.setVehicleRegNo("KA01AB1234");
+        application.setDetailsJson("{}"); // Missing regYear and vehicleAge
+
+        when(policyQuery.existsActivePolicyForVehicle("KA01AB1234")).thenReturn(true);
+
+        UnderwritingResult result = evaluator.evaluate(application, standardRules, clock2026);
+
+        assertThat(result.getOutcome()).isEqualTo(UnderwritingOutcome.REJECT);
+        assertThat(result.getReason()).containsIgnoringCase("active policy");
+    }
+
+    @Test
+    @DisplayName("Plan configuration cannot disable mandatory active policy rejection")
+    void planConfigurationCannotDisableActivePolicyRejection() {
+        Application application = new Application();
+        application.setVehicleRegNo("KA01AB1234");
+        application.setDetailsJson("{\"regYear\":2021}");
+
+        // Plan rule with rejectIfActivePolicy explicitly set to false
+        MotorRules permissiveRules = new MotorRules(20, 15, false);
+        when(policyQuery.existsActivePolicyForVehicle("KA01AB1234")).thenReturn(true);
+
+        UnderwritingResult result = evaluator.evaluate(application, permissiveRules, clock2026);
+
+        assertThat(result.getOutcome()).isEqualTo(UnderwritingOutcome.REJECT);
+        assertThat(result.getReason()).containsIgnoringCase("active policy");
+    }
+
+    @Test
+    @DisplayName("Future registration year throws ValidationException and never produces APPROVE")
+    void futureRegistrationYearThrowsValidationException() {
+        Application application = new Application();
+        application.setVehicleRegNo("KA01AB1234");
+        application.setDetailsJson("{\"regYear\":2030}"); // Future year relative to clock 2026
+
+        when(policyQuery.existsActivePolicyForVehicle("KA01AB1234")).thenReturn(false);
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> evaluator.evaluate(application, standardRules, clock2026))
+                .isInstanceOf(com.team11.insurance.common.exception.ValidationException.class)
+                .hasMessageContaining("registration year cannot be in the future");
+    }
+
+    @Test
+    @DisplayName("Explicitly negative vehicle age throws ValidationException and never produces APPROVE")
+    void negativeVehicleAgeThrowsValidationException() {
+        Application application = new Application();
+        application.setVehicleRegNo("KA01AB1234");
+        application.setDetailsJson("{\"vehicleAge\":-5}");
+
+        when(policyQuery.existsActivePolicyForVehicle("KA01AB1234")).thenReturn(false);
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> evaluator.evaluate(application, standardRules, clock2026))
+                .isInstanceOf(com.team11.insurance.common.exception.ValidationException.class);
+    }
 }

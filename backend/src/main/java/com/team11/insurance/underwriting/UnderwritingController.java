@@ -18,6 +18,7 @@ import com.team11.insurance.auth.CurrentUser;
 import com.team11.insurance.auth.RoleSecurity;
 import com.team11.insurance.auth.UserRole;
 import com.team11.insurance.common.exception.ResourceNotFoundException;
+import com.team11.insurance.underwriting.dto.ReferredApplicationResponse;
 import com.team11.insurance.underwriting.dto.UnderwriterDecisionRequest;
 import com.team11.insurance.underwriting.dto.UnderwritingDecisionResponse;
 
@@ -46,7 +47,7 @@ public class UnderwritingController {
      * Enforces RBAC (UNDERWRITER, INSURER_ADMIN, SYSTEM_ADMIN) and tenant isolation.
      */
     @GetMapping("/referred")
-    public ResponseEntity<List<Application>> getReferredApplications(CurrentUser currentUser) {
+    public ResponseEntity<List<ReferredApplicationResponse>> getReferredApplications(CurrentUser currentUser) {
         RoleSecurity.assertRole(currentUser, UserRole.UNDERWRITER, UserRole.INSURER_ADMIN, UserRole.SYSTEM_ADMIN);
 
         List<Application> referredApplications;
@@ -59,7 +60,11 @@ public class UnderwritingController {
             );
         }
 
-        return ResponseEntity.ok(referredApplications);
+        List<ReferredApplicationResponse> response = referredApplications.stream()
+                .map(ReferredApplicationResponse::from)
+                .toList();
+
+        return ResponseEntity.ok(response);
     }
 
     /**

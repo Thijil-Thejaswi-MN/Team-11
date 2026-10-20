@@ -48,13 +48,17 @@ public class MotorUnderwritingEvaluator {
         int currentYear = LocalDate.now(effectiveClock).getYear();
 
         // 1. Extract vehicle registration number and check for duplicate active policy
+        // Mandatory business rule (SAD §4.3.7): duplicate active policy must ALWAYS result in REJECT.
+        // Plan configuration cannot disable this rule, and it takes precedence even if vehicle age is missing.
         String vehicleRegNo = extractVehicleRegNo(application);
         boolean activePolicyExists = false;
-        if (rules.getRejectIfActivePolicy() && vehicleRegNo != null && !vehicleRegNo.isBlank()) {
+        if (vehicleRegNo != null && !vehicleRegNo.isBlank()) {
             activePolicyExists = policyQuery.existsActivePolicyForVehicle(vehicleRegNo);
             if (activePolicyExists) {
                 log.info("MotorUnderwriting: Active policy detected for vehicle reg '{}' on application {}",
                         vehicleRegNo, application != null ? application.getId() : null);
+                String rejectReason = "Active policy already exists for vehicle: " + vehicleRegNo;
+                return UnderwritingResult.reject(rejectReason);
             }
         }
 
@@ -66,26 +70,22 @@ public class MotorUnderwritingEvaluator {
             return UnderwritingResult.refer("Missing vehicle registration year or age in application details");
         }
 
-        // 3. Evaluate vehicle age boundary rules
-        UnderwritingResult ageResult;
+        // 3. Validate against negative vehicle age or future registration year
+        if (vehicleAge < 0) {
+            throw new com.team11.insurance.common.exception.ValidationException(
+                    "Invalid vehicle age: registration year cannot be in the future (calculated age: " + vehicleAge + ")");
+        }
+
+        // 4. Evaluate vehicle age boundary rules
         if (vehicleAge > rules.getMaxVehicleAgeYears()) {
-            ageResult = UnderwritingResult.reject("Vehicle age exceeds maximum threshold: "
+            return UnderwritingResult.reject("Vehicle age exceeds maximum threshold: "
                     + vehicleAge + " years (max allowed " + rules.getMaxVehicleAgeYears() + ")");
         } else if (vehicleAge > rules.getReferralVehicleAgeYears()) {
-            ageResult = UnderwritingResult.refer("Vehicle age requires referral: "
+            return UnderwritingResult.refer("Vehicle age requires referral: "
                     + vehicleAge + " years (referral threshold " + rules.getReferralVehicleAgeYears() + ")");
         } else {
-            ageResult = UnderwritingResult.approve("Vehicle age within acceptable limit: " + vehicleAge + " years");
+            return UnderwritingResult.approve("Vehicle age within acceptable limit: " + vehicleAge + " years");
         }
-
-        // 4. Precedence: Active policy results in Reject even when age rule returns Refer or Approve
-        if (activePolicyExists) {
-            String rejectReason = "Active policy already exists for vehicle"
-                    + (vehicleRegNo != null && !vehicleRegNo.isBlank() ? ": " + vehicleRegNo : "");
-            return UnderwritingResult.reject(rejectReason);
-        }
-
-        return ageResult;
     }
 
     private String extractVehicleRegNo(Application application) {

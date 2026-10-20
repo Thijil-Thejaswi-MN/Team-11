@@ -134,4 +134,26 @@ class HealthUnderwritingRuleTest {
         assertThat(result2.getOutcome()).isEqualTo(UnderwritingOutcome.REFER);
         assertThat(result2.getReason()).isEqualTo("Missing rule configuration");
     }
+
+    @Test
+    @DisplayName("Validation: Negative applicant age throws ValidationException")
+    void negativeApplicantAgeThrowsValidationException() {
+        Application application = new Application();
+        application.setDetailsJson("{\"age\":-5,\"preExisting\":false}");
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> evaluator.evaluate(application, standardRules))
+                .isInstanceOf(com.team11.insurance.common.exception.ValidationException.class)
+                .hasMessageContaining("age cannot be negative");
+    }
+
+    @Test
+    @DisplayName("Validation: Negative member age in members array throws ValidationException")
+    void negativeMemberAgeInArrayThrowsValidationException() {
+        Application application = new Application();
+        application.setDetailsJson("{\"members\":[{\"age\":25},{\"age\":-1}],\"preExisting\":false}");
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> evaluator.evaluate(application, standardRules))
+                .isInstanceOf(com.team11.insurance.common.exception.ValidationException.class)
+                .hasMessageContaining("age cannot be negative");
+    }
 }

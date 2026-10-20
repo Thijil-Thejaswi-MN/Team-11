@@ -77,7 +77,7 @@ class UnderwritingControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /applications/referred: Underwriter of Insurer 1 sees only referred applications of Insurer 1")
+    @DisplayName("GET /applications/referred: Underwriter sees referred DTOs without exposing internal updatedAt")
     void underwriterSeesOnlyOwnInsurerReferredApplications() throws Exception {
         TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_UNDERWRITER); // Insurer 1
 
@@ -85,7 +85,11 @@ class UnderwritingControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id").value(referredAppInsurer1.getId()))
-                .andExpect(jsonPath("$[0].insurerId").value(1));
+                .andExpect(jsonPath("$[0].insurerId").value(1))
+                .andExpect(jsonPath("$[0].productType").value("HEALTH"))
+                .andExpect(jsonPath("$[0].status").value("REFERRED"))
+                .andExpect(jsonPath("$[0].customerId").value(1001))
+                .andExpect(jsonPath("$[0].updatedAt").doesNotExist());
     }
 
     @Test

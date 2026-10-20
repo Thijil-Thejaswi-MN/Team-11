@@ -49,6 +49,11 @@ public class HealthUnderwritingEvaluator {
             return UnderwritingResult.refer("Missing applicant or member age in application details");
         }
 
+        if (profile.hasNegativeAge || (profile.oldestAge != null && profile.oldestAge < 0)) {
+            throw new com.team11.insurance.common.exception.ValidationException(
+                    "Invalid member age: age cannot be negative (provided: " + profile.oldestAge + ")");
+        }
+
         int oldestAge = profile.oldestAge;
         boolean hasPreExisting = profile.hasPreExisting;
 
@@ -90,7 +95,7 @@ public class HealthUnderwritingEvaluator {
 
     private HealthProfile extractHealthProfile(Application application) {
         if (application == null || application.getDetailsJson() == null || application.getDetailsJson().isBlank()) {
-            return new HealthProfile(null, false);
+            return new HealthProfile(null, false, false);
         }
 
         try {
@@ -142,12 +147,13 @@ public class HealthUnderwritingEvaluator {
             }
 
             Integer oldestAge = ages.stream().max(Integer::compareTo).orElse(null);
-            return new HealthProfile(oldestAge, preExisting);
+            boolean hasNegativeAge = ages.stream().anyMatch(a -> a < 0);
+            return new HealthProfile(oldestAge, preExisting, hasNegativeAge);
         } catch (Exception e) {
             log.warn("Failed to extract health profile from detailsJson: {}", e.getMessage());
-            return new HealthProfile(null, false);
+            return new HealthProfile(null, false, false);
         }
     }
 
-    private static record HealthProfile(Integer oldestAge, boolean hasPreExisting) {}
+    private static record HealthProfile(Integer oldestAge, boolean hasPreExisting, boolean hasNegativeAge) {}
 }
