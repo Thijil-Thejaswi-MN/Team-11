@@ -35,13 +35,14 @@ public final class RefundCalculator {
     
     /** Date-based entry point; both term dates are inclusive. */
     public static BigDecimal calculateRefund(BigDecimal premiumPaid, LocalDate termStart, LocalDate termEnd,
-                                             LocalDate cancellationDate, boolean claimPaid) {        if (premiumPaid == null || termStart == null || termEnd == null || cancellationDate == null) {
+                                             LocalDate cancellationDate, boolean claimPaid) {
+        if (premiumPaid == null || termStart == null || termEnd == null || cancellationDate == null) {
             throw new IllegalArgumentException("premiumPaid, termStart, termEnd, and cancellationDate must not be null");
         }
         if (termEnd.isBefore(termStart)) {
             throw new IllegalArgumentException("termEnd must not be before termStart");
         }
-                                                                                             
+
         int totalDays = (int) ChronoUnit.DAYS.between(termStart, termEnd) + 1;
         int dayOfTerm = (int) ChronoUnit.DAYS.between(termStart, cancellationDate) + 1;
         return calculateRefund(premiumPaid, dayOfTerm, totalDays, claimPaid);
