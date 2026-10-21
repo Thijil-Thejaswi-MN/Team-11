@@ -1,5 +1,6 @@
 package com.team11.insurance.quotes.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -22,6 +23,10 @@ public class HealthMemberRequest {
     @JsonProperty("relation")
     private String relation;
 
+    @JsonProperty("preExisting")
+    @JsonAlias({"preExistingDisease", "hasPreExisting"})
+    private Boolean preExisting;
+
     public HealthMemberRequest() {
     }
 
@@ -29,10 +34,22 @@ public class HealthMemberRequest {
         this.age = age;
     }
 
+    public HealthMemberRequest(Integer age, Boolean preExisting) {
+        this.age = age;
+        this.preExisting = preExisting;
+    }
+
     public HealthMemberRequest(Integer age, String gender, String relation) {
         this.age = age;
         this.gender = gender;
         this.relation = relation;
+    }
+
+    public HealthMemberRequest(Integer age, String gender, String relation, Boolean preExisting) {
+        this.age = age;
+        this.gender = gender;
+        this.relation = relation;
+        this.preExisting = preExisting;
     }
 
     public Integer getAge() {
@@ -57,5 +74,17 @@ public class HealthMemberRequest {
 
     public void setRelation(String relation) {
         this.relation = relation;
+    }
+
+    public Boolean getPreExisting() {
+        return preExisting;
+    }
+
+    public boolean isPreExisting() {
+        return Boolean.TRUE.equals(preExisting);
+    }
+
+    public void setPreExisting(Boolean preExisting) {
+        this.preExisting = preExisting;
     }
 }

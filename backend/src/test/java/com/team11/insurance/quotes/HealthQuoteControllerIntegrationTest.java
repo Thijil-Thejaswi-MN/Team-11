@@ -268,4 +268,29 @@ class HealthQuoteControllerIntegrationTest {
                 .andExpect(jsonPath("$.status").value(403))
                 .andExpect(jsonPath("$.errorCode", is("ACCESS-403")));
     }
+
+    @Test
+    @DisplayName("Integration: Member-level preExisting: true in JSON payload applies 1.2x loading factor")
+    void memberLevelPreExistingInJsonAppliesLoading() throws Exception {
+        String jsonPayload = """
+                {
+                  "planId": %d,
+                  "members": [
+                    { "age": 30, "preExisting": true },
+                    { "age": 32, "preExisting": false }
+                  ],
+                  "sumInsured": 500000,
+                  "preExisting": false
+                }
+                """.formatted(healthPlanId);
+
+        mockMvc.perform(post("/quotes/health")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonPayload))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.premium", is(7200.00)))
+                .andExpect(jsonPath("$.breakdown.basePremium", is(6000.00)))
+                .andExpect(jsonPath("$.breakdown.ageLoading", is(1200.00)))
+                .andExpect(jsonPath("$.breakdown.addOns.PRE_EXISTING_FACTOR", is(1.2)));
+    }
 }

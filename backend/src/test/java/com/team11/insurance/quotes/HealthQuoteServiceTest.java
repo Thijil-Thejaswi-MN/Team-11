@@ -263,4 +263,89 @@ class HealthQuoteServiceTest {
         assertThat(saved.getPremium()).isEqualByComparingTo(new BigDecimal("3000.00"));
         assertThat(saved.getValidUntil()).isEqualTo(Instant.parse("2026-10-21T10:00:00Z").plus(java.time.Duration.ofDays(30)));
     }
+
+    @Test
+    @DisplayName("Regression: Single member declaring pre-existing disease triggers 1.2x loading")
+    void singleMemberDeclaringPreExistingDisease() {
+        HealthQuoteRequest request = new HealthQuoteRequest(
+                3L,
+                List.of(new HealthMemberRequest(45, true)),
+                new BigDecimal("500000"),
+                false
+        );
+
+        QuoteResponse response = service.calculateHealthQuote(request, 1001L);
+
+        // Member base: 4500. Sum insured 5L: 1.0. Member preExisting: 1.2 -> 5400.00
+        assertThat(response.getPremium()).isEqualByComparingTo(new BigDecimal("5400.00"));
+        assertThat(response.getBreakdown().getBasePremium()).isEqualByComparingTo(new BigDecimal("4500.00"));
+        assertThat(response.getBreakdown().getAgeLoading()).isEqualByComparingTo(new BigDecimal("900.00"));
+        assertThat(response.getBreakdown().getAddOns()).containsEntry("PRE_EXISTING_FACTOR", new BigDecimal("1.2"));
+    }
+
+    @Test
+    @DisplayName("Regression: Multiple members where only one declares pre-existing condition triggers 1.2x loading")
+    void multipleMembersWhereOnlyOneHasCondition() {
+        HealthQuoteRequest request = new HealthQuoteRequest(
+                3L,
+                List.of(
+                        new HealthMemberRequest(30, true),
+                        new HealthMemberRequest(32, false)
+                ),
+                new BigDecimal("500000"),
+                false
+        );
+
+        QuoteResponse response = service.calculateHealthQuote(request, 1001L);
+
+        // Members base: 3000 + 3000 = 6000. Sum insured: 1.0. PreExisting: 1.2 -> 7200.00
+        assertThat(response.getPremium()).isEqualByComparingTo(new BigDecimal("7200.00"));
+        assertThat(response.getBreakdown().getBasePremium()).isEqualByComparingTo(new BigDecimal("6000.00"));
+        assertThat(response.getBreakdown().getAgeLoading()).isEqualByComparingTo(new BigDecimal("1200.00"));
+        assertThat(response.getBreakdown().getAddOns()).containsEntry("PRE_EXISTING_FACTOR", new BigDecimal("1.2"));
+    }
+
+    @Test
+    @DisplayName("Regression: No member declaring condition with top-level false applies 1.0x factor")
+    void noMemberDeclaringCondition() {
+        HealthQuoteRequest request = new HealthQuoteRequest(
+                3L,
+                List.of(
+                        new HealthMemberRequest(30, false),
+                        new HealthMemberRequest(32, false)
+                ),
+                new BigDecimal("500000"),
+                false
+        );
+
+        QuoteResponse response = service.calculateHealthQuote(request, 1001L);
+
+        // Members base: 3000 + 3000 = 6000. Sum insured: 1.0. PreExisting: 1.0 -> 6000.00
+        assertThat(response.getPremium()).isEqualByComparingTo(new BigDecimal("6000.00"));
+        assertThat(response.getBreakdown().getBasePremium()).isEqualByComparingTo(new BigDecimal("6000.00"));
+        assertThat(response.getBreakdown().getAgeLoading()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(response.getBreakdown().getAddOns()).doesNotContainKey("PRE_EXISTING_FACTOR");
+    }
+
+    @Test
+    @DisplayName("Regression: Top-level pre-existing flag true applies 1.2x loading even when members don't specify")
+    void topLevelPreExistingFlagAppliesLoading() {
+        HealthQuoteRequest request = new HealthQuoteRequest(
+                3L,
+                List.of(
+                        new HealthMemberRequest(30),
+                        new HealthMemberRequest(32)
+                ),
+                new BigDecimal("500000"),
+                true
+        );
+
+        QuoteResponse response = service.calculateHealthQuote(request, 1001L);
+
+        // Members base: 6000. PreExisting: 1.2 -> 7200.00
+        assertThat(response.getPremium()).isEqualByComparingTo(new BigDecimal("7200.00"));
+        assertThat(response.getBreakdown().getBasePremium()).isEqualByComparingTo(new BigDecimal("6000.00"));
+        assertThat(response.getBreakdown().getAgeLoading()).isEqualByComparingTo(new BigDecimal("1200.00"));
+        assertThat(response.getBreakdown().getAddOns()).containsEntry("PRE_EXISTING_FACTOR", new BigDecimal("1.2"));
+    }
 }

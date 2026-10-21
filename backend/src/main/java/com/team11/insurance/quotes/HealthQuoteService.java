@@ -106,6 +106,9 @@ public class HealthQuoteService {
             if (member.getRelation() != null) {
                 memberMap.put("relation", member.getRelation());
             }
+            if (member.getPreExisting() != null) {
+                memberMap.put("preExisting", member.getPreExisting());
+            }
             memberMap.put("basePremium", memberBase);
             membersDetails.add(memberMap);
         }
@@ -113,8 +116,9 @@ public class HealthQuoteService {
         // 2. Lookup sum insured multiplier (validates sum insured is offered by plan)
         BigDecimal sumInsuredMultiplier = ratingRules.getSumInsuredMultiplier(request.getSumInsured());
 
-        // 3. Lookup pre-existing disease multiplier
-        boolean hasPreExisting = request.isPreExisting();
+        // 3. Lookup pre-existing disease multiplier (supports request-level or any member-level declaration)
+        boolean hasMemberPreExisting = request.getMembers().stream().anyMatch(HealthMemberRequest::isPreExisting);
+        boolean hasPreExisting = request.isPreExisting() || hasMemberPreExisting;
         BigDecimal preExistingMultiplier = hasPreExisting ? ratingRules.getPreExistingMultiplier() : BigDecimal.ONE;
 
         // 4. Calculate total premium: basePremiumTotal * sumInsuredMultiplier * preExistingMultiplier
