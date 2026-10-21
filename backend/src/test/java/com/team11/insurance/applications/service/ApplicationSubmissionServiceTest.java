@@ -80,7 +80,9 @@ class ApplicationSubmissionServiceTest {
         when(quotes.findById(QUOTE_ID)).thenReturn(Optional.of(quote(USER_ID, 10L, Instant.parse("2026-10-21T10:00:00Z"))));
         when(applications.saveAndFlush(any())).thenAnswer(inv -> {
             Application a = inv.getArgument(0);
-            ReflectionTestUtils.setField(a, "id", APPLICATION_ID);
+            if (a != null) {
+                ReflectionTestUtils.setField(a, "id", APPLICATION_ID);
+            }
             stored.set(a);
             return a;
         });
@@ -213,11 +215,43 @@ class ApplicationSubmissionServiceTest {
     }
 
     @Test
-    void ifUnderwritingFailsTheApplicationStaysSubmitted() {
+    void ifUnderwritingFailsTheApplicationSafelyTransitionsToReferred() {
         when(underwriting.evaluate(any())).thenThrow(new IllegalStateException("engine down"));
-        assertThrows(IllegalStateException.class, () -> service.submit(customer, request(List.of(301L))));
-        assertEquals(ApplicationStatus.SUBMITTED, stored.get().getStatus());
-        verify(histories, times(1)).save(any());
-        verifyNoInteractions(audit);
+        SubmissionResult result = service.submit(customer, request(List.of(301L)));
+        assertEquals(ApplicationStatus.REFERRED, result.status());
+        assertEquals("Underwriting evaluation deferred: manual review required", result.reason());
+        assertEquals(ApplicationStatus.REFERRED, stored.get().getStatus());
+        verify(histories, times(2)).save(any());
+        verify(audit).record(eq(USER_ID), eq("APPLICATION_SUBMITTED"), eq("Application"), eq(APPLICATION_ID), any());
+    }
+
+    @Test
+    void duplicateSubmissionCatchDataIntegrityViolationThrowsConflict() {
+        doThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"))
+                .when(applications).saveAndFlush(any());
+        StateConflictException e = assertThrows(StateConflictException.class,
+                () -> service.submit(customer, request(List.of(301L))));
+        assertCode(ErrorCode.STATE_409, e);
+    }
+
+    @Test
+    void oversizedDetailsPayloadThrowsValidationException() {
+        String hugeString = "x".repeat(4001);
+        SubmitApplicationRequest hugeRequest = new SubmitApplicationRequest(
+                QUOTE_ID, Map.of("largeField", hugeString), List.of(301L));
+        ValidationException e = assertThrows(ValidationException.class,
+                () -> service.submit(customer, hugeRequest));
+        assertCode(ErrorCode.VALID_422, e);
+        assertTrue(e.getMessage().contains("exceeds maximum allowed size"));
+    }
+
+    @Test
+    void vehicleRegNoTooLongThrowsValidationException() {
+        SubmitApplicationRequest req = new SubmitApplicationRequest(
+                QUOTE_ID, Map.of("vehicleRegNo", "KA22AB1234567890123456"), List.of(301L));
+        ValidationException e = assertThrows(ValidationException.class,
+                () -> service.submit(customer, req));
+        assertCode(ErrorCode.VALID_422, e);
+        assertEquals("vehicleRegNo is too long.", e.getMessage());
     }
 }

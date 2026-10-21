@@ -117,7 +117,8 @@ class ApplicationControllerIntegrationTest {
         mockMvc.perform(post("/applications").contentType(MediaType.APPLICATION_JSON).content(body(List.of(301L))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value("VALID-422"))
-                .andExpect(jsonPath("$.details[0]").value("Active policy on the vehicle"));
+                .andExpect(jsonPath("$.message").value("Application rejected"))
+                .andExpect(jsonPath("$.details[0].reason").value("Active policy on the vehicle"));
 
         Application saved = savedApplication();
         assertNotNull(saved, "a rejected application must stay in the database");
@@ -126,6 +127,33 @@ class ApplicationControllerIntegrationTest {
         List<ApplicationHistory> history = historyRepository.findByApplicationIdOrderByIdAsc(saved.getId());
         assertEquals(2, history.size());
         assertEquals(ApplicationStatus.REJECTED, history.get(1).getToStatus());
+    }
+
+    @Test
+    @DisplayName("Oversized payload: 422 VALID-422")
+    void oversizedPayloadReturns422() throws Exception {
+        String hugeString = "x".repeat(4001);
+        String requestJson = objectMapper.writeValueAsString(Map.of(
+                "quoteId", quote.getId(),
+                "details", Map.of("largeField", hugeString),
+                "documentIds", List.of(301L)));
+        mockMvc.perform(post("/applications").contentType(MediaType.APPLICATION_JSON).content(requestJson))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode").value("VALID-422"));
+        assertNull(savedApplication());
+    }
+
+    @Test
+    @DisplayName("Vehicle reg no too long: 422 VALID-422")
+    void vehicleRegNoTooLongReturns422() throws Exception {
+        String requestJson = objectMapper.writeValueAsString(Map.of(
+                "quoteId", quote.getId(),
+                "details", Map.of("vehicleRegNo", "KA22AB1234567890123456"),
+                "documentIds", List.of(301L)));
+        mockMvc.perform(post("/applications").contentType(MediaType.APPLICATION_JSON).content(requestJson))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode").value("VALID-422"));
+        assertNull(savedApplication());
     }
 
     @Test

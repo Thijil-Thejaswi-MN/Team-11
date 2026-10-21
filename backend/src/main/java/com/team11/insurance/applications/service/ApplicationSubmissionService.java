@@ -7,8 +7,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionOperations;
 
@@ -38,9 +41,9 @@ import com.team11.insurance.underwriting.UnderwritingResult;
  * Submit an insurance application (INS-F-007; SAD 4.1.2; contract docs/contracts/p3-contract.md 3.1).
  *
  * Flow: KYC check (403) -> documents present (422) -> quote belongs to the caller and is valid (404 / 422 / 409)
- * -> save as SUBMITTED in its own transaction -> underwriting -> move to APPROVED, REFERRED or REJECTED in a
- * second transaction -> audit entry. The method itself is NOT transactional, so the SUBMITTED row is committed
- * before underwriting runs, and a REJECTED application stays saved even though the controller then answers 422.
+ * -> save as SUBMITTED in its own transaction -> underwriting (recovering to REFERRED if unexpected engine failure occurs)
+ * -> move to APPROVED, REFERRED or REJECTED in a second transaction -> audit entry. The method itself is NOT transactional,
+ * so the SUBMITTED row is committed before underwriting runs, and a REJECTED application stays saved even though the controller then answers 422.
  *
  * Not done here yet (P3-04b, needs P4-06): checking that each document id exists in IFileStore, and the
  * APPLICATION_APPROVED / REFERRED / REJECTED notification.
@@ -48,9 +51,12 @@ import com.team11.insurance.underwriting.UnderwritingResult;
 @Service
 public class ApplicationSubmissionService {
 
+    private static final Logger log = LoggerFactory.getLogger(ApplicationSubmissionService.class);
+
     static final String ENTITY = "Application";
     static final int MAX_TEXT = 500;
     static final int MAX_REG_NO = 20;
+    public static final int MAX_DETAILS_LENGTH = 4000;
 
     private final IKycStatus kycStatus;
     private final QuoteRepository quoteRepository;
@@ -117,27 +123,43 @@ public class ApplicationSubmissionService {
             throw new ValidationException("The quote is not linked to an insurer.");
         }
 
-        // 4. Save as SUBMITTED first (own transaction), with its first history row.
-        Application submitted = Objects.requireNonNull(tx.execute(status -> {
-            Application a = new Application();
-            a.setCustomerId(userId);
-            a.setInsurerId(insurerId);
-            a.setPlanId(quote.getPlanId());
-            a.setQuoteId(quote.getId());
-            a.setProductType(quote.getProductType());
-            a.setVehicleRegNo(vehicleRegNo(request.details()));
-            a.setPremium(quote.getPremium());
-            a.setDetailsJson(toJson(request.details()));
-            a.setDocumentIds(documentIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
-            a.setStatus(ApplicationStatus.SUBMITTED);
-            Application saved = applicationRepository.saveAndFlush(a);
-            historyRepository.save(new ApplicationHistory(
-                    saved.getId(), null, ApplicationStatus.SUBMITTED, userId, "Application submitted"));
-            return saved;
-        }));
+        // 4. Validate details payload size and fields prior to database operations
+        String detailsJson = toJson(request.details());
+        String regNo = vehicleRegNo(request.details());
 
-        // 5. Underwriting runs outside any transaction; if it fails the application stays SUBMITTED.
-        UnderwritingResult result = underwriting.evaluate(submitted);
+        // 5. Save as SUBMITTED first (own transaction), with its first history row.
+        Application submitted;
+        try {
+            submitted = Objects.requireNonNull(tx.execute(status -> {
+                Application a = new Application();
+                a.setCustomerId(userId);
+                a.setInsurerId(insurerId);
+                a.setPlanId(quote.getPlanId());
+                a.setQuoteId(quote.getId());
+                a.setProductType(quote.getProductType());
+                a.setVehicleRegNo(regNo);
+                a.setPremium(quote.getPremium());
+                a.setDetailsJson(detailsJson);
+                a.setDocumentIds(documentIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                a.setStatus(ApplicationStatus.SUBMITTED);
+                Application saved = applicationRepository.saveAndFlush(a);
+                historyRepository.save(new ApplicationHistory(
+                        saved.getId(), null, ApplicationStatus.SUBMITTED, userId, "Application submitted"));
+                return saved;
+            }));
+        } catch (DataIntegrityViolationException ex) {
+            throw new StateConflictException("An application has already been submitted for this quote.");
+        }
+
+        // 6. Underwriting runs outside any transaction; if an unexpected failure occurs, refer to manual review.
+        UnderwritingResult result;
+        try {
+            result = underwriting.evaluate(submitted);
+        } catch (Exception ex) {
+            log.error("Underwriting evaluation encountered an unexpected error for application {}: {}",
+                    submitted.getId(), ex.getMessage(), ex);
+            result = UnderwritingResult.refer("Underwriting evaluation deferred: manual review required");
+        }
         ApplicationStatus target = switch (result.getOutcome()) {
             case APPROVE -> ApplicationStatus.APPROVED;
             case REFER -> ApplicationStatus.REFERRED;
@@ -146,7 +168,7 @@ public class ApplicationSubmissionService {
         ApplicationStateMachine.requireTransition(ApplicationStatus.SUBMITTED, target);
         String reason = limit(result.getReason(), MAX_TEXT);
 
-        // 6. Apply the outcome and its history row (second transaction).
+        // 7. Apply the outcome and its history row (second transaction).
         Long applicationId = submitted.getId();
         tx.executeWithoutResult(status -> {
             Application a = applicationRepository.findById(applicationId).orElseThrow(
@@ -160,7 +182,7 @@ public class ApplicationSubmissionService {
                     applicationId, ApplicationStatus.SUBMITTED, target, null, reason));
         });
 
-        // 7. Audit after the data is committed (the audit write has its own transaction).
+        // 8. Audit after the data is committed (the audit write has its own transaction).
         auditLog.record(userId, "APPLICATION_SUBMITTED", ENTITY, applicationId, "status=" + target);
 
         return new SubmissionResult(applicationId, target, reason);
@@ -189,8 +211,16 @@ public class ApplicationSubmissionService {
     }
 
     private String toJson(Map<String, Object> details) {
+        if (details == null) {
+            return "{}";
+        }
         try {
-            return objectMapper.writeValueAsString(details);
+            String json = objectMapper.writeValueAsString(details);
+            if (json.length() > MAX_DETAILS_LENGTH) {
+                throw new ValidationException(
+                        "Application details payload exceeds maximum allowed size of 4000 characters.", "details");
+            }
+            return json;
         } catch (JsonProcessingException e) {
             throw new ValidationException("The application details could not be read.", "details");
         }

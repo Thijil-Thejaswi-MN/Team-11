@@ -15,7 +15,7 @@ import com.team11.insurance.applications.service.SubmissionResult;
 import com.team11.insurance.auth.CurrentUser;
 import com.team11.insurance.auth.RoleSecurity;
 import com.team11.insurance.auth.UserRole;
-import com.team11.insurance.common.exception.ValidationException;
+import com.team11.insurance.applications.exception.ApplicationRejectedException;
 
 import jakarta.validation.Valid;
 
@@ -46,7 +46,7 @@ public class ApplicationController {
         if (result.status() == ApplicationStatus.REJECTED) {
             String reason = (result.reason() == null || result.reason().isBlank())
                     ? "No reason given" : result.reason();
-            throw new ValidationException("Application rejected", reason);
+            throw new ApplicationRejectedException(reason);
         }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(SubmitApplicationResponse.of(result.applicationId(), result.status()));
