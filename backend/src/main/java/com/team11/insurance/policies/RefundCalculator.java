@@ -7,7 +7,12 @@ import java.time.temporal.ChronoUnit;
 /**
  * Refund on cancellation (INS-F-020; SRS 4.6.2; SAD 4.1.6, which is the test oracle). Pure functions: no
  * Spring, no database, no clock, so they are easy to unit-test.
- *
+  * D-095 Rule (docs/decisions.md D-09.5 and docs/contracts/p3-contract.md §3.5):
+ *  claimPaid is true ONLY when a claim on the policy has status SETTLED (IClaimService.hasPaidClaim(policyId)).
+  * Claims in Submitted, UnderReview, Approved, or Rejected status do NOT count as paid.
+   * TC-Can-02 day-16 cancellation oracle: ₹10,873 per SRS §4.6.2 and SAD §4.1.6 round-down rule.
+    *
+    
  * Fee = 5% of the premium paid for the current term.
  *   - a claim has been paid                  -> 0
  *   - day of term <= 15 (free-look), no claim -> premiumPaid - fee
@@ -23,10 +28,20 @@ public final class RefundCalculator {
     public static final int FREE_LOOK_DAYS = 15;
 
     private RefundCalculator() { }
+    public static boolean isPaidClaimStatus(String claimStatus) {
+        return claimStatus != null && "SETTLED".equalsIgnoreCase(claimStatus.trim());
+    }
 
+    
     /** Date-based entry point; both term dates are inclusive. */
     public static BigDecimal calculateRefund(BigDecimal premiumPaid, LocalDate termStart, LocalDate termEnd,
-                                             LocalDate cancellationDate, boolean claimPaid) {
+                                             LocalDate cancellationDate, boolean claimPaid) {        if (premiumPaid == null || termStart == null || termEnd == null || cancellationDate == null) {
+            throw new IllegalArgumentException("premiumPaid, termStart, termEnd, and cancellationDate must not be null");
+        }
+        if (termEnd.isBefore(termStart)) {
+            throw new IllegalArgumentException("termEnd must not be before termStart");
+        }
+                                                                                             
         int totalDays = (int) ChronoUnit.DAYS.between(termStart, termEnd) + 1;
         int dayOfTerm = (int) ChronoUnit.DAYS.between(termStart, cancellationDate) + 1;
         return calculateRefund(premiumPaid, dayOfTerm, totalDays, claimPaid);
