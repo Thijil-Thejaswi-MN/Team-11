@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,9 @@ class TestDataLoaderTest {
 
     @Autowired
     private TestDataLoader testDataLoader;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Autowired
     private InsurerRepository insurerRepository;
@@ -81,5 +85,38 @@ class TestDataLoaderTest {
         assertEquals(initialUsers, userRepository.count());
         assertEquals(initialPlans, planRepository.count());
         assertEquals(initialPolicies, policyRepository.count());
+    }
+
+    @Test
+    @DisplayName("Deliberate fixture load failure rolls back transaction atomically and propagates exception")
+    void testFixtureLoadFailureRollsBackTransaction() {
+        // Clear all fixture data
+        jdbcTemplate.execute("DELETE FROM policies");
+        jdbcTemplate.execute("DELETE FROM plans");
+        jdbcTemplate.execute("DELETE FROM users");
+        jdbcTemplate.execute("DELETE FROM insurers");
+        assertEquals(0, insurerRepository.count());
+        assertEquals(0, userRepository.count());
+
+        // Add a check constraint on users that cannot be satisfied by users.json (which has email strings)
+        // This allows loadInsurers() to succeed, but causes loadUsers() to fail
+        jdbcTemplate.execute("ALTER TABLE users ADD CONSTRAINT chk_deliberate_fail CHECK (email = 'IMPOSSIBLE_EMAIL')");
+
+        try {
+            // Attempt loading fixtures - must throw exception
+            assertThrows(Exception.class, () -> testDataLoader.loadCanonicalFixtures(false));
+
+            // Verify transaction rolled back: insurers inserted before the failure must have been rolled back
+            assertEquals(0, insurerRepository.count(), "Insurers must be rolled back after users fixture failure");
+            assertEquals(0, userRepository.count(), "Users must be rolled back");
+        } finally {
+            // Clean up the constraint so other tests are not affected
+            jdbcTemplate.execute("ALTER TABLE users DROP CONSTRAINT chk_deliberate_fail");
+        }
+
+        // Verify recovery: subsequent fixture loading succeeds cleanly
+        assertDoesNotThrow(() -> testDataLoader.loadCanonicalFixtures(true));
+        assertEquals(2, insurerRepository.count());
+        assertEquals(10, userRepository.count());
     }
 }

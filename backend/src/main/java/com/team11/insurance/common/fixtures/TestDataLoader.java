@@ -14,7 +14,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,8 +42,9 @@ import jakarta.persistence.EntityManager;
  *   <li>Policies (policies.json)</li>
  *   <li>Claims (claims.json - loaded dynamically if table exists)</li>
  * </ol>
- * Uses {@link JdbcTemplate} to preserve exact canonical entity IDs without Hibernate
- * IDENTITY-merge sequence conflicts.
+ * Uses {@link JdbcTemplate} and {@link TransactionTemplate} with PROPAGATION_REQUIRES_NEW
+ * to guarantee atomic, all-or-nothing execution that rolls back on any insertion failure.
+ * Checks per-record existence for deterministic idempotency rather than naive table row counts.
  * Restricted strictly to 'dev' and 'test' profiles.
  */
 @Component
@@ -54,6 +57,7 @@ public class TestDataLoader implements CommandLineRunner {
             "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewfY5v7m2G9J7Lce"; // Password123!
 
     private final JdbcTemplate jdbcTemplate;
+    private final TransactionTemplate transactionTemplate;
     private final InsurerRepository insurerRepository;
     private final UserRepository userRepository;
     private final PlanRepository planRepository;
@@ -62,6 +66,7 @@ public class TestDataLoader implements CommandLineRunner {
     private final ObjectMapper objectMapper;
 
     public TestDataLoader(JdbcTemplate jdbcTemplate,
+                          PlatformTransactionManager transactionManager,
                           InsurerRepository insurerRepository,
                           UserRepository userRepository,
                           PlanRepository planRepository,
@@ -69,6 +74,8 @@ public class TestDataLoader implements CommandLineRunner {
                           EntityManager entityManager,
                           ObjectMapper objectMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.transactionTemplate = new TransactionTemplate(transactionManager);
+        this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.insurerRepository = insurerRepository;
         this.userRepository = userRepository;
         this.planRepository = planRepository;
@@ -78,39 +85,50 @@ public class TestDataLoader implements CommandLineRunner {
     }
 
     @Override
-    @Transactional
     public void run(String... args) {
         log.info("TestDataLoader: Checking canonical test fixtures initialization...");
         loadCanonicalFixtures(false);
     }
 
     /**
-     * Loads the canonical fixtures in foreign-key dependency order.
+     * Loads the canonical fixtures in foreign-key dependency order within an atomic transaction.
+     * If any fixture insert fails, the entire transaction is rolled back and the exception is propagated.
      *
      * @param resetExisting if true, clears and reloads the fixture tables
      */
-    @Transactional
     public synchronized void loadCanonicalFixtures(boolean resetExisting) {
-        if (resetExisting) {
-            log.warn("TestDataLoader: Clearing existing fixture records in reverse FK order...");
-            if (tableExists("claims")) {
-                jdbcTemplate.execute("DELETE FROM claims");
-            }
-            jdbcTemplate.execute("DELETE FROM policies");
-            jdbcTemplate.execute("DELETE FROM plans");
-            jdbcTemplate.execute("DELETE FROM users");
-            jdbcTemplate.execute("DELETE FROM insurers");
-            entityManager.flush();
-            entityManager.clear();
-        }
+        transactionTemplate.execute(status -> {
+            try {
+                if (resetExisting) {
+                    log.warn("TestDataLoader: Clearing existing fixture records in reverse FK order...");
+                    if (tableExists("claims")) {
+                        jdbcTemplate.execute("DELETE FROM claims");
+                    }
+                    jdbcTemplate.execute("DELETE FROM policies");
+                    jdbcTemplate.execute("DELETE FROM plans");
+                    jdbcTemplate.execute("DELETE FROM users");
+                    jdbcTemplate.execute("DELETE FROM insurers");
+                    entityManager.flush();
+                    entityManager.clear();
+                }
 
-        loadInsurers();
-        loadUsers();
-        loadPlans();
-        loadPolicies();
-        loadClaims();
-        entityManager.clear();
-        log.info("TestDataLoader: Canonical test fixture loading complete.");
+                loadInsurers();
+                loadUsers();
+                loadPlans();
+                loadPolicies();
+                loadClaims();
+                entityManager.clear();
+                log.info("TestDataLoader: Canonical test fixture loading complete.");
+                return null;
+            } catch (Exception e) {
+                log.error("TestDataLoader: Error during fixture loading, rolling back transaction: {}", e.getMessage());
+                status.setRollbackOnly();
+                if (e instanceof RuntimeException re) {
+                    throw re;
+                }
+                throw new IllegalStateException("Failed to load canonical test fixtures: " + e.getMessage(), e);
+            }
+        });
     }
 
     private boolean tableExists(String tableName) {
@@ -125,17 +143,14 @@ public class TestDataLoader implements CommandLineRunner {
         }
     }
 
-    private void loadInsurers() {
-        if (insurerRepository.count() > 0) {
-            log.info("TestDataLoader: Insurers already loaded (count={}), skipping.", insurerRepository.count());
-            return;
-        }
-        try {
-            ClassPathResource resource = new ClassPathResource("fixtures/insurers.json");
-            try (InputStream is = resource.getInputStream()) {
-                List<Map<String, Object>> list = objectMapper.readValue(is, new TypeReference<>() {});
-                for (Map<String, Object> map : list) {
-                    Long id = ((Number) map.get("id")).longValue();
+    private void loadInsurers() throws Exception {
+        ClassPathResource resource = new ClassPathResource("fixtures/insurers.json");
+        try (InputStream is = resource.getInputStream()) {
+            List<Map<String, Object>> list = objectMapper.readValue(is, new TypeReference<>() {});
+            for (Map<String, Object> map : list) {
+                Long id = ((Number) map.get("id")).longValue();
+                Integer count = jdbcTemplate.queryForObject("SELECT count(*) FROM insurers WHERE id = ?", Integer.class, id);
+                if (count == null || count == 0) {
                     String name = (String) map.get("name");
                     String status = (String) map.get("status");
                     boolean active = "ACTIVE".equalsIgnoreCase(status);
@@ -145,26 +160,21 @@ public class TestDataLoader implements CommandLineRunner {
                             id, name, active
                     );
                 }
-                log.info("TestDataLoader: Loaded {} insurers from fixtures.", list.size());
             }
-        } catch (Exception e) {
-            log.error("TestDataLoader: Failed to load insurers.json", e);
+            log.info("TestDataLoader: Insurers fixture verified/loaded.");
         }
     }
 
-    private void loadUsers() {
-        if (userRepository.count() > 0) {
-            log.info("TestDataLoader: Users already loaded (count={}), skipping.", userRepository.count());
-            return;
-        }
-        try {
-            ClassPathResource resource = new ClassPathResource("fixtures/users.json");
-            try (InputStream is = resource.getInputStream()) {
-                List<Map<String, Object>> list = objectMapper.readValue(is, new TypeReference<>() {});
-                for (Map<String, Object> map : list) {
-                    Long id = ((Number) map.get("id")).longValue();
+    private void loadUsers() throws Exception {
+        ClassPathResource resource = new ClassPathResource("fixtures/users.json");
+        try (InputStream is = resource.getInputStream()) {
+            List<Map<String, Object>> list = objectMapper.readValue(is, new TypeReference<>() {});
+            for (Map<String, Object> map : list) {
+                Long id = ((Number) map.get("id")).longValue();
+                String email = (String) map.get("email");
+                Integer count = jdbcTemplate.queryForObject("SELECT count(*) FROM users WHERE id = ? OR email = ?", Integer.class, id, email);
+                if (count == null || count == 0) {
                     String name = (String) map.get("name");
-                    String email = (String) map.get("email");
                     String roleStr = (String) map.get("role");
                     Long insurerId = map.get("insurerId") != null ? ((Number) map.get("insurerId")).longValue() : null;
 
@@ -173,25 +183,20 @@ public class TestDataLoader implements CommandLineRunner {
                             id, name, email, "+919876543210", DEFAULT_PASSWORD_HASH, roleStr, insurerId
                     );
                 }
-                log.info("TestDataLoader: Loaded {} users from fixtures.", list.size());
             }
-        } catch (Exception e) {
-            log.error("TestDataLoader: Failed to load users.json", e);
+            log.info("TestDataLoader: Users fixture verified/loaded.");
         }
     }
 
-    private void loadPlans() {
-        if (planRepository.count() > 0) {
-            log.info("TestDataLoader: Plans already loaded (count={}), skipping.", planRepository.count());
-            return;
-        }
-        try {
-            ClassPathResource resource = new ClassPathResource("fixtures/plans.json");
-            try (InputStream is = resource.getInputStream()) {
-                JsonNode root = objectMapper.readTree(is);
-                for (JsonNode node : root) {
-                    Long id = node.get("id").asLong();
-                    String code = node.get("code").asText();
+    private void loadPlans() throws Exception {
+        ClassPathResource resource = new ClassPathResource("fixtures/plans.json");
+        try (InputStream is = resource.getInputStream()) {
+            JsonNode root = objectMapper.readTree(is);
+            for (JsonNode node : root) {
+                Long id = node.get("id").asLong();
+                String code = node.get("code").asText();
+                Integer count = jdbcTemplate.queryForObject("SELECT count(*) FROM plans WHERE id = ? OR code = ?", Integer.class, id, code);
+                if (count == null || count == 0) {
                     Long insurerId = node.get("insurerId").asLong();
                     String type = node.get("type").asText();
                     String name = node.get("name").asText();
@@ -210,25 +215,20 @@ public class TestDataLoader implements CommandLineRunner {
                             id, code, insurerId, type, name, coverage, deductible, waiting, basePremium, premiumRulesJson, uwRulesJson, active
                     );
                 }
-                log.info("TestDataLoader: Loaded plans from fixtures.");
             }
-        } catch (Exception e) {
-            log.error("TestDataLoader: Failed to load plans.json", e);
+            log.info("TestDataLoader: Plans fixture verified/loaded.");
         }
     }
 
-    private void loadPolicies() {
-        if (policyRepository.count() > 0) {
-            log.info("TestDataLoader: Policies already loaded (count={}), skipping.", policyRepository.count());
-            return;
-        }
-        try {
-            ClassPathResource resource = new ClassPathResource("fixtures/policies.json");
-            try (InputStream is = resource.getInputStream()) {
-                List<Map<String, Object>> list = objectMapper.readValue(is, new TypeReference<>() {});
-                for (Map<String, Object> map : list) {
-                    Long id = ((Number) map.get("id")).longValue();
-                    String policyNo = (String) map.get("policyNo");
+    private void loadPolicies() throws Exception {
+        ClassPathResource resource = new ClassPathResource("fixtures/policies.json");
+        try (InputStream is = resource.getInputStream()) {
+            List<Map<String, Object>> list = objectMapper.readValue(is, new TypeReference<>() {});
+            for (Map<String, Object> map : list) {
+                Long id = ((Number) map.get("id")).longValue();
+                String policyNo = (String) map.get("policyNo");
+                Integer count = jdbcTemplate.queryForObject("SELECT count(*) FROM policies WHERE id = ? OR policy_no = ?", Integer.class, id, policyNo);
+                if (count == null || count == 0) {
                     Long customerId = ((Number) map.get("customerId")).longValue();
                     Long insurerId = ((Number) map.get("insurerId")).longValue();
                     Long planId = ((Number) map.get("planId")).longValue();
@@ -243,30 +243,24 @@ public class TestDataLoader implements CommandLineRunner {
                             id, policyNo, customerId, insurerId, planId, premium, Date.valueOf(startDate), Date.valueOf(endDate), vehicleRegNo, statusStr
                     );
                 }
-                log.info("TestDataLoader: Loaded {} policies from fixtures.", list.size());
             }
-        } catch (Exception e) {
-            log.error("TestDataLoader: Failed to load policies.json", e);
+            log.info("TestDataLoader: Policies fixture verified/loaded.");
         }
     }
 
-    private void loadClaims() {
+    private void loadClaims() throws Exception {
         if (!tableExists("claims")) {
             log.info("TestDataLoader: Table 'claims' does not exist yet (owned by P3/C7), skipping claims fixture.");
             return;
         }
-        try {
-            Integer existingCount = jdbcTemplate.queryForObject("SELECT count(*) FROM claims", Integer.class);
-            if (existingCount != null && existingCount > 0) {
-                log.info("TestDataLoader: Claims already loaded (count={}), skipping.", existingCount);
-                return;
-            }
-            ClassPathResource resource = new ClassPathResource("fixtures/claims.json");
-            try (InputStream is = resource.getInputStream()) {
-                List<Map<String, Object>> list = objectMapper.readValue(is, new TypeReference<>() {});
-                for (Map<String, Object> map : list) {
-                    Long id = ((Number) map.get("id")).longValue();
-                    String claimNo = (String) map.get("claimNo");
+        ClassPathResource resource = new ClassPathResource("fixtures/claims.json");
+        try (InputStream is = resource.getInputStream()) {
+            List<Map<String, Object>> list = objectMapper.readValue(is, new TypeReference<>() {});
+            for (Map<String, Object> map : list) {
+                Long id = ((Number) map.get("id")).longValue();
+                String claimNo = (String) map.get("claimNo");
+                Integer count = jdbcTemplate.queryForObject("SELECT count(*) FROM claims WHERE id = ? OR claim_no = ?", Integer.class, id, claimNo);
+                if (count == null || count == 0) {
                     Long policyId = ((Number) map.get("policyId")).longValue();
                     String policyNo = (String) map.get("policyNo");
                     Long customerId = ((Number) map.get("customerId")).longValue();
@@ -283,10 +277,8 @@ public class TestDataLoader implements CommandLineRunner {
                             id, claimNo, policyId, policyNo, customerId, insurerId, Date.valueOf(incidentDate), claimAmount, settledAmount, statusStr, reason
                     );
                 }
-                log.info("TestDataLoader: Loaded {} claims from fixtures.", list.size());
             }
-        } catch (Exception e) {
-            log.error("TestDataLoader: Failed to load claims.json", e);
+            log.info("TestDataLoader: Claims fixture verified/loaded.");
         }
     }
 }
