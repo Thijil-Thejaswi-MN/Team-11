@@ -750,7 +750,31 @@
           "response": []
         },
         {
-          "name": "Generate Health Quote (Contract INS-F-006)",
+          "name": "TC-Quote-02 Step 1: Health Quote - 1 Member Age 45 (PLAN-A-H1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"TC-Quote-02 Step 1: 1 member age 45, 5L, No PED is Rs 4500.00\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.premium).to.eql(4500.00);",
+                  "    pm.expect(json.breakdown.basePremium).to.eql(4500.00);",
+                  "    pm.expect(json.breakdown.totalPremium).to.eql(4500.00);",
+                  "    pm.expect(json.breakdown.ageLoading).to.eql(0.00);",
+                  "    pm.expect(json.quoteId).to.be.a('number');",
+                  "});",
+                  "pm.test(\"TC-Perf-01 / INS-NF-001: Response time is within 5 seconds\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -759,20 +783,286 @@
                 "value": "application/json"
               },
               {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
                 "key": "X-Correlation-Id",
                 "value": "{{correlationId}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"planId\": 3,\n  \"age\": 29,\n  \"sumInsured\": 500000,\n  \"hasPreExisting\": false,\n  \"isSmoker\": false\n}"
+              "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 45}],\n  \"sumInsured\": 500000,\n  \"preExisting\": false\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "quotes", "health"]
             },
-            "description": "Contract example: POST /api/v1/quotes/health."
+            "description": "TC-Quote-02 Step 1: 1 member age 45, sum insured 5 lakh, pre-existing No -> Rs 4,500."
+          },
+          "response": []
+        },
+        {
+          "name": "TC-Quote-02 Step 2: Health Quote - 2 Members Ages 30 & 32 (PLAN-A-H1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"TC-Quote-02 Step 2: 2 members ages 30 and 32, 5L, No PED is Rs 6000.00\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.premium).to.eql(6000.00);",
+                  "    pm.expect(json.breakdown.basePremium).to.eql(6000.00);",
+                  "    pm.expect(json.breakdown.totalPremium).to.eql(6000.00);",
+                  "    pm.expect(json.quoteId).to.be.a('number');",
+                  "});",
+                  "pm.test(\"TC-Perf-01 / INS-NF-001: Response time is within 5 seconds\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 30}, {\"age\": 32}],\n  \"sumInsured\": 500000,\n  \"preExisting\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "quotes", "health"]
+            },
+            "description": "TC-Quote-02 Step 2: 2 members ages 30 and 32, sum insured 5 lakh, pre-existing No -> Rs 6,000."
+          },
+          "response": []
+        },
+        {
+          "name": "TC-Quote-02 Step 3: Health Quote - 2 Members Higher Coverage 10L (PLAN-A-H1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"TC-Quote-02 Step 3: 2 members ages 30 and 32, 10L, No PED is Rs 9600.00\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.premium).to.eql(9600.00);",
+                  "    pm.expect(json.breakdown.basePremium).to.eql(6000.00);",
+                  "    pm.expect(json.breakdown.ageLoading).to.eql(3600.00);",
+                  "    pm.expect(json.breakdown.totalPremium).to.eql(9600.00);",
+                  "});",
+                  "pm.test(\"TC-Perf-01 / INS-NF-001: Response time is within 5 seconds\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 30}, {\"age\": 32}],\n  \"sumInsured\": 1000000,\n  \"preExisting\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "quotes", "health"]
+            },
+            "description": "TC-Quote-02 Step 3: 2 members ages 30 and 32, sum insured 10 lakh, pre-existing No -> Rs 9,600."
+          },
+          "response": []
+        },
+        {
+          "name": "TC-Quote-02 Step 4: Health Quote - 2 Members with Pre-Existing Condition (PLAN-A-H1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"TC-Quote-02 Step 4: 2 members ages 30 and 32, 5L, Pre-existing Yes is Rs 7200.00\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.premium).to.eql(7200.00);",
+                  "    pm.expect(json.breakdown.basePremium).to.eql(6000.00);",
+                  "    pm.expect(json.breakdown.ageLoading).to.eql(1200.00);",
+                  "    pm.expect(json.breakdown.totalPremium).to.eql(7200.00);",
+                  "});",
+                  "pm.test(\"TC-Perf-01 / INS-NF-001: Response time is within 5 seconds\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 30}, {\"age\": 32}],\n  \"sumInsured\": 500000,\n  \"preExisting\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "quotes", "health"]
+            },
+            "description": "TC-Quote-02 Step 4: 2 members ages 30 and 32, sum insured 5 lakh, pre-existing Yes -> Rs 7,200."
+          },
+          "response": []
+        },
+        {
+          "name": "TC-Quote-02 Step 5a: Health Quote - No Members (Expect 422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test(\"Error schema complies with SAD Section 4.4\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(422);",
+                  "    pm.expect(json.errorCode).to.eql(\"VALID-422\");",
+                  "    pm.expect(json.message).to.be.a(\"string\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": 3,\n  \"members\": [],\n  \"sumInsured\": 500000,\n  \"preExisting\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "quotes", "health"]
+            },
+            "description": "TC-Quote-02 Step 5: Quote with no members must be rejected with HTTP 422."
+          },
+          "response": []
+        },
+        {
+          "name": "TC-Quote-02 Step 5b: Health Quote - Unsupported Sum Insured 7.5L (Expect 422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test(\"Error schema complies with SAD Section 4.4\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(422);",
+                  "    pm.expect(json.errorCode).to.eql(\"VALID-422\");",
+                  "    pm.expect(json.message).to.be.a(\"string\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customerToken}}"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "{{correlationId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 30}],\n  \"sumInsured\": 750000,\n  \"preExisting\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "quotes", "health"]
+            },
+            "description": "TC-Quote-02 Step 5: Sum insured not offered by plan (7,50,000) must be rejected with HTTP 422."
           },
           "response": []
         }
