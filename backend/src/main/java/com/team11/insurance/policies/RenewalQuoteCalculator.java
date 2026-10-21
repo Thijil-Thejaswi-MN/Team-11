@@ -1,5 +1,4 @@
 package com.team11.insurance.policies;
-package com.team11.insurance.policies;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
