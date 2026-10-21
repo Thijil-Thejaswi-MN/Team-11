@@ -9,7 +9,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.time.Clock;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
@@ -25,7 +27,10 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -66,26 +71,48 @@ public class DiskFileStore implements IFileStore {
     private final SecretKey secretKey;
     private final SecureRandom secureRandom = new SecureRandom();
     private final ObjectMapper objectMapper;
+    private final Clock clock;
 
     private final Map<Long, StoredDocument> indexById = new ConcurrentHashMap<>();
     private final Map<Long, Path> fileLocationById = new ConcurrentHashMap<>();
     private final Map<Long, Path> metaLocationById = new ConcurrentHashMap<>();
     private final AtomicLong idSequence = new AtomicLong(100);
 
+    @Autowired
     public DiskFileStore(
             @Value("${insurance.filestore.root-dir:${FILE_STORE_DIR:./storage/uploads}}") String rootDir,
             @Value("${insurance.security.encryption-key:}") String encryptionKey,
+            Environment environment,
+            ObjectProvider<Clock> clockProvider,
             ObjectMapper objectMapper) {
 
+        this(rootDir, encryptionKey, environment,
+                clockProvider != null ? clockProvider.getIfAvailable(Clock::systemDefaultZone) : Clock.systemDefaultZone(),
+                objectMapper);
+    }
+
+    public DiskFileStore(String rootDir, String encryptionKey, Environment environment, Clock clock, ObjectMapper objectMapper) {
         this.rootPath = Paths.get(rootDir).toAbsolutePath().normalize();
         this.objectMapper = objectMapper != null ? objectMapper : new ObjectMapper();
         this.objectMapper.findAndRegisterModules();
+        this.clock = clock != null ? clock : Clock.systemDefaultZone();
 
-        byte[] rawKey = resolveKeyBytes(encryptionKey);
+        byte[] rawKey = resolveKeyBytes(encryptionKey, environment);
         this.secretKey = new SecretKeySpec(rawKey, "AES");
     }
 
-    private byte[] resolveKeyBytes(String keyString) {
+    public DiskFileStore(String rootDir, String encryptionKey, ObjectMapper objectMapper) {
+        this(rootDir, encryptionKey, null, Clock.systemDefaultZone(), objectMapper);
+    }
+
+    private byte[] resolveKeyBytes(String keyString, Environment env) {
+        boolean isDevOrTest = false;
+        if (env != null) {
+            String[] activeProfiles = env.getActiveProfiles();
+            isDevOrTest = Arrays.stream(activeProfiles)
+                    .anyMatch(p -> "dev".equalsIgnoreCase(p) || "test".equalsIgnoreCase(p));
+        }
+
         if (keyString != null && !keyString.trim().isEmpty()) {
             String trimmed = keyString.trim();
             try {
@@ -99,8 +126,16 @@ public class DiskFileStore implements IFileStore {
             if (utf8.length == 32) {
                 return utf8;
             }
+            throw new IllegalStateException("Configured encryption key ('insurance.security.encryption-key') must be exactly 32 bytes (256-bit) Base64 or UTF-8");
         }
-        return DEFAULT_DEV_KEY.getBytes(StandardCharsets.UTF_8);
+
+        // Key is missing/empty:
+        if (isDevOrTest) {
+            log.warn("DiskFileStore: No encryption key configured. Falling back to default development key for dev/test profile.");
+            return DEFAULT_DEV_KEY.getBytes(StandardCharsets.UTF_8);
+        }
+
+        throw new IllegalStateException("CRITICAL SECURITY VIOLATION: Production requires a 256-bit AES encryption key configured via 'insurance.security.encryption-key'!");
     }
 
     @PostConstruct
@@ -240,7 +275,7 @@ public class DiskFileStore implements IFileStore {
                 targetCategory,
                 checksum,
                 ownerUserId,
-                Instant.now()
+                clock.instant()
         );
 
         try {
@@ -279,7 +314,7 @@ public class DiskFileStore implements IFileStore {
             throw new ResourceNotFoundException("Document", id);
         }
 
-        // Authorization check
+        // Authorization check fails closed if currentUser is null or unauthorized
         checkAuthorization(metadata, currentUser);
 
         try {
@@ -309,7 +344,7 @@ public class DiskFileStore implements IFileStore {
             throw new ResourceNotFoundException("Document", id);
         }
 
-        // Authorization check
+        // Authorization check fails closed if currentUser is null or unauthorized
         checkAuthorization(metadata, currentUser);
 
         try {
@@ -321,6 +356,62 @@ public class DiskFileStore implements IFileStore {
             fileLocationById.remove(id);
             metaLocationById.remove(id);
             log.info("DiskFileStore: Deleted document ID={}", id);
+        } catch (Exception e) {
+            throw new FileStorageException("Failed to delete document file with ID: " + id, e);
+        }
+    }
+
+    /**
+     * Explicit internal trusted path for system/background workflows that execute outside an active user request.
+     */
+    public LoadedDocument getInternal(Long id) {
+        if (id == null) {
+            throw new ResourceNotFoundException("Document", "null");
+        }
+
+        StoredDocument metadata = indexById.get(id);
+        Path encPath = fileLocationById.get(id);
+
+        if (metadata == null || encPath == null || !Files.exists(encPath)) {
+            throw new ResourceNotFoundException("Document", id);
+        }
+
+        try {
+            byte[] encryptedBytes = Files.readAllBytes(encPath);
+            byte[] decryptedBytes = decryptPayload(encryptedBytes);
+
+            ByteArrayResource resource = new ByteArrayResource(decryptedBytes, metadata.originalFilename());
+            return new LoadedDocument(metadata, resource);
+        } catch (Exception e) {
+            throw new FileStorageException("Failed to decrypt or read document with ID: " + id, e);
+        }
+    }
+
+    /**
+     * Explicit internal trusted path for system cleanup workflows that execute outside an active user request.
+     */
+    public void deleteInternal(Long id) {
+        if (id == null) {
+            throw new ResourceNotFoundException("Document", "null");
+        }
+
+        StoredDocument metadata = indexById.get(id);
+        Path encPath = fileLocationById.get(id);
+        Path metaPath = metaLocationById.get(id);
+
+        if (metadata == null || encPath == null || !Files.exists(encPath)) {
+            throw new ResourceNotFoundException("Document", id);
+        }
+
+        try {
+            Files.deleteIfExists(encPath);
+            if (metaPath != null) {
+                Files.deleteIfExists(metaPath);
+            }
+            indexById.remove(id);
+            fileLocationById.remove(id);
+            metaLocationById.remove(id);
+            log.info("DiskFileStore: Deleted document internally ID={}", id);
         } catch (Exception e) {
             throw new FileStorageException("Failed to delete document file with ID: " + id, e);
         }
@@ -341,8 +432,7 @@ public class DiskFileStore implements IFileStore {
 
     private void checkAuthorization(StoredDocument doc, CurrentUser user) {
         if (user == null) {
-            // Null user allowed in internal/system contexts
-            return;
+            throw new AccessDeniedException("Unauthenticated request: user context is required to access document " + doc.id());
         }
         // System admin has full access
         if (user.isSystemAdmin()) {

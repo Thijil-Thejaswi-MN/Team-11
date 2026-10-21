@@ -1,12 +1,13 @@
 package com.team11.insurance.filestore;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.core.io.Resource;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.mock.web.MockMultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -259,5 +261,110 @@ class DiskFileStoreTest {
 
         // System Admin can access
         assertDoesNotThrow(() -> fileStore.get(stored.id(), systemAdminUser));
+    }
+
+    @Test
+    @DisplayName("Injected Clock is used for upload timestamp")
+    void testInjectedClockForUploadTimestamp() {
+        Instant testInstant = Instant.parse("2026-10-21T15:30:00Z");
+        Clock fixedClock = Clock.fixed(testInstant, ZoneOffset.UTC);
+        DiskFileStore customClockStore = new DiskFileStore(tempStorageDir.toString(), "0123456789abcdef0123456789abcdef", null, fixedClock, objectMapper);
+        customClockStore.init();
+
+        StoredDocument stored = customClockStore.storeStream(
+                new ByteArrayInputStream(VALID_PDF_BYTES),
+                "clock_test.pdf",
+                "application/pdf",
+                VALID_PDF_BYTES.length,
+                DocumentCategory.POLICY,
+                customerUser.getUserId()
+        );
+
+        assertEquals(testInstant, stored.uploadedAt(), "Upload timestamp must come directly from injected Clock");
+    }
+
+    @Test
+    @DisplayName("Production profile fails startup if encryption key is missing or invalid length")
+    void testProductionRejectsMissingOrInvalidKey() {
+        MockEnvironment prodEnv = new MockEnvironment();
+        prodEnv.setActiveProfiles("prod");
+
+        // Missing/null key in production
+        IllegalStateException exNull = assertThrows(IllegalStateException.class, () ->
+                new DiskFileStore(tempStorageDir.toString(), null, prodEnv, Clock.systemDefaultZone(), objectMapper));
+        assertTrue(exNull.getMessage().contains("Production requires a 256-bit AES encryption key"));
+
+        // Blank key in production
+        IllegalStateException exBlank = assertThrows(IllegalStateException.class, () ->
+                new DiskFileStore(tempStorageDir.toString(), "   ", prodEnv, Clock.systemDefaultZone(), objectMapper));
+        assertTrue(exBlank.getMessage().contains("Production requires a 256-bit AES encryption key"));
+
+        // Malformed / wrong length key in production
+        IllegalStateException exShort = assertThrows(IllegalStateException.class, () ->
+                new DiskFileStore(tempStorageDir.toString(), "too-short-key", prodEnv, Clock.systemDefaultZone(), objectMapper));
+        assertTrue(exShort.getMessage().contains("must be exactly 32 bytes"));
+
+        // Valid 32-byte key in production succeeds
+        assertDoesNotThrow(() ->
+                new DiskFileStore(tempStorageDir.toString(), "0123456789abcdef0123456789abcdef", prodEnv, Clock.systemDefaultZone(), objectMapper));
+    }
+
+    @Test
+    @DisplayName("Dev and test profiles permit fallback to default development key when key is absent")
+    void testDevAndTestProfilePermitDefaultKeyFallback() {
+        MockEnvironment devEnv = new MockEnvironment();
+        devEnv.setActiveProfiles("dev");
+
+        assertDoesNotThrow(() ->
+                new DiskFileStore(tempStorageDir.toString(), null, devEnv, Clock.systemDefaultZone(), objectMapper));
+
+        MockEnvironment testEnv = new MockEnvironment();
+        testEnv.setActiveProfiles("test");
+
+        assertDoesNotThrow(() ->
+                new DiskFileStore(tempStorageDir.toString(), "", testEnv, Clock.systemDefaultZone(), objectMapper));
+    }
+
+    @Test
+    @DisplayName("Missing/null user context fails closed for normal get() and delete() operations")
+    void testMissingUserContextFailsClosed() {
+        StoredDocument stored = fileStore.storeStream(
+                new ByteArrayInputStream(VALID_PDF_BYTES),
+                "auth_fail_doc.pdf",
+                "application/pdf",
+                VALID_PDF_BYTES.length,
+                DocumentCategory.KYC,
+                customerUser.getUserId()
+        );
+
+        // get() with null user context throws AccessDeniedException
+        AccessDeniedException getEx = assertThrows(AccessDeniedException.class, () -> fileStore.get(stored.id(), null));
+        assertTrue(getEx.getMessage().contains("user context is required"));
+
+        // delete() with null user context throws AccessDeniedException
+        AccessDeniedException delEx = assertThrows(AccessDeniedException.class, () -> fileStore.delete(stored.id(), null));
+        assertTrue(delEx.getMessage().contains("user context is required"));
+    }
+
+    @Test
+    @DisplayName("Explicit internal trusted path (getInternal, deleteInternal) succeeds without user context")
+    void testInternalTrustedPath() throws Exception {
+        StoredDocument stored = fileStore.storeStream(
+                new ByteArrayInputStream(VALID_PDF_BYTES),
+                "internal_doc.pdf",
+                "application/pdf",
+                VALID_PDF_BYTES.length,
+                DocumentCategory.KYC,
+                customerUser.getUserId()
+        );
+
+        // getInternal works without user context
+        LoadedDocument loaded = fileStore.getInternal(stored.id());
+        assertNotNull(loaded);
+        assertEquals(stored.id(), loaded.metadata().id());
+
+        // deleteInternal works without user context
+        fileStore.deleteInternal(stored.id());
+        assertFalse(fileStore.exists(stored.id()));
     }
 }

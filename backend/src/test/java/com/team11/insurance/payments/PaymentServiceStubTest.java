@@ -4,6 +4,13 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -58,6 +65,50 @@ class PaymentServiceStubTest {
         assertEquals(first.paymentId(), second.paymentId());
         assertEquals(first.transactionReference(), second.transactionReference());
         assertEquals(1, paymentService.count());
+    }
+
+    @Test
+    @DisplayName("Concurrent charge() calls with identical idempotencyKey atomically produce identical result exactly once")
+    void testConcurrentChargeIdempotency() throws Exception {
+        int threads = 20;
+        ExecutorService executor = Executors.newFixedThreadPool(threads);
+        CountDownLatch readyLatch = new CountDownLatch(threads);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threads);
+
+        String key = "concurrent-key-999";
+        BigDecimal amount = new BigDecimal("15000.00");
+        List<PaymentResult> results = Collections.synchronizedList(new ArrayList<>());
+
+        for (int i = 0; i < threads; i++) {
+            executor.submit(() -> {
+                readyLatch.countDown();
+                try {
+                    startLatch.await();
+                    PaymentResult res = paymentService.charge(9999L, amount, key);
+                    results.add(res);
+                } catch (Exception e) {
+                    fail("Concurrent execution threw unexpected exception: " + e.getMessage());
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        assertTrue(readyLatch.await(5, TimeUnit.SECONDS));
+        startLatch.countDown();
+        assertTrue(doneLatch.await(5, TimeUnit.SECONDS));
+        executor.shutdown();
+
+        assertEquals(threads, results.size());
+        PaymentResult baseline = results.get(0);
+        assertNotNull(baseline);
+        for (PaymentResult r : results) {
+            assertSame(baseline, r, "Every concurrent thread must receive the exact same cached instance");
+            assertEquals(baseline.paymentId(), r.paymentId());
+            assertEquals(baseline.transactionReference(), r.transactionReference());
+        }
+        assertEquals(1, paymentService.count(), "Only 1 payment record must be created for the key");
     }
 
     @Test

@@ -20,6 +20,9 @@ import com.team11.insurance.common.exception.ResourceNotFoundException;
  * <p>
  * Simulates successful payment operations (charge, refund, payout) and strict idempotency handling
  * without interacting with third-party payment gateways.
+ * Uses atomic {@link ConcurrentHashMap#computeIfAbsent(Object, java.util.function.Function)}
+ * to guarantee that concurrent requests with the same idempotency key create and return the exact
+ * same payment result without race conditions.
  * <p>
  * Strictly active under {@code dev} and {@code test} profiles.
  */
@@ -47,19 +50,17 @@ public class PaymentServiceStub implements IPaymentService {
         log.info("PaymentServiceStub: Processing charge for applicationId={}, amount={}, key={}",
                 applicationId, amount, idempotencyKey);
 
-        if (idempotencyKey != null && recordedPayments.containsKey(idempotencyKey)) {
-            log.info("PaymentServiceStub: Returning cached result for idempotencyKey={}", idempotencyKey);
-            return recordedPayments.get(idempotencyKey);
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            return recordedPayments.computeIfAbsent(idempotencyKey, k -> {
+                Long paymentId = paymentIdSeq.incrementAndGet();
+                String ref = "TXN-APP-" + applicationId + "-" + k;
+                return PaymentResult.success(paymentId, k, ref, amount, PaymentType.CHARGE, clock);
+            });
         }
 
         Long paymentId = paymentIdSeq.incrementAndGet();
-        String ref = "TXN-APP-" + applicationId + "-" + (idempotencyKey != null ? idempotencyKey : paymentId);
-        PaymentResult result = PaymentResult.success(paymentId, idempotencyKey, ref, amount, PaymentType.CHARGE, clock);
-
-        if (idempotencyKey != null) {
-            recordedPayments.put(idempotencyKey, result);
-        }
-        return result;
+        String ref = "TXN-APP-" + applicationId + "-" + paymentId;
+        return PaymentResult.success(paymentId, null, ref, amount, PaymentType.CHARGE, clock);
     }
 
     @Override
@@ -67,19 +68,17 @@ public class PaymentServiceStub implements IPaymentService {
         log.info("PaymentServiceStub: Processing refund for policyId={}, amount={}, key={}, reason={}",
                 policyId, amount, idempotencyKey, reason);
 
-        if (idempotencyKey != null && recordedPayments.containsKey(idempotencyKey)) {
-            log.info("PaymentServiceStub: Returning cached refund result for idempotencyKey={}", idempotencyKey);
-            return recordedPayments.get(idempotencyKey);
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            return recordedPayments.computeIfAbsent(idempotencyKey, k -> {
+                Long paymentId = paymentIdSeq.incrementAndGet();
+                String ref = "REF-POL-" + policyId + "-" + k;
+                return PaymentResult.success(paymentId, k, ref, amount, PaymentType.REFUND, clock);
+            });
         }
 
         Long paymentId = paymentIdSeq.incrementAndGet();
-        String ref = "REF-POL-" + policyId + "-" + (idempotencyKey != null ? idempotencyKey : paymentId);
-        PaymentResult result = PaymentResult.success(paymentId, idempotencyKey, ref, amount, PaymentType.REFUND, clock);
-
-        if (idempotencyKey != null) {
-            recordedPayments.put(idempotencyKey, result);
-        }
-        return result;
+        String ref = "REF-POL-" + policyId + "-" + paymentId;
+        return PaymentResult.success(paymentId, null, ref, amount, PaymentType.REFUND, clock);
     }
 
     @Override
@@ -87,19 +86,17 @@ public class PaymentServiceStub implements IPaymentService {
         log.info("PaymentServiceStub: Processing payout for claimId={}, assessedAmount={}, key={}, account={}",
                 claimId, assessedAmount, idempotencyKey, destinationAccount);
 
-        if (idempotencyKey != null && recordedPayments.containsKey(idempotencyKey)) {
-            log.info("PaymentServiceStub: Returning cached payout result for idempotencyKey={}", idempotencyKey);
-            return recordedPayments.get(idempotencyKey);
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            return recordedPayments.computeIfAbsent(idempotencyKey, k -> {
+                Long paymentId = paymentIdSeq.incrementAndGet();
+                String ref = "PAY-CLM-" + claimId + "-" + k;
+                return PaymentResult.success(paymentId, k, ref, assessedAmount, PaymentType.PAYOUT, clock);
+            });
         }
 
         Long paymentId = paymentIdSeq.incrementAndGet();
-        String ref = "PAY-CLM-" + claimId + "-" + (idempotencyKey != null ? idempotencyKey : paymentId);
-        PaymentResult result = PaymentResult.success(paymentId, idempotencyKey, ref, assessedAmount, PaymentType.PAYOUT, clock);
-
-        if (idempotencyKey != null) {
-            recordedPayments.put(idempotencyKey, result);
-        }
-        return result;
+        String ref = "PAY-CLM-" + claimId + "-" + paymentId;
+        return PaymentResult.success(paymentId, null, ref, assessedAmount, PaymentType.PAYOUT, clock);
     }
 
     @Override
