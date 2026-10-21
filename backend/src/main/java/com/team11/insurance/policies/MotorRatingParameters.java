@@ -17,6 +17,6 @@ public record MotorRatingParameters(
         Objects.requireNonNull(ownDamageBasePct, "ownDamageBasePct");
         Objects.requireNonNull(ageLoadingPct, "ageLoadingPct");
         Objects.requireNonNull(depreciationPct, "depreciationPct");
-        this.addOnPrices = addOnPrices == null ? Map.of() : Map.copyOf(addOnPrices);
+        addOnPrices = addOnPrices == null ? Map.of() : Map.copyOf(addOnPrices);
     }
 }

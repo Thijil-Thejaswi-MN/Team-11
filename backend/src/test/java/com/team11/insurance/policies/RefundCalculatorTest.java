@@ -75,4 +75,40 @@ class RefundCalculatorTest {
         assertThrows(IllegalArgumentException.class,
                 () -> RefundCalculator.calculateRefund(new BigDecimal("-1"), 10, 365, false));
     }
+
+    @Test
+    void isPaidClaimStatusSettledOnly() {
+        assertTrue(RefundCalculator.isPaidClaimStatus("SETTLED"));
+        assertTrue(RefundCalculator.isPaidClaimStatus("settled"));
+        assertTrue(RefundCalculator.isPaidClaimStatus(" SETTLED "));
+        assertFalse(RefundCalculator.isPaidClaimStatus("APPROVED"));
+        assertFalse(RefundCalculator.isPaidClaimStatus("SUBMITTED"));
+        assertFalse(RefundCalculator.isPaidClaimStatus("UNDER_REVIEW"));
+        assertFalse(RefundCalculator.isPaidClaimStatus("PAYMENT_PROCESSING"));
+        assertFalse(RefundCalculator.isPaidClaimStatus("REJECTED"));
+        assertFalse(RefundCalculator.isPaidClaimStatus(null));
+        assertFalse(RefundCalculator.isPaidClaimStatus(""));
+    }
+
+    @Test
+    void leapYearPolicyTerm366Days() {
+        LocalDate start = LocalDate.of(2028, 1, 1);
+        LocalDate end = LocalDate.of(2028, 12, 31); // 366 days in leap year
+        // Day 15 (free look): 12000 - 600 = 11400
+        assertRupees(11400, RefundCalculator.calculateRefund(PREMIUM, start, end, start.plusDays(14), false));
+        // Day 100: unused = 266 days, total = 366 days.
+        // (12000 * 266 - 600 * 366) / 366 = (3192000 - 219600) / 366 = 2972400 / 366 = 8121.31 -> 8121
+        assertRupees(8121, RefundCalculator.calculateRefund(PREMIUM, start, end, start.plusDays(99), false));
+    }
+
+    @Test
+    void nullInputsInDateBasedRefundThrow() {
+        LocalDate start = LocalDate.of(2026, 10, 20);
+        LocalDate end = LocalDate.of(2027, 10, 19);
+        assertThrows(IllegalArgumentException.class, () -> RefundCalculator.calculateRefund(null, start, end, start, false));
+        assertThrows(IllegalArgumentException.class, () -> RefundCalculator.calculateRefund(PREMIUM, null, end, start, false));
+        assertThrows(IllegalArgumentException.class, () -> RefundCalculator.calculateRefund(PREMIUM, start, null, start, false));
+        assertThrows(IllegalArgumentException.class, () -> RefundCalculator.calculateRefund(PREMIUM, start, end, null, false));
+        assertThrows(IllegalArgumentException.class, () -> RefundCalculator.calculateRefund(PREMIUM, end, start, start, false)); // end before start
+    }
 }

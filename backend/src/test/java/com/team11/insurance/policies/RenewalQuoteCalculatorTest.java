@@ -98,5 +98,64 @@ class RenewalQuoteCalculatorTest {
         assertThrows(IllegalArgumentException.class, () -> quote(2030, List.of(), true, TODAY));  // future regYear
         assertThrows(IllegalArgumentException.class, () -> RenewalQuoteCalculator.quote(
                 PLAN_A_M1, BigDecimal.ZERO, 2019, List.of(), true, EXPIRY, TODAY));
+        assertThrows(IllegalArgumentException.class, () -> RenewalQuoteCalculator.quote(
+                PLAN_A_M1, new BigDecimal("-100"), 2019, List.of(), true, EXPIRY, TODAY));
+        assertThrows(IllegalArgumentException.class, () -> RenewalQuoteCalculator.quote(
+                PLAN_A_M1, null, 2019, List.of(), true, EXPIRY, TODAY));
+    }
+
+    @Test
+    void nullAddOnPricesInMotorRatingParametersDefaultsToEmptyMap() {
+        MotorRatingParameters params = new MotorRatingParameters(
+                new BigDecimal("0.02"), 6, 10, new BigDecimal("0.05"),
+                null, new BigDecimal("0.10"));
+        assertNotNull(params.addOnPrices());
+        assertTrue(params.addOnPrices().isEmpty());
+
+        MotorRenewalQuote q = RenewalQuoteCalculator.quote(params, PREVIOUS_IDV, 2019, List.of(), true, EXPIRY, TODAY);
+        assertRupees(0, q.addOnsTotal());
+    }
+
+    @Test
+    void emptyAddOnPricesMapWorksAsExpected() {
+        MotorRatingParameters params = new MotorRatingParameters(
+                new BigDecimal("0.02"), 6, 10, new BigDecimal("0.05"),
+                Map.of(), new BigDecimal("0.10"));
+        assertTrue(params.addOnPrices().isEmpty());
+
+        MotorRenewalQuote q = RenewalQuoteCalculator.quote(params, PREVIOUS_IDV, 2019, List.of(), true, EXPIRY, TODAY);
+        assertRupees(0, q.addOnsTotal());
+    }
+
+    @Test
+    void nullAddOnsCollectionInQuoteDefaultsToZero() {
+        MotorRenewalQuote q = RenewalQuoteCalculator.quote(PLAN_A_M1, PREVIOUS_IDV, 2019, null, true, EXPIRY, TODAY);
+        assertRupees(0, q.addOnsTotal());
+    }
+
+    @Test
+    void nullDatePreconditionsInRequireWithinWindowAndQuote() {
+        IllegalArgumentException ex1 = assertThrows(IllegalArgumentException.class,
+                () -> RenewalQuoteCalculator.requireWithinWindow(null, TODAY));
+        assertEquals("expiryDate and today must not be null", ex1.getMessage());
+
+        IllegalArgumentException ex2 = assertThrows(IllegalArgumentException.class,
+                () -> RenewalQuoteCalculator.requireWithinWindow(EXPIRY, null));
+        assertEquals("expiryDate and today must not be null", ex2.getMessage());
+
+        IllegalArgumentException ex3 = assertThrows(IllegalArgumentException.class,
+                () -> RenewalQuoteCalculator.quote(PLAN_A_M1, PREVIOUS_IDV, 2019, List.of(), true, null, TODAY));
+        assertEquals("expiryDate and today must not be null", ex3.getMessage());
+
+        IllegalArgumentException ex4 = assertThrows(IllegalArgumentException.class,
+                () -> RenewalQuoteCalculator.quote(PLAN_A_M1, PREVIOUS_IDV, 2019, List.of(), true, EXPIRY, null));
+        assertEquals("expiryDate and today must not be null", ex4.getMessage());
+    }
+
+    @Test
+    void nullRulesPreconditionInQuote() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> RenewalQuoteCalculator.quote(null, PREVIOUS_IDV, 2019, List.of(), true, EXPIRY, TODAY));
+        assertEquals("rules must not be null", ex.getMessage());
     }
 }
