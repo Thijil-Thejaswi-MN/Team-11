@@ -11,6 +11,8 @@ import RegisterView from '../views/public/RegisterView';
 
 // Customer Portal Views
 import CustomerDashboardView from '../views/customer/CustomerDashboardView';
+import MotorQuoteView from '../views/customer/MotorQuoteView';
+import HealthQuoteView from '../views/customer/HealthQuoteView';
 import QuotingPlaceholder from '../views/customer/QuotingPlaceholder';
 import ApplicationsPlaceholder from '../views/customer/ApplicationsPlaceholder';
 import PoliciesPlaceholder from '../views/customer/PoliciesPlaceholder';
@@ -57,14 +59,14 @@ export default function AppRoutes() {
       {/* ============================================================ */}
       <Route path={ROUTES.CUSTOMER_DASHBOARD} element={<CustomerDashboardView />} />
 
-      {/* Person 1 Customer Hooks: Motor & Health Quoting */}
+      {/* Person 1 Customer Screens: Motor & Health Quoting (P1-08) */}
       <Route
         path={ROUTES.CUSTOMER_QUOTE_MOTOR}
-        element={<QuotingPlaceholder mode="MOTOR" />}
+        element={<MotorQuoteView />}
       />
       <Route
         path={ROUTES.CUSTOMER_QUOTE_HEALTH}
-        element={<QuotingPlaceholder mode="HEALTH" />}
+        element={<HealthQuoteView />}
       />
 
       {/* Person 3 Customer Hooks: Applications & Policies */}
