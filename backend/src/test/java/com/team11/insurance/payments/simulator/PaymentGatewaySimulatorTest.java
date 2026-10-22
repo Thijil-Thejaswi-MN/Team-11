@@ -75,4 +75,38 @@ class PaymentGatewaySimulatorTest {
                 simulator.processPayment("normal-key", new BigDecimal("1200.00"));
         assertTrue(defaultResp.successful());
     }
+
+    @Test
+    @DisplayName("setTimeoutAttempts: simulates transient timeout attempts followed by success")
+    void testTransientTimeoutSequence() throws Exception {
+        simulator.setTimeoutAttempts(2);
+
+        // Attempt 1: timeout
+        assertThrows(PaymentTimeoutException.class, () ->
+                simulator.processPayment("seq-key", new BigDecimal("1000.00")));
+        assertEquals(1, simulator.getAttemptsForKey("seq-key"));
+
+        // Attempt 2: timeout
+        assertThrows(PaymentTimeoutException.class, () ->
+                simulator.processPayment("seq-key", new BigDecimal("1000.00")));
+        assertEquals(2, simulator.getAttemptsForKey("seq-key"));
+
+        // Attempt 3: recovered to SUCCESS
+        PaymentGatewaySimulator.GatewayResponse resp =
+                simulator.processPayment("seq-key", new BigDecimal("1000.00"));
+        assertTrue(resp.successful());
+        assertEquals(3, simulator.getAttemptsForKey("seq-key"));
+    }
+
+    @Test
+    @DisplayName("NETWORK_DISCONNECT mode throws PaymentTimeoutException indicating network failure")
+    void testNetworkDisconnectMode() {
+        simulator.setMode(PaymentGatewaySimulator.SimulatorMode.NETWORK_DISCONNECT);
+
+        PaymentTimeoutException ex = assertThrows(PaymentTimeoutException.class, () ->
+                simulator.processPayment("disc-key", new BigDecimal("1500.00")));
+
+        assertTrue(ex.getMessage().contains("Network disconnect"));
+        assertEquals(1, simulator.getAttemptsForKey("disc-key"));
+    }
 }

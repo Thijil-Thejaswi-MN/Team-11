@@ -31,7 +31,8 @@ public class PaymentGatewaySimulator {
         SUCCESS,
         DECLINED,
         TIMEOUT,
-        GATEWAY_ERROR
+        GATEWAY_ERROR,
+        NETWORK_DISCONNECT
     }
 
     public record GatewayResponse(
@@ -56,6 +57,8 @@ public class PaymentGatewaySimulator {
     private volatile SimulatorMode defaultMode = SimulatorMode.SUCCESS;
     private final Map<String, AtomicInteger> attemptCounters = new ConcurrentHashMap<>();
     private final Map<String, SimulatorMode> keyOverrides = new ConcurrentHashMap<>();
+    private final Map<String, AtomicInteger> timeoutAttemptsRemainingForKey = new ConcurrentHashMap<>();
+    private final AtomicInteger defaultTimeoutAttemptsRemaining = new AtomicInteger(0);
 
     public void setMode(SimulatorMode mode) {
         this.defaultMode = mode;
@@ -67,10 +70,30 @@ public class PaymentGatewaySimulator {
         log.info("PaymentGatewaySimulator mode for key [{}] set to: {}", idempotencyKey, mode);
     }
 
+    /**
+     * Configure the simulator to throw {@link PaymentTimeoutException} for the next
+     * {@code timeoutCount} attempts globally, after which it reverts to {@link #defaultMode}.
+     */
+    public void setTimeoutAttempts(int timeoutCount) {
+        this.defaultTimeoutAttemptsRemaining.set(timeoutCount);
+        log.info("PaymentGatewaySimulator configured for {} transient timeout attempts globally", timeoutCount);
+    }
+
+    /**
+     * Configure the simulator to throw {@link PaymentTimeoutException} for the next
+     * {@code timeoutCount} attempts for the specified key, after which it reverts to standard mode.
+     */
+    public void setTimeoutAttemptsForKey(String idempotencyKey, int timeoutCount) {
+        this.timeoutAttemptsRemainingForKey.computeIfAbsent(idempotencyKey, k -> new AtomicInteger(0)).set(timeoutCount);
+        log.info("PaymentGatewaySimulator configured for {} transient timeout attempts for key [{}]", timeoutCount, idempotencyKey);
+    }
+
     public void reset() {
         this.defaultMode = SimulatorMode.SUCCESS;
         this.attemptCounters.clear();
         this.keyOverrides.clear();
+        this.defaultTimeoutAttemptsRemaining.set(0);
+        this.timeoutAttemptsRemainingForKey.clear();
         log.info("PaymentGatewaySimulator reset to SUCCESS with cleared counters.");
     }
 
@@ -80,16 +103,31 @@ public class PaymentGatewaySimulator {
     }
 
     public GatewayResponse processPayment(String idempotencyKey, BigDecimal amount) throws PaymentTimeoutException {
-        attemptCounters.computeIfAbsent(idempotencyKey, k -> new AtomicInteger(0)).incrementAndGet();
+        int attempt = attemptCounters.computeIfAbsent(idempotencyKey, k -> new AtomicInteger(0)).incrementAndGet();
+
+        // Check key-specific transient timeout countdown
+        AtomicInteger keyTimeouts = timeoutAttemptsRemainingForKey.get(idempotencyKey);
+        if (keyTimeouts != null && keyTimeouts.getAndDecrement() > 0) {
+            log.info("PaymentGatewaySimulator: simulated transient timeout for key={} (attempt {})", idempotencyKey, attempt);
+            throw new PaymentTimeoutException("Gateway read timeout connecting to payment network for key: " + idempotencyKey);
+        }
+
+        // Check global transient timeout countdown
+        if (defaultTimeoutAttemptsRemaining.getAndDecrement() > 0) {
+            log.info("PaymentGatewaySimulator: simulated transient timeout for key={} (attempt {})", idempotencyKey, attempt);
+            throw new PaymentTimeoutException("Gateway read timeout connecting to payment network for key: " + idempotencyKey);
+        }
+
         SimulatorMode mode = keyOverrides.getOrDefault(idempotencyKey, defaultMode);
 
         log.info("PaymentGatewaySimulator: processing key={} amount={} attempt={} mode={}",
-                idempotencyKey, amount, getAttemptsForKey(idempotencyKey), mode);
+                idempotencyKey, amount, attempt, mode);
 
         return switch (mode) {
             case SUCCESS -> GatewayResponse.success("TXN-" + System.nanoTime());
             case DECLINED -> GatewayResponse.declined("PAY-402", "Card declined by issuing bank (insufficient funds)");
             case TIMEOUT -> throw new PaymentTimeoutException("Gateway read timeout connecting to payment network for key: " + idempotencyKey);
+            case NETWORK_DISCONNECT -> throw new PaymentTimeoutException("Network disconnect: connection reset by peer for key: " + idempotencyKey);
             case GATEWAY_ERROR -> GatewayResponse.error("SYS-500", "Payment gateway internal server error (HTTP 502)");
         };
     }
