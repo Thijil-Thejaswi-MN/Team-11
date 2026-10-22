@@ -183,6 +183,19 @@ Before beginning Sprint 1 on Monday, 19 October 2026, the team must hold a 15-mi
 - **Rationale:** An `Approved` or `Payment Processing` claim that has not completed payout must not count as paid for the cancellation refund oracle. If true, the cancellation refund is Rs 0 (SAD §4.1.5, P3 Contract §3.5).
 - **Other D-09 choices (D-09.1 to D-09.4, D-09.6 to D-09.9):** Remain **Proposed** awaiting team sign-off. Virus scanning is marked **Proposed**.
 
+#### D-09.10 — Day-16 Cancellation Refund Rounding Oracle Discrepancy (TC-Can-02)
+
+- **Status: Proposed (Pending Formal Team / Guide Clarification).**
+- **Discrepancy Analysis:**
+  - In TC-Can-02, for a 365-day policy with gross premium ₹12,000 cancelled on Day 16 (unused days = 349) with a 5% fee (₹600):
+    $$\text{Unexpired Premium} = 12000 \times \frac{349}{365} = 11,473.9726\dots$$
+    $$\text{Net Refund} = 11,473.9726\dots - 600 = 10,873.9726\dots$$
+  - Under SRS §4.6.2 and SAD §4.1.6, all monetary refund calculations must round down (floor) to the nearest whole rupee (`RoundingMode.DOWN`). Applying floor rounding yields **₹10,873**.
+  - The submitted STP document specifies an expected refund of **₹10,874** due to flawed premature intermediate rounding: $12000 - (12000 \times 16 / 365) = 12000 - 526.02 = 11473.97 \approx 11474$, minus $600 = 10874$.
+- **Agreed Implementation Position:**
+  - The backend implementation in `RefundCalculator.java` preserves mathematically exact integer-numerator arithmetic with floor rounding yielding ₹10,873, strictly adhering to the SRS/SAD round-down mandate.
+  - This 1-rupee difference is recorded here as an identified oracle discrepancy pending formal team/guide clarification and sign-off during Sprint 2 test execution.
+
 ## Review and change control
 
 ---

@@ -84,6 +84,7 @@ Errors: `402 PAY-402` payment failed, retry allowed; `409 STATE-409` application
 | `POST /policies/{id}/renew` | `{ renewalQuoteId }` | `200 { newPolicyNo }` | `402 PAY-402`; `409 STATE-409` not renewable |
 
 Rules (SAD 4.1.6): window is 30 days before expiry to 15 days after; plan must still be active; update age (health) or vehicle age and reduced IDV (motor); apply the insurer's current premium rules; 10% no-claim discount on own-damage premium for motor with no claim in the previous term. On renew, charge through `IPaymentService`, then create a new Policy with `previousPolicyId`, a term starting at the old expiry date, and a renewal certificate. Notify `POLICY_RENEWED`.
+(Per D-09.5, settled claims with payout > 0 count as claims).
 
 **PROPOSED:** `renewalQuoteId` is stored server-side so `/renew` charges the quoted premium, not a client value.
 
@@ -94,7 +95,7 @@ Rules (SAD 4.1.6): window is 30 days before expiry to 15 days after; plan must s
 | `POST /policies/{id}/cancellation` | C | `{ reason }` | `201 { requestId, status: "Requested" }` | `409 STATE-409` policy not Active |
 | `POST /cancellations/{id}/decision` | IA | `{ decision: "Approve" \| "Reject" }` | `200 { status, refundAmount }` | `403 ACCESS-403` other insurer; `409 STATE-409` already decided |
 
-Refund (fee = 5% of premium paid for the current term; test oracle for the STP):
+Refund (fee = 5% of premium paid for the current term; test oracle for the ST (Day-16 refund oracle is Rs 10,873 per SRS 4.6.2 round-down; D-09.5 settled-claim rule applies).P):
 
 | Case | Refund |
 | --- | --- |
