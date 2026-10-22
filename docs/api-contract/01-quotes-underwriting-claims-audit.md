@@ -166,6 +166,46 @@ Required safeguards:
 - The production profile must fail closed if the real underwriting component is missing, rather than silently falling back to the stub.
 - The exact profile/configuration mechanism is an implementation choice to confirm with Person 4.
 
+### 3.4 Underwriter assessment endpoints — INS-F-011
+
+#### 3.4.1 `GET /api/v1/applications/referred`
+
+- **Purpose:** Retrieve the queue of applications awaiting manual underwriter risk review.
+- **Authentication:** Required.
+- **Roles:** Underwriter (`UW`), Insurer Admin (`IA`), System Admin (`SA`).
+- **Access Rule:** Enforces multi-tenant insurer isolation (`INS-SR-004`). Insurer staff only see referred applications for their assigned `insurerId`. System Admin sees all.
+- **Privacy & Data Minimization:** Raw application persistence entities (`Application`) and database audit timestamps (`updatedAt`) are never exposed. Free-form `detailsJson` is sanitized server-side to expose only legitimate underwriting risk factors (`regYear`, `vehicleAge`, `vehicleType`, `make`, `model`, `city`, `idv`, `addOns`, `age`, `applicantAge`, `members`, `preExisting`, `hasPreExisting`, `sumInsured`), while strictly withholding unnecessary sensitive customer data (such as `aadhaar`, `pan`, `bankAccount`, card tokens, and KYC document references).
+- **Success — `200 OK`:** Array of `ReferredApplicationResponse` objects:
+  ```json
+  [
+    {
+      "id": 7001,
+      "customerId": 1001,
+      "insurerId": 1,
+      "planId": 1,
+      "quoteId": 5001,
+      "productType": "HEALTH",
+      "vehicleRegNo": null,
+      "premium": 9000.00,
+      "detailsJson": "{\"members\":[{\"age\":62}],\"preExisting\":false}",
+      "status": "REFERRED",
+      "reason": "Oldest member age requires referral: 62 years",
+      "createdAt": "2026-10-20T12:00:00Z"
+    }
+  ]
+  ```
+- **Open Clarification for Sprint 2:** Confirm whether `detailsJson` should remain a sanitized JSON string or migrate to a strongly typed nested `underwritingDetails` object prior to frontend table binding in P1-11.
+
+#### 3.4.2 `POST /api/v1/applications/{id}/decision`
+
+- **Purpose:** Record manual underwriter decision (`APPROVE` or `REJECT`) for a referred application.
+- **Authentication:** Required.
+- **Roles:** Underwriter (`UW`), Insurer Admin (`IA`), System Admin (`SA`).
+- **Access Rule:** Multi-tenant insurer isolation strictly enforced.
+- **Request Body:** `{ "decision": "APPROVE" | "REJECT", "reason": "string" }` (reason mandatory).
+- **Success — `200 OK`:** `{ "applicationId": 7001, "status": "APPROVED", "reason": "..." }`.
+- **State Machine Rule:** State must transition from `REFERRED` to `APPROVED` or `REJECTED`. Immutable history and audit log are recorded.
+
 ## 4. Plan and rating-rule data contract — INS-F-003 dependency
 
 Person 2 owns the plans API. This section specifies the minimum information the quote and underwriting components need to read; it does not redefine Person 2's public endpoints.
