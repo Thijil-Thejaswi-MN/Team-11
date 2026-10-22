@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "policyNo": "POL-H-1",
+    "customerId": 1,
+    "insurerId": 1,
+    "planId": 3,
+    "type": "HEALTH",
+    "status": "ACTIVE",
+    "premium": 8500.00,
+    "sumInsured": 500000.00,
+    "startDate": "2026-01-01",
+    "endDate": "2026-12-31",
+    "vehicleRegNo": null,
+    "idv": null,
+    "hasPaidClaim": false
+  },
+  {
+    "id": 2,
+    "policyNo": "POL-M-1",
+    "customerId": 1,
+    "insurerId": 1,
+    "planId": 1,
+    "type": "MOTOR_FOUR_WHEELER",
+    "status": "ACTIVE",
+    "premium": 9480.00,
+    "sumInsured": 400000.00,
+    "startDate": "2026-01-01",
+    "endDate": "2026-12-31",
+    "vehicleRegNo": "KA01AB1234",
+    "regYear": 2019,
+    "idv": 400000.00,
+    "hasPaidClaim": false
+  },
+  {
+    "id": 3,
+    "policyNo": "POL-M-2",
+    "customerId": 1,
+    "insurerId": 1,
+    "planId": 1,
+    "type": "MOTOR_FOUR_WHEELER",
+    "status": "ACTIVE",
+    "premium": 9480.00,
+    "sumInsured": 400000.00,
+    "startDate": "2026-01-01",
+    "endDate": "2026-12-31",
+    "vehicleRegNo": "KA02CD5678",
+    "regYear": 2019,
+    "idv": 400000.00,
+    "hasPaidClaim": true
+  }
+]
