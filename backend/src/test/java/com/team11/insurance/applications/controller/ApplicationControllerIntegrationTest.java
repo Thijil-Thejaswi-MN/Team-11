@@ -1,6 +1,7 @@
 package com.team11.insurance.applications.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -34,7 +35,7 @@ import com.team11.insurance.auth.TestCurrentUserProvider;
 import com.team11.insurance.kyc.service.KycService;
 import com.team11.insurance.quotes.Quote;
 import com.team11.insurance.quotes.QuoteRepository;
-import com.team11.insurance.underwriting.StubUnderwritingEngine;
+import com.team11.insurance.underwriting.IUnderwriting;
 import com.team11.insurance.underwriting.UnderwritingResult;
 
 /** TC-App-01: POST /applications end to end (real database, real service, stub underwriting). */
@@ -53,12 +54,16 @@ class ApplicationControllerIntegrationTest {
     /** Replaces the real KYC service so each test decides whether the customer is verified. */
     @MockBean private KycService kycService;
 
+    /** Replaces underwriting engine with test stub behavior. */
+    @MockBean private IUnderwriting underwriting;
+
     private Quote quote;
 
     @BeforeEach
     void setUp() {
         TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_CUSTOMER);   // user 1001
         when(kycService.isVerified(1001L)).thenReturn(true);
+        when(underwriting.evaluate(any())).thenReturn(UnderwritingResult.approve("Stub approved"));
         quote = quoteRepository.save(new Quote(1001L, 1L, 1L, "MOTOR_FOUR_WHEELER", new BigDecimal("8640"),
                 "{}", "{}", Instant.now().plus(1, ChronoUnit.DAYS)));
     }
@@ -66,7 +71,6 @@ class ApplicationControllerIntegrationTest {
     @AfterEach
     void tearDown() {
         TestCurrentUserProvider.clearSyntheticUser();
-        StubUnderwritingEngine.clearSyntheticOutcome();
     }
 
     private String body(List<Long> documentIds) throws Exception {
@@ -103,7 +107,7 @@ class ApplicationControllerIntegrationTest {
     @Test
     @DisplayName("Referred: 201 with status Referred")
     void referredReturns201() throws Exception {
-        StubUnderwritingEngine.setSyntheticOutcome(UnderwritingResult.refer("IDV above auto limit"));
+        when(underwriting.evaluate(any())).thenReturn(UnderwritingResult.refer("IDV above auto limit"));
         mockMvc.perform(post("/applications").contentType(MediaType.APPLICATION_JSON).content(body(List.of(301L))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("Referred"));
@@ -113,7 +117,7 @@ class ApplicationControllerIntegrationTest {
     @Test
     @DisplayName("Rejected: 422 with the reason, and the application is kept (not rolled back)")
     void rejectedReturns422ButTheRecordIsKept() throws Exception {
-        StubUnderwritingEngine.setSyntheticOutcome(UnderwritingResult.reject("Active policy on the vehicle"));
+        when(underwriting.evaluate(any())).thenReturn(UnderwritingResult.reject("Active policy on the vehicle"));
         mockMvc.perform(post("/applications").contentType(MediaType.APPLICATION_JSON).content(body(List.of(301L))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value("VALID-422"))
