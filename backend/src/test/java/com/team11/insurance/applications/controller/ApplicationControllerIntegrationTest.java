@@ -186,6 +186,52 @@ class ApplicationControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("Concurrent duplicate submissions for same quote results in exactly 1 success (201) and 1 conflict (409)")
+    void concurrentDuplicateSubmissionsHandleRaceSafely() throws Exception {
+        int threads = 2;
+        java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(threads);
+        java.util.concurrent.CountDownLatch readyLatch = new java.util.concurrent.CountDownLatch(threads);
+        java.util.concurrent.CountDownLatch startLatch = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch doneLatch = new java.util.concurrent.CountDownLatch(threads);
+
+        List<Integer> statuses = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+
+        for (int i = 0; i < threads; i++) {
+            executor.submit(() -> {
+                TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_CUSTOMER);
+                readyLatch.countDown();
+                try {
+                    startLatch.await();
+                    var mvcResult = mockMvc.perform(post("/applications")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body(List.of(301L))))
+                            .andReturn();
+                    statuses.add(mvcResult.getResponse().getStatus());
+                } catch (Exception e) {
+                    fail("Unexpected failure during concurrent submission: " + e.getMessage());
+                } finally {
+                    TestCurrentUserProvider.clearSyntheticUser();
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        assertTrue(readyLatch.await(5, java.util.concurrent.TimeUnit.SECONDS));
+        startLatch.countDown();
+        assertTrue(doneLatch.await(10, java.util.concurrent.TimeUnit.SECONDS));
+        executor.shutdown();
+
+        assertEquals(2, statuses.size());
+        assertTrue(statuses.contains(201), "One request must succeed with 201 Created");
+        assertTrue(statuses.contains(409), "One request must fail with 409 Conflict");
+
+        long count = applicationRepository.findAll().stream()
+                .filter(a -> quote.getId().equals(a.getQuoteId()))
+                .count();
+        assertEquals(1, count, "Exactly 1 Application record must exist for the quote in the database");
+    }
+
+    @Test
     @DisplayName("Only customers may apply: an insurer admin gets 403")
     void staffRoleIsForbidden() throws Exception {
         TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_INSURER_ADMIN);

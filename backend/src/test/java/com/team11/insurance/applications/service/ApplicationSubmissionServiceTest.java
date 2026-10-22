@@ -227,11 +227,21 @@ class ApplicationSubmissionServiceTest {
 
     @Test
     void duplicateSubmissionCatchDataIntegrityViolationThrowsConflict() {
+        when(applications.existsByQuoteId(QUOTE_ID)).thenReturn(false, true);
         doThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"))
                 .when(applications).saveAndFlush(any());
         StateConflictException e = assertThrows(StateConflictException.class,
                 () -> service.submit(customer, request(List.of(301L))));
         assertCode(ErrorCode.STATE_409, e);
+    }
+
+    @Test
+    void unrelatedDataIntegrityViolationExceptionPropagates() {
+        when(applications.existsByQuoteId(QUOTE_ID)).thenReturn(false);
+        doThrow(new org.springframework.dao.DataIntegrityViolationException("unrelated constraint failure"))
+                .when(applications).saveAndFlush(any());
+        assertThrows(org.springframework.dao.DataIntegrityViolationException.class,
+                () -> service.submit(customer, request(List.of(301L))));
     }
 
     @Test

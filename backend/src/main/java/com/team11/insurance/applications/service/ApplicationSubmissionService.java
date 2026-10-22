@@ -148,7 +148,10 @@ public class ApplicationSubmissionService {
                 return saved;
             }));
         } catch (DataIntegrityViolationException ex) {
-            throw new StateConflictException("An application has already been submitted for this quote.");
+            if (applicationRepository.existsByQuoteId(quote.getId())) {
+                throw new StateConflictException("An application has already been submitted for this quote.");
+            }
+            throw ex;
         }
 
         // 6. Underwriting runs outside any transaction; if an unexpected failure occurs, refer to manual review.
