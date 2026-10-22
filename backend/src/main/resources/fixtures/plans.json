@@ -1,0 +1,184 @@
+[
+  {
+    "id": 1,
+    "code": "PLAN-A-M1",
+    "insurerId": 1,
+    "type": "MOTOR_FOUR_WHEELER",
+    "name": "SafeShield Comprehensive Car",
+    "coverage": 500000.00,
+    "deductible": 2000.00,
+    "waitingPeriodMonths": 0,
+    "basePremium": 0.00,
+    "premiumRules": {
+      "type": "R-M",
+      "ownDamageBasePct": 0.02,
+      "ageLoadingMinYears": 6,
+      "ageLoadingMaxYears": 10,
+      "ageLoadingPct": 0.05,
+      "addOns": {
+        "ZERO_DEP": 1080.00
+      },
+      "depreciationPct": 0.10
+    },
+    "uwRules": {
+      "maxVehicleAgeYears": 20,
+      "referralVehicleAgeYears": 15,
+      "rejectIfActivePolicy": true
+    },
+    "active": true
+  },
+  {
+    "id": 2,
+    "code": "PLAN-A-M2",
+    "insurerId": 1,
+    "type": "MOTOR_TWO_WHEELER",
+    "name": "SafeShield Two-Wheeler Protect",
+    "coverage": 100000.00,
+    "deductible": 500.00,
+    "waitingPeriodMonths": 0,
+    "basePremium": 0.00,
+    "premiumRules": {
+      "type": "R-M",
+      "ownDamageBasePct": 0.02,
+      "ageLoadingMinYears": 6,
+      "ageLoadingMaxYears": 10,
+      "ageLoadingPct": 0.05,
+      "addOns": {
+        "ZERO_DEP": 500.00
+      },
+      "depreciationPct": 0.10
+    },
+    "uwRules": {
+      "maxVehicleAgeYears": 20,
+      "referralVehicleAgeYears": 15,
+      "rejectIfActivePolicy": true
+    },
+    "active": true
+  },
+  {
+    "id": 3,
+    "code": "PLAN-A-H1",
+    "insurerId": 1,
+    "type": "HEALTH",
+    "name": "SafeShield Health Essential 5L",
+    "coverage": 500000.00,
+    "deductible": 0.00,
+    "waitingPeriodMonths": 12,
+    "basePremium": 8500.00,
+    "premiumRules": {
+      "type": "R-H",
+      "ageBands": [
+        {"minAge": 18, "maxAge": 35, "base": 3000.00},
+        {"minAge": 36, "maxAge": 45, "base": 4500.00},
+        {"minAge": 46, "maxAge": 59, "base": 7000.00},
+        {"minAge": 60, "maxAge": 120, "base": 10000.00}
+      ],
+      "sumInsuredMultipliers": {
+        "500000": 1.0,
+        "1000000": 1.6
+      },
+      "preExistingMultiplier": 1.2
+    },
+    "uwRules": {
+      "maxAge": 70,
+      "referralAge": 60,
+      "preExistingReferral": true
+    },
+    "active": true
+  },
+  {
+    "id": 4,
+    "code": "PLAN-A-H2",
+    "insurerId": 1,
+    "type": "HEALTH",
+    "name": "SafeShield Health Advantage 10L",
+    "coverage": 1000000.00,
+    "deductible": 0.00,
+    "waitingPeriodMonths": 24,
+    "basePremium": 14000.00,
+    "premiumRules": {
+      "type": "R-H",
+      "ageBands": [
+        {"minAge": 18, "maxAge": 35, "base": 3000.00},
+        {"minAge": 36, "maxAge": 45, "base": 4500.00},
+        {"minAge": 46, "maxAge": 59, "base": 7000.00},
+        {"minAge": 60, "maxAge": 120, "base": 10000.00}
+      ],
+      "sumInsuredMultipliers": {
+        "500000": 1.0,
+        "1000000": 1.6
+      },
+      "preExistingMultiplier": 1.2
+    },
+    "uwRules": {
+      "maxAge": 70,
+      "referralAge": 60,
+      "preExistingReferral": true
+    },
+    "active": true
+  },
+  {
+    "id": 5,
+    "code": "PLAN-A-H3",
+    "insurerId": 1,
+    "type": "HEALTH",
+    "name": "SafeShield Health Unconfigured (No UW Rules)",
+    "coverage": 500000.00,
+    "deductible": 0.00,
+    "waitingPeriodMonths": 12,
+    "basePremium": 7500.00,
+    "premiumRules": {
+      "type": "R-H",
+      "ageBands": [
+        {"minAge": 18, "maxAge": 35, "base": 3000.00}
+      ]
+    },
+    "uwRules": null,
+    "active": true
+  },
+  {
+    "id": 6,
+    "code": "PLAN-B-M1",
+    "insurerId": 2,
+    "type": "MOTOR_FOUR_WHEELER",
+    "name": "Bharat Care Car Supreme",
+    "coverage": 600000.00,
+    "deductible": 2500.00,
+    "waitingPeriodMonths": 0,
+    "basePremium": 0.00,
+    "premiumRules": {
+      "type": "R-M",
+      "ownDamageBasePct": 0.02,
+      "addOns": {
+        "ZERO_DEP": 1200.00
+      }
+    },
+    "uwRules": {
+      "maxVehicleAgeYears": 20,
+      "referralVehicleAgeYears": 15
+    },
+    "active": true
+  },
+  {
+    "id": 7,
+    "code": "PLAN-B-H1",
+    "insurerId": 2,
+    "type": "HEALTH",
+    "name": "Bharat Care Family Health",
+    "coverage": 500000.00,
+    "deductible": 0.00,
+    "waitingPeriodMonths": 12,
+    "basePremium": 9200.00,
+    "premiumRules": {
+      "type": "R-H",
+      "ageBands": [
+        {"minAge": 18, "maxAge": 35, "base": 3200.00}
+      ]
+    },
+    "uwRules": {
+      "maxAge": 70,
+      "referralAge": 60
+    },
+    "active": true
+  }
+]
