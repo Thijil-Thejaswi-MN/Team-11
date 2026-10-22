@@ -88,6 +88,9 @@ public class Claim {
     @Column(name = "document_file_id")
     private List<Long> documentIds = new ArrayList<>();
 
+    @Column(name = "document_requested_at")
+    private Instant documentRequestedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -242,6 +245,14 @@ public class Claim {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Instant getDocumentRequestedAt() {
+        return documentRequestedAt;
+    }
+
+    public void setDocumentRequestedAt(Instant documentRequestedAt) {
+        this.documentRequestedAt = documentRequestedAt;
     }
 
     public Instant getUpdatedAt() {

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,9 @@ import com.team11.insurance.common.exception.StateConflictException;
 import com.team11.insurance.common.exception.ValidationException;
 import com.team11.insurance.notifications.INotify;
 import com.team11.insurance.notifications.NotificationEvent;
+import com.team11.insurance.payments.IPaymentService;
+import com.team11.insurance.payments.PaymentResult;
+import com.team11.insurance.payments.PaymentStatus;
 import com.team11.insurance.policies.IPolicyQuery;
 import com.team11.insurance.policies.Policy;
 import com.team11.insurance.policies.PolicyRepository;
@@ -45,6 +49,7 @@ public class ClaimService implements IClaimService {
     private final ObjectProvider<IPolicyQuery> policyQueryProvider;
     private final ObjectProvider<PolicyRepository> policyRepositoryProvider;
     private final ObjectProvider<INotify> notifyProvider;
+    private final ObjectProvider<IPaymentService> paymentServiceProvider;
     private final Clock clock;
     private final AtomicLong claimSeq = new AtomicLong(System.currentTimeMillis() % 100000);
 
@@ -55,18 +60,20 @@ public class ClaimService implements IClaimService {
             ObjectProvider<IPolicyQuery> policyQueryProvider,
             ObjectProvider<PolicyRepository> policyRepositoryProvider,
             ObjectProvider<INotify> notifyProvider,
-            ObjectProvider<Clock> clockProvider) {
+            ObjectProvider<Clock> clockProvider,
+            ObjectProvider<IPaymentService> paymentServiceProvider) {
         this.claimRepository = claimRepository;
         this.claimHistoryRepository = claimHistoryRepository;
         this.policyQueryProvider = policyQueryProvider;
         this.policyRepositoryProvider = policyRepositoryProvider;
         this.notifyProvider = notifyProvider;
+        this.paymentServiceProvider = paymentServiceProvider;
         this.clock = clockProvider != null
                 ? clockProvider.getIfAvailable(Clock::systemDefaultZone)
                 : Clock.systemDefaultZone();
     }
 
-    // Constructor for testing with explicit clock and dependencies
+    // Constructor for testing with explicit clock and dependencies (without payment service)
     public ClaimService(
             ClaimRepository claimRepository,
             ClaimHistoryRepository claimHistoryRepository,
@@ -74,11 +81,24 @@ public class ClaimService implements IClaimService {
             PolicyRepository policyRepository,
             INotify notify,
             Clock clock) {
+        this(claimRepository, claimHistoryRepository, policyQuery, policyRepository, notify, clock, null);
+    }
+
+    // Constructor for testing with explicit clock, payment service and dependencies
+    public ClaimService(
+            ClaimRepository claimRepository,
+            ClaimHistoryRepository claimHistoryRepository,
+            IPolicyQuery policyQuery,
+            PolicyRepository policyRepository,
+            INotify notify,
+            Clock clock,
+            IPaymentService paymentService) {
         this.claimRepository = claimRepository;
         this.claimHistoryRepository = claimHistoryRepository;
         this.policyQueryProvider = new SimpleObjectProvider<>(policyQuery);
         this.policyRepositoryProvider = new SimpleObjectProvider<>(policyRepository);
         this.notifyProvider = new SimpleObjectProvider<>(notify);
+        this.paymentServiceProvider = new SimpleObjectProvider<>(paymentService);
         this.clock = clock != null ? clock : Clock.systemDefaultZone();
     }
 
@@ -309,12 +329,15 @@ public class ClaimService implements IClaimService {
             // Remains in DOCUMENT_VERIFICATION
             ClaimStateMachine.requireTransition(claim.getStatus(), ClaimStatus.DOCUMENT_VERIFICATION);
             String missingDocs = request.missing() != null ? String.join(", ", request.missing()) : "Additional documents required";
+            claim.setDocumentRequestedAt(clock.instant());
+            claim = claimRepository.saveAndFlush(claim);
+
             claimHistoryRepository.save(new ClaimHistory(
                     claim.getId(), claim.getStatus(), ClaimStatus.DOCUMENT_VERIFICATION, currentUser.getUserId(),
                     "Documents requested: " + missingDocs));
 
             emitNotification(NotificationEvent.CLAIM_DOCUMENTS_REQUESTED, claim.getCustomerId(), Map.of(
-                    "claimNo", claim.getClaimNo(),
+                    "claimNo", claim.getClaimNo() != null ? claim.getClaimNo() : "",
                     "missing", missingDocs
             ));
 
@@ -402,9 +425,48 @@ public class ClaimService implements IClaimService {
 
     @Override
     public int closeStale() {
-        // Daily scheduler job closing unresponded document verification claims >= 15 days
-        // Handled by background scheduler or on-demand
-        return 0;
+        // Daily scheduler job (TC-Clm-06, SAD §4.1.3): closes claims in Document Verification
+        // with no response after 15 days of document request.
+        Instant now = clock.instant();
+        Instant cutoff = now.minus(15, ChronoUnit.DAYS);
+
+        List<Claim> pendingClaims = claimRepository.findByStatus(ClaimStatus.DOCUMENT_VERIFICATION);
+        int closedCount = 0;
+
+        for (Claim claim : pendingClaims) {
+            Instant requestTime = claim.getDocumentRequestedAt();
+            if (requestTime == null) {
+                // Fall back to most recent document request history entry if field wasn't set
+                requestTime = claimHistoryRepository.findByClaimIdOrderByIdAsc(claim.getId()).stream()
+                        .filter(h -> h.getToStatus() == ClaimStatus.DOCUMENT_VERIFICATION
+                                && h.getReason() != null && h.getReason().startsWith("Documents requested"))
+                        .map(ClaimHistory::getCreatedAt)
+                        .reduce((first, second) -> second)
+                        .orElse(null);
+            }
+
+            if (requestTime != null && !requestTime.isAfter(cutoff)) {
+                ClaimStateMachine.requireTransition(claim.getStatus(), ClaimStatus.CLOSED_NO_RESPONSE);
+                ClaimStatus prev = claim.getStatus();
+                claim.setStatus(ClaimStatus.CLOSED_NO_RESPONSE);
+                claim.setReason("Closed due to 15 days inactivity following document request");
+                claimRepository.saveAndFlush(claim);
+
+                claimHistoryRepository.save(new ClaimHistory(
+                        claim.getId(), prev, ClaimStatus.CLOSED_NO_RESPONSE, null,
+                        "Closed due to 15 days inactivity on document request"
+                ));
+
+                emitNotification(NotificationEvent.CLAIM_CLOSED, claim.getCustomerId(), Map.of(
+                        "claimNo", claim.getClaimNo() != null ? claim.getClaimNo() : "",
+                        "reason", "15 days inactivity on document request"
+                ));
+
+                closedCount++;
+            }
+        }
+
+        return closedCount;
     }
 
     @Override
@@ -412,30 +474,87 @@ public class ClaimService implements IClaimService {
         if (currentUser == null) {
             throw new AccessDeniedException("Access denied: user context is missing.");
         }
+        if (claimId == null) {
+            throw new ResourceNotFoundException("Claim", null);
+        }
         Claim claim = claimRepository.findById(claimId)
                 .orElseThrow(() -> new ResourceNotFoundException("Claim", claimId));
 
+        RoleSecurity.assertRole(currentUser, UserRole.CLAIMS_OFFICER, UserRole.INSURER_ADMIN, UserRole.SYSTEM_ADMIN);
         RoleSecurity.assertInsurerAccess(currentUser, claim.getInsurerId());
 
         ClaimStateMachine.requireTransition(claim.getStatus(), ClaimStatus.SETTLED);
-        ClaimStatus prev = claim.getStatus();
-        claim.setStatus(ClaimStatus.SETTLED);
-        claim.setSettledAmount(claim.getAssessedAmount());
-        claim = claimRepository.saveAndFlush(claim);
 
-        claimHistoryRepository.save(new ClaimHistory(
-                claim.getId(), prev, ClaimStatus.SETTLED, currentUser.getUserId(), "Payout settled"));
+        if (claim.getAssessedAmount() == null || claim.getAssessedAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ValidationException("Claim has no valid assessed amount for payout settlement.");
+        }
 
-        emitNotification(NotificationEvent.CLAIM_SETTLED, claim.getCustomerId(), Map.of(
-                "claimNo", claim.getClaimNo(),
-                "settledAmount", claim.getSettledAmount() != null ? claim.getSettledAmount().toPlainString() : ""
-        ));
+        IPaymentService paymentService = paymentServiceProvider != null ? paymentServiceProvider.getIfAvailable() : null;
+        if (paymentService == null) {
+            throw new IllegalStateException("Payment service is unavailable; cannot process claim payout settlement.");
+        }
 
-        return new ClaimResponse(
-                claim.getId(), claim.getClaimNo(), claim.getPolicyId(), claim.getStatus(),
-                claim.getClaimAmount(), claim.getAssessedAmount(), claim.isDuplicateFlag(),
-                "Claim settled"
-        );
+        String idempotencyKey = "claim-" + claim.getId() + "-payout";
+        String destinationAccount = "ACC-" + claim.getCustomerId();
+
+        PaymentResult result;
+        try {
+            result = paymentService.payout(claim.getId(), claim.getAssessedAmount(), idempotencyKey, destinationAccount);
+        } catch (Exception e) {
+            log.warn("Claim payout attempt for claim {} threw an exception: {}", claim.getId(), e.getMessage());
+            claimHistoryRepository.save(new ClaimHistory(
+                    claim.getId(), claim.getStatus(), ClaimStatus.PAYMENT_PROCESSING, currentUser.getUserId(),
+                    "Payout failed with error: " + e.getMessage()));
+
+            emitNotification(NotificationEvent.PAYMENT_FAILED, claim.getCustomerId(), Map.of(
+                    "claimNo", claim.getClaimNo() != null ? claim.getClaimNo() : "",
+                    "reason", e.getMessage() != null ? e.getMessage() : "Payment timeout or communication failure"
+            ));
+
+            return new ClaimResponse(
+                    claim.getId(), claim.getClaimNo(), claim.getPolicyId(), claim.getStatus(),
+                    claim.getClaimAmount(), claim.getAssessedAmount(), claim.isDuplicateFlag(),
+                    "Payout processing failed: " + e.getMessage()
+            );
+        }
+
+        if (result != null && result.status() == PaymentStatus.SUCCESS) {
+            ClaimStatus prev = claim.getStatus();
+            claim.setStatus(ClaimStatus.SETTLED);
+            claim.setSettledAmount(claim.getAssessedAmount());
+            claim = claimRepository.saveAndFlush(claim);
+
+            claimHistoryRepository.save(new ClaimHistory(
+                    claim.getId(), prev, ClaimStatus.SETTLED, currentUser.getUserId(),
+                    "Payout settled via transaction reference: " + result.transactionReference()));
+
+            emitNotification(NotificationEvent.CLAIM_SETTLED, claim.getCustomerId(), Map.of(
+                    "claimNo", claim.getClaimNo() != null ? claim.getClaimNo() : "",
+                    "settledAmount", claim.getSettledAmount() != null ? claim.getSettledAmount().toPlainString() : ""
+            ));
+
+            return new ClaimResponse(
+                    claim.getId(), claim.getClaimNo(), claim.getPolicyId(), claim.getStatus(),
+                    claim.getClaimAmount(), claim.getAssessedAmount(), claim.isDuplicateFlag(),
+                    "Claim settled successfully"
+            );
+        } else {
+            String reason = (result != null && result.failureReason() != null) ? result.failureReason() : "Payment rejected by gateway";
+            claimHistoryRepository.save(new ClaimHistory(
+                    claim.getId(), claim.getStatus(), ClaimStatus.PAYMENT_PROCESSING, currentUser.getUserId(),
+                    "Payout rejected: " + reason));
+
+            emitNotification(NotificationEvent.PAYMENT_FAILED, claim.getCustomerId(), Map.of(
+                    "claimNo", claim.getClaimNo() != null ? claim.getClaimNo() : "",
+                    "reason", reason
+            ));
+
+            return new ClaimResponse(
+                    claim.getId(), claim.getClaimNo(), claim.getPolicyId(), claim.getStatus(),
+                    claim.getClaimAmount(), claim.getAssessedAmount(), claim.isDuplicateFlag(),
+                    "Payout failed: " + reason
+            );
+        }
     }
 
     // =========================================================================

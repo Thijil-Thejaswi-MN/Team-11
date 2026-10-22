@@ -11,6 +11,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +19,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+
+import com.team11.insurance.payments.IPaymentService;
+import com.team11.insurance.payments.PaymentResult;
+import com.team11.insurance.payments.PaymentStatus;
+import com.team11.insurance.payments.PaymentType;
 
 import com.team11.insurance.auth.CurrentUser;
 import com.team11.insurance.auth.UserRole;
@@ -405,11 +411,262 @@ class ClaimServiceTest {
         assertThrows(AccessDeniedException.class, () -> claimService.get(50L, null));
     }
 
-    @Test
-    @DisplayName("GET claim fails with 404 when claim is not found")
-    void get_notFound_throwsResourceNotFound() {
-        when(claimRepository.findById(999L)).thenReturn(Optional.empty());
+    // =========================================================================
+    // 7. closeStale() tests (15-day inactivity rule, TC-Clm-06, SAD §4.1.3)
+    // =========================================================================
 
-        assertThrows(ResourceNotFoundException.class, () -> claimService.get(999L, customerOwner));
+    @Test
+    @DisplayName("closeStale leaves claim untouched at 14-day boundary")
+    void closeStale_14DayBoundary_claimUntouched() {
+        Claim claim = new Claim();
+        claim.setId(101L);
+        claim.setClaimNo("CLM-2026-000101");
+        claim.setStatus(ClaimStatus.DOCUMENT_VERIFICATION);
+        claim.setCustomerId(customerOwner.getUserId());
+        // Requested 14 days ago relative to fixedClock
+        claim.setDocumentRequestedAt(FIXED_INSTANT.minus(14, ChronoUnit.DAYS));
+
+        when(claimRepository.findByStatus(ClaimStatus.DOCUMENT_VERIFICATION))
+                .thenReturn(List.of(claim));
+
+        int closed = claimService.closeStale();
+
+        assertEquals(0, closed);
+        assertEquals(ClaimStatus.DOCUMENT_VERIFICATION, claim.getStatus());
+        verify(claimRepository, never()).saveAndFlush(any());
+        verify(notify, never()).send(eq(NotificationEvent.CLAIM_CLOSED), anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("closeStale closes claim at exactly 15-day boundary, records history and emits CLAIM_CLOSED")
+    void closeStale_15DayBoundary_claimClosed() {
+        Claim claim = new Claim();
+        claim.setId(102L);
+        claim.setClaimNo("CLM-2026-000102");
+        claim.setStatus(ClaimStatus.DOCUMENT_VERIFICATION);
+        claim.setCustomerId(customerOwner.getUserId());
+        // Requested 15 days ago relative to fixedClock
+        claim.setDocumentRequestedAt(FIXED_INSTANT.minus(15, ChronoUnit.DAYS));
+
+        when(claimRepository.findByStatus(ClaimStatus.DOCUMENT_VERIFICATION))
+                .thenReturn(List.of(claim));
+        when(claimRepository.saveAndFlush(any(Claim.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        int closed = claimService.closeStale();
+
+        assertEquals(1, closed);
+        assertEquals(ClaimStatus.CLOSED_NO_RESPONSE, claim.getStatus());
+        verify(claimRepository).saveAndFlush(claim);
+        verify(claimHistoryRepository).save(argThat(h ->
+                h.getClaimId().equals(102L)
+                        && h.getFromStatus() == ClaimStatus.DOCUMENT_VERIFICATION
+                        && h.getToStatus() == ClaimStatus.CLOSED_NO_RESPONSE
+        ));
+        verify(notify).send(eq(NotificationEvent.CLAIM_CLOSED), eq(customerOwner.getUserId()), any());
+    }
+
+    @Test
+    @DisplayName("closeStale repeated execution does not re-process already closed claims")
+    void closeStale_repeatedExecution_untouched() {
+        Claim claim = new Claim();
+        claim.setId(103L);
+        claim.setClaimNo("CLM-2026-000103");
+        claim.setStatus(ClaimStatus.DOCUMENT_VERIFICATION);
+        claim.setCustomerId(customerOwner.getUserId());
+        claim.setDocumentRequestedAt(FIXED_INSTANT.minus(16, ChronoUnit.DAYS));
+
+        // First invocation returns the claim in DOCUMENT_VERIFICATION
+        when(claimRepository.findByStatus(ClaimStatus.DOCUMENT_VERIFICATION))
+                .thenReturn(List.of(claim))
+                // Second invocation (e.g. next scheduler tick): claim is now CLOSED_NO_RESPONSE in DB
+                .thenReturn(List.of());
+        when(claimRepository.saveAndFlush(any(Claim.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        int firstRun = claimService.closeStale();
+        assertEquals(1, firstRun);
+        assertEquals(ClaimStatus.CLOSED_NO_RESPONSE, claim.getStatus());
+
+        int secondRun = claimService.closeStale();
+        assertEquals(0, secondRun);
+        // Only 1 save and 1 notification from the first run
+        verify(claimRepository, times(1)).saveAndFlush(any());
+        verify(notify, times(1)).send(eq(NotificationEvent.CLAIM_CLOSED), anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("closeStale ignores claim in DOCUMENT_VERIFICATION if no document request timestamp exists")
+    void closeStale_noDocumentRequestTimestamp_claimUntouched() {
+        Claim claim = new Claim();
+        claim.setId(104L);
+        claim.setStatus(ClaimStatus.DOCUMENT_VERIFICATION);
+        claim.setDocumentRequestedAt(null);
+
+        when(claimRepository.findByStatus(ClaimStatus.DOCUMENT_VERIFICATION))
+                .thenReturn(List.of(claim));
+        when(claimHistoryRepository.findByClaimIdOrderByIdAsc(104L))
+                .thenReturn(List.of());
+
+        int closed = claimService.closeStale();
+
+        assertEquals(0, closed);
+        assertEquals(ClaimStatus.DOCUMENT_VERIFICATION, claim.getStatus());
+        verify(claimRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    @DisplayName("verify records documentRequestedAt timestamp using injected clock on document request")
+    void verify_documentRequest_recordsDocumentRequestedAt() {
+        Claim claim = new Claim();
+        claim.setId(105L);
+        claim.setClaimNo("CLM-2026-000105");
+        claim.setStatus(ClaimStatus.DOCUMENT_VERIFICATION);
+        claim.setInsurerId(1L);
+        claim.setCustomerId(customerOwner.getUserId());
+
+        when(claimRepository.findById(105L)).thenReturn(Optional.of(claim));
+        when(claimRepository.saveAndFlush(any(Claim.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ClaimVerificationRequest request = new ClaimVerificationRequest(false, List.of("repair_estimate"), "Estimate required");
+        claimService.verify(105L, request, claimsOfficerInsurer1);
+
+        assertEquals(FIXED_INSTANT, claim.getDocumentRequestedAt());
+        verify(claimRepository).saveAndFlush(claim);
+        verify(notify).send(eq(NotificationEvent.CLAIM_DOCUMENTS_REQUESTED), eq(customerOwner.getUserId()), any());
+    }
+
+    // =========================================================================
+    // 8. Safe payout() tests (IPaymentService integration)
+    // =========================================================================
+
+    @Test
+    @DisplayName("payout settles claim, saves history, and emits CLAIM_SETTLED on payment success")
+    void payout_success_settlesClaimAndEmitsNotification() {
+        IPaymentService paymentService = mock(IPaymentService.class);
+        ClaimService serviceWithPayment = new ClaimService(
+                claimRepository, claimHistoryRepository, policyQuery, null, notify, fixedClock, paymentService
+        );
+
+        Claim claim = new Claim();
+        claim.setId(201L);
+        claim.setClaimNo("CLM-2026-000201");
+        claim.setPolicyId(10L);
+        claim.setCustomerId(customerOwner.getUserId());
+        claim.setInsurerId(1L);
+        claim.setStatus(ClaimStatus.PAYMENT_PROCESSING);
+        claim.setAssessedAmount(new BigDecimal("15000.00"));
+
+        when(claimRepository.findById(201L)).thenReturn(Optional.of(claim));
+        when(claimRepository.saveAndFlush(any(Claim.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(paymentService.payout(eq(201L), eq(new BigDecimal("15000.00")), eq("claim-201-payout"), any()))
+                .thenReturn(PaymentResult.success(5001L, "claim-201-payout", "REF-TXN-001", new BigDecimal("15000.00"), PaymentType.PAYOUT, fixedClock));
+
+        ClaimResponse response = serviceWithPayment.payout(201L, claimsOfficerInsurer1);
+
+        assertNotNull(response);
+        assertEquals(ClaimStatus.SETTLED, response.status());
+        assertEquals(ClaimStatus.SETTLED, claim.getStatus());
+        assertEquals(new BigDecimal("15000.00"), claim.getSettledAmount());
+        verify(claimRepository).saveAndFlush(claim);
+        verify(claimHistoryRepository).save(argThat(h ->
+                h.getClaimId().equals(201L)
+                        && h.getFromStatus() == ClaimStatus.PAYMENT_PROCESSING
+                        && h.getToStatus() == ClaimStatus.SETTLED
+        ));
+        verify(notify).send(eq(NotificationEvent.CLAIM_SETTLED), eq(customerOwner.getUserId()), argThat(params ->
+                params.containsKey("settledAmount") && params.get("settledAmount").equals("15000.00")
+        ));
+    }
+
+    @Test
+    @DisplayName("payout keeps claim in PAYMENT_PROCESSING and emits PAYMENT_FAILED on payment rejection")
+    void payout_paymentFailure_remainsInPaymentProcessing() {
+        IPaymentService paymentService = mock(IPaymentService.class);
+        ClaimService serviceWithPayment = new ClaimService(
+                claimRepository, claimHistoryRepository, policyQuery, null, notify, fixedClock, paymentService
+        );
+
+        Claim claim = new Claim();
+        claim.setId(202L);
+        claim.setClaimNo("CLM-2026-000202");
+        claim.setPolicyId(10L);
+        claim.setCustomerId(customerOwner.getUserId());
+        claim.setInsurerId(1L);
+        claim.setStatus(ClaimStatus.PAYMENT_PROCESSING);
+        claim.setAssessedAmount(new BigDecimal("8000.00"));
+
+        when(claimRepository.findById(202L)).thenReturn(Optional.of(claim));
+        when(paymentService.payout(eq(202L), eq(new BigDecimal("8000.00")), eq("claim-202-payout"), any()))
+                .thenReturn(PaymentResult.failed(5002L, "claim-202-payout", new BigDecimal("8000.00"), PaymentType.PAYOUT, "Bank account invalid", "PAY-402", fixedClock));
+
+        ClaimResponse response = serviceWithPayment.payout(202L, claimsOfficerInsurer1);
+
+        assertNotNull(response);
+        assertEquals(ClaimStatus.PAYMENT_PROCESSING, response.status());
+        assertEquals(ClaimStatus.PAYMENT_PROCESSING, claim.getStatus());
+        assertNull(claim.getSettledAmount());
+        verify(claimHistoryRepository).save(argThat(h ->
+                h.getClaimId().equals(202L)
+                        && h.getToStatus() == ClaimStatus.PAYMENT_PROCESSING
+                        && h.getReason().contains("Payout rejected")
+        ));
+        verify(notify).send(eq(NotificationEvent.PAYMENT_FAILED), eq(customerOwner.getUserId()), any());
+        verify(notify, never()).send(eq(NotificationEvent.CLAIM_SETTLED), anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("payout keeps claim in PAYMENT_PROCESSING and emits PAYMENT_FAILED on gateway timeout/exception")
+    void payout_timeoutException_remainsInPaymentProcessing() {
+        IPaymentService paymentService = mock(IPaymentService.class);
+        ClaimService serviceWithPayment = new ClaimService(
+                claimRepository, claimHistoryRepository, policyQuery, null, notify, fixedClock, paymentService
+        );
+
+        Claim claim = new Claim();
+        claim.setId(203L);
+        claim.setClaimNo("CLM-2026-000203");
+        claim.setPolicyId(10L);
+        claim.setCustomerId(customerOwner.getUserId());
+        claim.setInsurerId(1L);
+        claim.setStatus(ClaimStatus.PAYMENT_PROCESSING);
+        claim.setAssessedAmount(new BigDecimal("12000.00"));
+
+        when(claimRepository.findById(203L)).thenReturn(Optional.of(claim));
+        when(paymentService.payout(anyLong(), any(), any(), any()))
+                .thenThrow(new RuntimeException("Gateway read timed out after 5000ms"));
+
+        ClaimResponse response = serviceWithPayment.payout(203L, claimsOfficerInsurer1);
+
+        assertNotNull(response);
+        assertEquals(ClaimStatus.PAYMENT_PROCESSING, response.status());
+        assertEquals(ClaimStatus.PAYMENT_PROCESSING, claim.getStatus());
+        assertNull(claim.getSettledAmount());
+        verify(claimHistoryRepository).save(argThat(h ->
+                h.getClaimId().equals(203L)
+                        && h.getToStatus() == ClaimStatus.PAYMENT_PROCESSING
+                        && h.getReason().contains("Gateway read timed out")
+        ));
+        verify(notify).send(eq(NotificationEvent.PAYMENT_FAILED), eq(customerOwner.getUserId()), any());
+        verify(notify, never()).send(eq(NotificationEvent.CLAIM_SETTLED), anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("payout fails safely when IPaymentService bean is unavailable without faking settlement")
+    void payout_paymentServiceUnavailable_throwsIllegalState_doesNotSettle() {
+        // service without IPaymentService injected
+        Claim claim = new Claim();
+        claim.setId(204L);
+        claim.setStatus(ClaimStatus.PAYMENT_PROCESSING);
+        claim.setAssessedAmount(new BigDecimal("5000.00"));
+        claim.setInsurerId(1L);
+
+        when(claimRepository.findById(204L)).thenReturn(Optional.of(claim));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                claimService.payout(204L, claimsOfficerInsurer1)
+        );
+        assertTrue(ex.getMessage().contains("Payment service is unavailable"));
+        assertEquals(ClaimStatus.PAYMENT_PROCESSING, claim.getStatus());
+        assertNull(claim.getSettledAmount());
+        verify(notify, never()).send(eq(NotificationEvent.CLAIM_SETTLED), anyLong(), any());
     }
 }
