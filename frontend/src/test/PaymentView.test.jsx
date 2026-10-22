@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import PaymentView from '../views/customer/PaymentView';
 import apiClient from '../api/apiClient';
@@ -15,9 +15,9 @@ describe('PaymentView Component (P4-17)', () => {
     vi.clearAllMocks();
   });
 
-  const renderWithRouter = (initialRoute = '/customer/payment/9021', state = null) => {
+  const renderWithRouter = (initialRoute = '/customer/payment/9021') => {
     return render(
-      <MemoryRouter initialEntries={[{ pathname: initialRoute, state }]}>
+      <MemoryRouter initialEntries={[initialRoute]}>
         <AuthProvider>
           <Routes>
             <Route path="/customer/payment/:applicationId" element={<PaymentView />} />
@@ -79,6 +79,80 @@ describe('PaymentView Component (P4-17)', () => {
 
     // Pay button is disabled and shows paid
     expect(screen.getByRole('button', { name: /Premium Paid/i })).toBeDisabled();
+  });
+
+  it('handles failed application-summary loading, unsets application, shows error, and disables Pay button', async () => {
+    vi.spyOn(apiClient, 'get').mockRejectedValueOnce({
+      status: 404,
+      errorCode: 'NOTFOUND-404',
+      message: 'Application 9021 does not exist or is not visible.',
+    });
+
+    const postSpy = vi.spyOn(apiClient, 'post');
+
+    renderWithRouter('/customer/payment/9021');
+
+    // Verify error banner is displayed
+    expect(await screen.findByRole('heading', { name: /Unable to Load Application/i })).toBeInTheDocument();
+    expect(screen.getByText(/Application 9021 does not exist/i)).toBeInTheDocument();
+
+    // Verify no fallback data was fabricated
+    expect(screen.queryByText(/SafeShield Motor 4W/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/No authoritative application data available/i)).toBeInTheDocument();
+
+    // Verify Pay button is strictly disabled
+    const payBtn = screen.getByRole('button', { name: /Payment Unavailable/i });
+    expect(payBtn).toBeDisabled();
+
+    // Attempting to click does NOT initiate payment
+    fireEvent.click(payBtn);
+    expect(postSpy).not.toHaveBeenCalled();
+  });
+
+  it('disables Pay button while application details are loading', async () => {
+    let resolveGet;
+    const pendingPromise = new Promise((resolve) => {
+      resolveGet = resolve;
+    });
+
+    vi.spyOn(apiClient, 'get').mockReturnValueOnce(pendingPromise);
+
+    renderWithRouter('/customer/payment/9021');
+
+    // While loading, button must be disabled
+    const button = screen.getByRole('button', { name: /Loading Application.../i });
+    expect(button).toBeDisabled();
+
+    // Resolve GET
+    resolveGet({
+      data: {
+        applicationId: 9021,
+        customerId: 1001,
+        planName: 'SafeShield Motor 4W',
+        premium: 8450.0,
+        status: 'APPROVED',
+      },
+    });
+
+    expect(await screen.findByRole('button', { name: /Pay Premium/i })).toBeEnabled();
+  });
+
+  it('disables Pay button when application status is not APPROVED (e.g. REFERRED)', async () => {
+    vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
+      data: {
+        applicationId: 9021,
+        customerId: 1001,
+        planName: 'SafeShield Motor 4W',
+        premium: 8450.0,
+        status: 'REFERRED',
+      },
+    });
+
+    renderWithRouter('/customer/payment/9021');
+
+    expect(await screen.findByText(/SafeShield Motor 4W/i)).toBeInTheDocument();
+    const payButton = screen.getByRole('button', { name: /Application REFERRED/i });
+    expect(payButton).toBeDisabled();
   });
 
   it('handles HTTP 402 payment failure, shows "Payment failed — retry" banner, and allows retry', async () => {

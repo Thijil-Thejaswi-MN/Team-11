@@ -24,6 +24,7 @@ import com.team11.insurance.applications.ApplicationStateMachine;
 import com.team11.insurance.applications.ApplicationStatus;
 import com.team11.insurance.auth.CurrentUser;
 import com.team11.insurance.auth.RoleSecurity;
+import com.team11.insurance.common.exception.AccessDeniedException;
 import com.team11.insurance.common.exception.PaymentFailedException;
 import com.team11.insurance.common.exception.ResourceNotFoundException;
 import com.team11.insurance.common.exception.StateConflictException;
@@ -100,6 +101,9 @@ public class PaymentService {
      */
     @Transactional(readOnly = true)
     public ApplicationPaymentSummary getApplicationSummary(Long applicationId, CurrentUser currentUser) {
+        if (currentUser == null) {
+            throw new AccessDeniedException("Access denied: user context is missing.");
+        }
         if (applicationId == null || applicationId <= 0) {
             throw new ValidationException("Invalid application ID: " + applicationId);
         }
@@ -107,9 +111,7 @@ public class PaymentService {
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Application", applicationId));
 
-        if (currentUser != null) {
-            RoleSecurity.assertCustomerOrStaffAccess(currentUser, app.getCustomerId());
-        }
+        RoleSecurity.assertCustomerOrStaffAccess(currentUser, app.getCustomerId());
 
         BigDecimal derivedPremium = derivePayableAmount(app);
         String planName = "Insurance Plan #" + app.getPlanId();
@@ -131,6 +133,9 @@ public class PaymentService {
      */
     @Transactional
     public PaymentResponse processPayment(Long applicationId, CurrentUser currentUser) {
+        if (currentUser == null) {
+            throw new AccessDeniedException("Access denied: user context is missing.");
+        }
         if (applicationId == null || applicationId <= 0) {
             throw new ValidationException("Valid applicationId is required for payment.");
         }
@@ -145,9 +150,7 @@ public class PaymentService {
                     .orElseThrow(() -> new ResourceNotFoundException("Application", applicationId));
 
             // Validate caller ownership
-            if (currentUser != null) {
-                RoleSecurity.assertCustomerOrStaffAccess(currentUser, application.getCustomerId());
-            }
+            RoleSecurity.assertCustomerOrStaffAccess(currentUser, application.getCustomerId());
 
             // Validate eligibility
             if (application.getStatus() == ApplicationStatus.PAID) {

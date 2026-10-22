@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams, useLocation, useNavigate, Link } from 'react-router-dom';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import PortalLayout from '../../components/layout/PortalLayout';
 import apiClient from '../../api/apiClient';
 import { ROUTES } from '../../routes/routePaths';
@@ -7,22 +7,24 @@ import { ROUTES } from '../../routes/routePaths';
 /**
  * Customer Payment View (P4-17 / INS-F-009).
  * <p>
- * Security Invariant: The browser MUST send ONLY applicationId when starting a payment.
- * Amount and idempotency keys are derived server-side.
+ * Security Invariants:
+ * 1. The browser MUST send ONLY applicationId when starting a payment.
+ * 2. Amount and idempotency keys are derived strictly server-side.
+ * 3. Never fabricate an application or amount if loading fails or data is missing.
+ * 4. Pay button is strictly disabled while loading, when load failed, when no authoritative
+ *    application data exists, or when the application status is not APPROVED.
  */
 export default function PaymentView() {
   const { applicationId: routeAppId } = useParams();
   const [searchParams] = useSearchParams();
-  const location = useLocation();
-  const navigate = useNavigate();
 
   // Extract numeric application ID from route param or query param
   const rawId = routeAppId || searchParams.get('applicationId') || '';
   const parsedNumericMatch = rawId.match(/\d+$/);
   const cleanId = parsedNumericMatch ? parseInt(parsedNumericMatch[0], 10) : null;
 
-  const [application, setApplication] = useState(location.state?.application || null);
-  const [loadingApp, setLoadingApp] = useState(!location.state?.application && !!cleanId);
+  const [application, setApplication] = useState(null);
+  const [loadingApp, setLoadingApp] = useState(true);
   const [loadError, setLoadError] = useState(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,19 +36,15 @@ export default function PaymentView() {
   useEffect(() => {
     if (!cleanId) {
       setLoadError('No valid application ID provided.');
+      setApplication(null);
       setLoadingApp(false);
       return;
     }
 
-    // If application details were passed via navigation state, use them
-    if (location.state?.application) {
-      setApplication(location.state.application);
-      setLoadingApp(false);
-      return;
-    }
-
-    // Otherwise, fetch application summary from backend
     setLoadingApp(true);
+    setLoadError(null);
+
+    // Fetch authoritative application summary strictly from backend
     apiClient
       .get(`/payments/applications/${cleanId}`)
       .then((res) => {
@@ -54,23 +52,31 @@ export default function PaymentView() {
         setLoadError(null);
       })
       .catch((err) => {
-        // If not found or endpoint not reachable, fallback gracefully with cleanId
-        setLoadError(err.message || 'Unable to load application details.');
-        setApplication({
-          id: cleanId,
-          displayId: `APP-2026-${cleanId}`,
-          planName: 'Insurance Policy Application',
-          premium: 8450,
-          status: 'APPROVED',
-        });
+        // Authoritative load failed: keep application unset, do NOT fabricate fallback
+        const msg = err.message || err.response?.data?.message || 'Unable to load application details.';
+        setLoadError(msg);
+        setApplication(null);
       })
       .finally(() => {
         setLoadingApp(false);
       });
-  }, [cleanId, location.state]);
+  }, [cleanId]);
+
+  const isApproved = application?.status === 'APPROVED';
+  const isPaid = application?.status === 'PAID' || paymentState === 'success';
+
+  // Strict disable rule per P4-17 requirement 1
+  const isPayDisabled =
+    loadingApp ||
+    !!loadError ||
+    !application ||
+    !isApproved ||
+    isSubmitting ||
+    isPaid ||
+    !cleanId;
 
   const handlePay = async () => {
-    if (isSubmitting || !cleanId) return;
+    if (isPayDisabled || !cleanId) return;
 
     setIsSubmitting(true);
     setErrorMessage(null);
@@ -112,8 +118,34 @@ export default function PaymentView() {
     }
   };
 
-  const displayPremium = application?.premium ? Number(application.premium) : 8450;
-  const isPaid = application?.status === 'PAID' || paymentState === 'success';
+  const displayPremium = application?.premium ? Number(application.premium) : null;
+
+  const getButtonText = () => {
+    if (isSubmitting) {
+      return (
+        <>
+          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          Processing Payment...
+        </>
+      );
+    }
+    if (isPaid) {
+      return 'Premium Paid';
+    }
+    if (loadingApp) {
+      return 'Loading Application...';
+    }
+    if (loadError || !application) {
+      return 'Payment Unavailable';
+    }
+    if (!isApproved) {
+      return `Application ${application.status}`;
+    }
+    if (paymentState === 'failed') {
+      return `Retry Payment (₹${displayPremium?.toLocaleString('en-IN')})`;
+    }
+    return `Pay Premium (₹${displayPremium?.toLocaleString('en-IN')})`;
+  };
 
   return (
     <PortalLayout
@@ -133,6 +165,17 @@ export default function PaymentView() {
       <div className="row g-4">
         {/* Left Column: Application Details & States */}
         <div className="col-lg-7">
+          {/* Application Load Error Banner */}
+          {loadError && (
+            <div id="application-load-error-banner" className="alert alert-danger d-flex align-items-start mb-4" role="alert">
+              <div className="me-3 fs-3">✕</div>
+              <div className="flex-grow-1">
+                <h5 className="alert-heading fw-bold mb-1">Unable to Load Application</h5>
+                <p className="mb-0">{loadError}</p>
+              </div>
+            </div>
+          )}
+
           {/* Success Banner */}
           {paymentState === 'success' && result && (
             <div id="payment-success-banner" className="alert alert-success d-flex align-items-start mb-4" role="alert">
@@ -212,9 +255,11 @@ export default function PaymentView() {
           <div className="dashboard-card mb-4">
             <div className="dashboard-card-header d-flex justify-content-between align-items-center">
               <span className="fw-bold">Application Summary</span>
-              <span className="badge bg-secondary">
-                {application?.displayId || `APP-2026-${cleanId || 'N/A'}`}
-              </span>
+              {application && (
+                <span className="badge bg-secondary">
+                  {application.displayId || `APP-2026-${cleanId || 'N/A'}`}
+                </span>
+              )}
             </div>
             <div className="dashboard-card-body">
               {loadingApp ? (
@@ -222,21 +267,26 @@ export default function PaymentView() {
                   <div className="spinner-border text-primary" role="status"></div>
                   <div className="mt-2 text-muted">Loading application details...</div>
                 </div>
+              ) : loadError || !application ? (
+                <div className="text-center py-3 text-muted">
+                  <p className="mb-1 fw-semibold text-danger">No authoritative application data available.</p>
+                  <p className="small mb-0">Please verify the application ID or check back once underwriter review is complete.</p>
+                </div>
               ) : (
                 <div className="table-responsive">
                   <table className="table table-borderless align-middle mb-0">
                     <tbody>
                       <tr>
                         <th className="text-muted w-40">Plan Selected:</th>
-                        <td className="fw-semibold">{application?.planName || 'SafeShield Motor 4W'}</td>
+                        <td className="fw-semibold">{application.planName || 'Insurance Plan'}</td>
                       </tr>
-                      {application?.productType && (
+                      {application.productType && (
                         <tr>
                           <th className="text-muted">Product Type:</th>
                           <td>{application.productType}</td>
                         </tr>
                       )}
-                      {application?.vehicleRegNo && (
+                      {application.vehicleRegNo && (
                         <tr>
                           <th className="text-muted">Vehicle Reg No:</th>
                           <td><code>{application.vehicleRegNo}</code></td>
@@ -247,17 +297,17 @@ export default function PaymentView() {
                         <td>
                           {isPaid ? (
                             <span className="badge bg-success">PAID</span>
+                          ) : isApproved ? (
+                            <span className="badge bg-primary">APPROVED</span>
                           ) : (
-                            <span className="badge bg-primary">
-                              {application?.status || 'APPROVED'}
-                            </span>
+                            <span className="badge bg-warning text-dark">{application.status}</span>
                           )}
                         </td>
                       </tr>
                       <tr>
                         <th className="text-muted">Payable Premium:</th>
                         <td className="fs-5 fw-bold text-primary">
-                          ₹{displayPremium.toLocaleString('en-IN')}
+                          ₹{displayPremium?.toLocaleString('en-IN')}
                         </td>
                       </tr>
                     </tbody>
@@ -282,17 +332,17 @@ export default function PaymentView() {
               <div className="p-3 bg-light rounded mb-4">
                 <div className="d-flex justify-content-between mb-2">
                   <span>Base Premium:</span>
-                  <span>₹{Math.round(displayPremium / 1.18).toLocaleString('en-IN')}</span>
+                  <span>{displayPremium ? `₹${Math.round(displayPremium / 1.18).toLocaleString('en-IN')}` : '—'}</span>
                 </div>
                 <div className="d-flex justify-content-between mb-2">
                   <span>GST (18%):</span>
-                  <span>₹{(displayPremium - Math.round(displayPremium / 1.18)).toLocaleString('en-IN')}</span>
+                  <span>{displayPremium ? `₹${(displayPremium - Math.round(displayPremium / 1.18)).toLocaleString('en-IN')}` : '—'}</span>
                 </div>
                 <hr className="my-2" />
                 <div className="d-flex justify-content-between fw-bold fs-5">
                   <span>Total Due:</span>
                   <span className="text-primary" id="total-premium-amount">
-                    ₹{displayPremium.toLocaleString('en-IN')}
+                    {displayPremium ? `₹${displayPremium.toLocaleString('en-IN')}` : '—'}
                   </span>
                 </div>
               </div>
@@ -301,20 +351,9 @@ export default function PaymentView() {
                 id="submit-payment-btn"
                 className={`btn btn-lg w-100 ${paymentState === 'failed' ? 'btn-warning' : 'btn-primary'}`}
                 onClick={handlePay}
-                disabled={isSubmitting || isPaid || !cleanId}
+                disabled={isPayDisabled}
               >
-                {isSubmitting ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    Processing Payment...
-                  </>
-                ) : isPaid ? (
-                  'Premium Paid'
-                ) : paymentState === 'failed' ? (
-                  `Retry Payment (₹${displayPremium.toLocaleString('en-IN')})`
-                ) : (
-                  `Pay Premium (₹${displayPremium.toLocaleString('en-IN')})`
-                )}
+                {getButtonText()}
               </button>
 
               <div className="mt-3 text-center">

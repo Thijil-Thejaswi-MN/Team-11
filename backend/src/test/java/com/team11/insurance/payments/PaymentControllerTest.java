@@ -200,4 +200,30 @@ class PaymentControllerTest {
                 .andExpect(jsonPath("$.premium").value(8450.00))
                 .andExpect(jsonPath("$.status").value("APPROVED"));
     }
+
+    @Test
+    @DisplayName("POST /payments: Unauthenticated user returns HTTP 401 AUTH-401")
+    void testPostPayment_Unauthenticated_Returns401() throws Exception {
+        TestCurrentUserProvider.setUnauthenticated();
+
+        PaymentInitiationRequest request = new PaymentInitiationRequest(testApp.getId());
+
+        mockMvc.perform(post("/payments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.errorCode").value("AUTH-401"));
+    }
+
+    @Test
+    @DisplayName("GET /payments/applications/{id}: Unauthenticated user returns HTTP 401 AUTH-401")
+    void testGetApplicationSummary_Unauthenticated_Returns401() throws Exception {
+        TestCurrentUserProvider.setUnauthenticated();
+
+        mockMvc.perform(get("/payments/applications/" + testApp.getId()))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.errorCode").value("AUTH-401"));
+    }
 }

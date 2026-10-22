@@ -47,17 +47,7 @@ export default function ApplicationsPlaceholder() {
                     <button
                       id="pay-premium-9021-btn"
                       className="btn btn-primary btn-sm"
-                      onClick={() => navigate('/customer/payment/9021', {
-                        state: {
-                          application: {
-                            id: 9021,
-                            displayId: 'APP-2026-9021',
-                            planName: 'SafeShield Motor 4W',
-                            premium: 8450,
-                            status: 'APPROVED',
-                          }
-                        }
-                      })}
+                      onClick={() => navigate('/customer/payment/9021')}
                     >
                       Pay Premium (₹8,450)
                     </button>
