@@ -15,6 +15,7 @@ export const ROUTES = {
   CUSTOMER_QUOTE_MOTOR: '/customer/quote/motor',
   CUSTOMER_QUOTE_HEALTH: '/customer/quote/health',
   CUSTOMER_APPLICATIONS: '/customer/applications',
+  CUSTOMER_PAYMENT: '/customer/payment/:applicationId',
   CUSTOMER_POLICIES: '/customer/policies',
   CUSTOMER_CLAIMS: '/customer/claims',
 

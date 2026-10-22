@@ -16,6 +16,7 @@ import HealthQuoteView from '../views/customer/HealthQuoteView';
 import QuotingPlaceholder from '../views/customer/QuotingPlaceholder';
 import ApplicationsPlaceholder from '../views/customer/ApplicationsPlaceholder';
 import PoliciesPlaceholder from '../views/customer/PoliciesPlaceholder';
+import PaymentView from '../views/customer/PaymentView';
 import ClaimsPlaceholder from '../views/customer/ClaimsPlaceholder';
 
 // Insurer Admin Views
@@ -73,6 +74,15 @@ export default function AppRoutes() {
       <Route
         path={ROUTES.CUSTOMER_APPLICATIONS}
         element={<ApplicationsPlaceholder />}
+      />
+      {/* Person 4 Payment Flow Hook (P4-17) */}
+      <Route
+        path={ROUTES.CUSTOMER_PAYMENT}
+        element={<PaymentView />}
+      />
+      <Route
+        path="/customer/payment"
+        element={<PaymentView />}
       />
       <Route
         path={ROUTES.CUSTOMER_POLICIES}

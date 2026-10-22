@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import PortalLayout from '../../components/layout/PortalLayout';
 import apiClient from '../../api/apiClient';
 import { ROUTES } from '../../routes/routePaths';
 
 export default function ApplicationsPlaceholder() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const quoteIdParam = searchParams.get('quoteId');
   const planIdParam = searchParams.get('planId');
@@ -222,7 +223,12 @@ export default function ApplicationsPlaceholder() {
                     </td>
                     <td>
                       {submissionResult.status === 'Approved' ? (
-                        <button className="btn btn-primary btn-sm">Proceed to Payment</button>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => navigate(`/customer/payment/${submissionResult.applicationId}`)}
+                        >
+                          Proceed to Payment
+                        </button>
                       ) : (
                         <span className="text-muted small">Under Review</span>
                       )}
@@ -236,7 +242,13 @@ export default function ApplicationsPlaceholder() {
                   <td>12 Oct 2026</td>
                   <td><span className="status-badge status-approved">Approved</span></td>
                   <td>
-                    <button className="btn btn-primary btn-sm">Pay Premium (₹8,450)</button>
+                    <button
+                      id="pay-premium-9021-btn"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => navigate('/customer/payment/9021')}
+                    >
+                      Pay Premium (₹8,450)
+                    </button>
                   </td>
                 </tr>
                 <tr>
