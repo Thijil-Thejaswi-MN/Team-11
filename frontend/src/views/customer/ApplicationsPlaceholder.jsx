@@ -1,7 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import PortalLayout from '../../components/layout/PortalLayout';
 
 export default function ApplicationsPlaceholder() {
+  const navigate = useNavigate();
+
   return (
     <PortalLayout
       title="My Applications"
@@ -41,7 +44,23 @@ export default function ApplicationsPlaceholder() {
                   <td>12 Oct 2026</td>
                   <td><span className="status-badge status-approved">Approved</span></td>
                   <td>
-                    <button className="btn btn-primary btn-sm">Pay Premium (₹8,450)</button>
+                    <button
+                      id="pay-premium-9021-btn"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => navigate('/customer/payment/9021', {
+                        state: {
+                          application: {
+                            id: 9021,
+                            displayId: 'APP-2026-9021',
+                            planName: 'SafeShield Motor 4W',
+                            premium: 8450,
+                            status: 'APPROVED',
+                          }
+                        }
+                      })}
+                    >
+                      Pay Premium (₹8,450)
+                    </button>
                   </td>
                 </tr>
                 <tr>
