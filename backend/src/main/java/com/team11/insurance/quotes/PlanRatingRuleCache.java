@@ -19,9 +19,10 @@ public class PlanRatingRuleCache {
     private static final int MAX_ENTRIES = 500;
 
     private final ConcurrentHashMap<Long, MotorRatingRules> cache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, HealthRatingRules> healthCache = new ConcurrentHashMap<>();
 
     /**
-     * Retrieves cached rating rules for the plan, or computes them using the provided loader.
+     * Retrieves cached motor rating rules for the plan, or computes them using the provided loader.
      * Thread-safe via computeIfAbsent.
      */
     public MotorRatingRules getOrLoad(Long planId, Function<Long, MotorRatingRules> loader) {
@@ -42,11 +43,32 @@ public class PlanRatingRuleCache {
     }
 
     /**
+     * Retrieves cached health rating rules for the plan, or computes them using the provided loader.
+     * Thread-safe via computeIfAbsent.
+     */
+    public HealthRatingRules getOrLoadHealth(Long planId, Function<Long, HealthRatingRules> loader) {
+        if (planId == null) {
+            return null;
+        }
+
+        if (healthCache.size() >= MAX_ENTRIES && !healthCache.containsKey(planId)) {
+            log.warn("PlanRatingRuleCache reached max size ({}). Evicting all health entries to enforce bound.", MAX_ENTRIES);
+            healthCache.clear();
+        }
+
+        return healthCache.computeIfAbsent(planId, id -> {
+            log.debug("PlanRatingRuleCache miss for health planId={}. Loading rules...", id);
+            return loader.apply(id);
+        });
+    }
+
+    /**
      * Evicts cached rules for a specific plan.
      */
     public void invalidate(Long planId) {
         if (planId != null) {
             cache.remove(planId);
+            healthCache.remove(planId);
             log.debug("PlanRatingRuleCache invalidated for planId={}", planId);
         }
     }
@@ -56,13 +78,14 @@ public class PlanRatingRuleCache {
      */
     public void invalidateAll() {
         cache.clear();
+        healthCache.clear();
         log.debug("PlanRatingRuleCache cleared.");
     }
 
     /**
-     * Returns the number of currently cached plans.
+     * Returns the total number of currently cached motor and health plans.
      */
     public int size() {
-        return cache.size();
+        return cache.size() + healthCache.size();
     }
 }
