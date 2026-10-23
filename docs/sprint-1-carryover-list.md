@@ -26,7 +26,7 @@ The following items represent planned work items that were intentionally deferre
 | **P2-09** | Automated Newman API Suite in CI | Sharana (Person 2) | 3 SP | CI Pipeline, Newman Postman collection | Automated regression in GitHub Actions | Day 3 (28 Oct) |
 | **P4-08** | Real Email & SMS Notification Dispatcher | Raghunandan (Person 4) | 3 SP | C9 Notifications, SMTP / SMS Gateway | [TC-Ntf-01](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/92), [TC-Ren-01](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/81) | Day 2 (27 Oct) |
 | **P3-08** | Renewal & Cancellation End-to-End Workflow | Samarth (Person 3) | 5 SP | C7 Policy Lifecycle, C8 Payments | [TC-Ren-02](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/82), [TC-Can-01](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/84) | Day 3 (28 Oct) |
-| **P4-10** | Claims UI Integration & Settlement Wire | Raghunandan (Person 4) | 5 SP | C10 Claims, C8 Payments | [TC-Clm-01](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/86), [TC-Clm-03](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/88) | Day 3 (28 Oct) |
+| **P4-10** | Sprint 1 Test Execution & Harness | Raghunandan (Person 4) | 5 SP | C8 Payments, C10 Claims, Test Fixtures | [TC-Pay-02](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/76), [TC-Clm-02](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/87) | Day 1 (26 Oct) |
 | **P1-11** | Non-Functional JMeter & Security Scans | Samarth (Person 3) / Thijil (Person 1) | 5 SP | C5 Quote, C8 Payments, OWASP ZAP | [TC-Perf-01](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/97), [TC-Load-01](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/98), [TC-Sec-06](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/108) | Day 4 (29 Oct) |
 
 ---
@@ -48,6 +48,10 @@ The following items represent planned work items that were intentionally deferre
 ### 3.4 P4-08 — Production Notification Dispatcher (Raghunandan)
 - **Scope:** Replace development `NotificationServiceStub` with active Spring Mail (`JavaMailSender`) and mock SMS gateway (Twilio / SMS simulator) for real asynchronous notification dispatch.
 - **Carry-over Justification:** In-memory stub (`NotificationServiceStub`) verified 100% thread-safe and profile-isolated in Sprint 1; real SMTP infrastructure scheduled for Sprint 2.
+
+### 3.5 P4-10 — Sprint 1 Test Execution & Harness (Raghunandan)
+- **Scope:** Complete independent execution of assigned Sprint 1 integration and system test cases for payments and claims (TC-Pay-02, TC-Clm-02) against the live running application, including test fixture environment verification.
+- **Carry-over Justification:** Payments and claims components were merged into `main` at the conclusion of Sprint 1; live independent execution is scheduled as the first activity of Sprint 2.
 
 ---
 

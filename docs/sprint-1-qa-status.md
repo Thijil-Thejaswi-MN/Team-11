@@ -14,7 +14,7 @@
 | **19 Oct 2026 (Mon)** | Developer test suite for motor quote engine (29 focused unit/integration tests). Official **TC-Quote-01** (Issue #68) integration test not yet run. | **0 formal test cases passed** (29 developer tests passed; 188 backend total passed). Official TC-Quote-01 status: **Not Run**. | 0 | 0 | None | N/A | Thijil | 19 Oct 2026 | Sharana to execute Newman collection (`npm run test:api:quotes`) against running backend for independent peer validation; Samarth to run JMeter load test for INS-NF-001; Thijil to implement health quote engine (INS-F-006 / TC-Quote-02) on Day 2. |
 | **20 Oct 2026 (Tue)** | Health quote engine (TC-Quote-02 / INS-F-006) rating rules & member breakdown tests. | 14 unit tests, 4 integration tests passed. | 0 | 0 | None | N/A | Thijil | 20 Oct 2026 | Merged via PR #137 to main. |
 | **21 Oct 2026 (Wed)** | Underwriting engine integration tests (TC-UW-01 to TC-UW-04), rule configuration validation, and manual decision overrides. | 18 tests passed. | 0 | 0 | None | N/A | Thijil / Raghu | 21 Oct 2026 | Merged via PR #136 to main. |
-| **23 Oct 2026 (Fri)** | **Sprint 1 Close & Final Smoke Run.** Independently executed **TC-Acc-01** (Passed) and **TC-KYC-01** (Blocked). Full frontend (28/28 Vitest) and backend suites passing on `main`. | **17 test cases passed**, 1 blocked (`TC-KYC-01`), 34 not run (Sprint 2). All 28 frontend tests passed. | 0 | 1 | 0 High open (2 Low logged for Sprint 2 polish). | Low / Info | Thijil / Team 11 | 23 Oct 2026 | Merged PRs #144 (P1-08), #132 (P3-04a), #145 (P4-06), #146 (P2-06) into `main`. RTM v1 and TEAM-07 carry-over list submitted for Sprint 2 grooming. |
+| **23 Oct 2026 (Fri)** | **Sprint 1 Close — Feature Integration & Automated Build Verification.** Verified automated test suites across all integrated Sprint 1 modules on `main` (28/28 frontend Vitest tests, 200+ backend tests passing in CI). End-to-end smoke test could not be completed because policy issuance (P3-05) is not yet built. STP execution status: **0 passed, 1 blocked (`TC-KYC-01`), 51 Not Run**. | **0 formal STP test cases passed** (Automated build suites: 28/28 frontend, 200+ backend passing). | 0 | 1 | 0 High open (2 Low logged for Sprint 2 polish). | Low / Info | Thijil / Team 11 | 23 Oct 2026 | Merged PRs #144 (P1-08), #132 (P3-04a), #145 (P4-06), #146 (P2-06) into `main`. RTM v1 and TEAM-07 carry-over list submitted for Sprint 2 grooming. |
 
 ---
 
@@ -27,7 +27,7 @@
 - **Test Case Issue:** Issue [#68](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/68)
 - **Performance Test Case:** Issue [#97](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/97) (`[TC-Perf-01] Quote response time`)
 - **Author:** Thijil (QA Lead)
-- **Designated Independent Executor:** Sharana (Functional Test Engineer)
+- **Designated Independent Executor:** Samarth S. Maladkar
 - **Performance Test Owner:** Samarth (Non-functional & Security Test Engineer)
 - **Official Execution Status:** **Not Run** (Retained in RTM and TEM until independent Newman execution against running app and load test are completed)
 
@@ -40,7 +40,7 @@
 | **3** | POST `/quotes/motor`: Plan `PLAN-A-M1`, IDV ₹6,00,000, regYear 2024 (age 2), no add-ons | Total Premium: ₹12,000.00<br>• Base: ₹12,000.00 (2%)<br>• Age Loading: ₹0.00 | Total Premium: ₹12,000.00<br>Breakdown: base=12000.00, ageLoading=0.00 | **Dev Verified (Formal Run Pending)** | `QuoteControllerIntegrationTest.testTCQuote01_Step3_HigherIdvAge2` |
 | **4a** | POST `/quotes/motor`: Plan `PLAN-A-M1`, regYear 2030 (future year) | HTTP 422 Unprocessable Entity<br>Error Code: `VALID-422` | HTTP 422 Unprocessable Entity<br>`{"status":422,"errorCode":"VALID-422","message":"Vehicle registration year (2030) cannot be in the future."}` | **Dev Verified (Formal Run Pending)** | `QuoteControllerIntegrationTest.testTCQuote01_Step4a_FutureRegYearReturns422` |
 | **4b** | POST `/quotes/motor`: Plan `PLAN-A-M1`, IDV ₹-500 (non-positive IDV) | HTTP 422 Unprocessable Entity<br>Error Code: `VALID-422` | HTTP 422 Unprocessable Entity<br>`{"status":422,"errorCode":"VALID-422","message":"Field 'idv' must be greater than zero."}` | **Dev Verified (Formal Run Pending)** | `QuoteControllerIntegrationTest.testTCQuote01_Step4b_NegativeIdvReturns422` |
-| **5** | Measure response time of Step 1 (single-request latency check in TC-Quote-01) | Response time ≤ 5.0 seconds for single quote request | In-memory calculation executes in ~12 ms (internal development timing only). Newman single-request check against running server has NOT yet been run. | **Not Run (Pending Live Execution)** | Pending independent execution by Sharana via Newman test script (`pm.expect(pm.response.responseTime).to.be.below(5000)`) |
+| **5** | Measure response time of Step 1 (single-request latency check in TC-Quote-01) | Response time ≤ 5.0 seconds for single quote request | In-memory calculation executes in ~12 ms (internal development timing only). Newman single-request check against running server has NOT yet been run. | **Not Run (Pending Live Execution)** | Pending independent execution against running server |
 
 #### Performance Requirement & Load-Test Acceptance (INS-NF-001 / TC-Perf-01)
 - **Requirement INS-NF-001 (Issue [#13](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/13)):** At least 95% of quote requests under normal load must respond in five seconds or less ($\le 5.0$ s), measured by a formal load test.
@@ -66,7 +66,7 @@ The following standard triage protocol is enforced for Sprint 1:
 3. **Traceability:**
    - Every defect must link the failing test case ID, requirement ID, reproducible request/response payload, and expected vs actual behavior.
    - Security issues must be flagged with `epic:E10-security` and kept separate from functional defects.
-4. **Current Defect Count:** **0 Open Defects** as of 19 October 2026 17:00.
+4. **Current Defect Count:** **0 Open Defects** as of Sprint 1 close.
 
 ---
 
@@ -96,7 +96,7 @@ The following standard triage protocol is enforced for Sprint 1:
 
 | Team Member | Role | Assigned Modules | Dependency on P1 | Dependency on Other Modules | Status |
 |---|---|---|---|---|---|
-| **Person 1 (Thijil)** | QA Lead | C5 Quote Engine, C6 Underwriting, C11 Audit Log | None (P1-06 implementation ready) | Consumes `IPlanQuery` (P1-17 merged), `CurrentUser` (P2-02 merged), `Clock` bean | Green (Motor Quote implemented, Health Quote next) |
+| **Person 1 (Thijil)** | QA Lead | C5 Quote Engine, C6 Underwriting, C11 Audit Log | None (P1-06 implementation ready) | Consumes `IPlanQuery` (P1-17 merged), `CurrentUser` (P2-02 merged), `Clock` bean | Green (Motor Quote implemented, Health Quote merged) |
 | **Person 2 (Sharana)** | Functional Tester | C1 Auth & KYC, C4 Plans, Newman/Selenium framework | Consumes `/api/v1/quotes/motor` for Newman functional tests | Auth & KYC (P2-05 PR #124 merged to `main`) | Awaiting independent Newman execution |
 | **Person 3 (Samarth)** | NF & Security Tester | C7 Applications & Policies, Security testing | Consumes `Quote` entity and quoteId for application submission; responsible for INS-NF-001 load test | P3-02 Application entities merged | Ready for load testing and application workflow |
 | **Person 4 (Raghunandan)** | Dev & Environment | C8 Payments, C9 Notifications, C10 Claims, CI/Docker | None | PR #128 shared contract specifications merged to `main` | Green |
@@ -114,7 +114,7 @@ The following standard triage protocol is enforced for Sprint 1:
 - [x] Integration test suite (`QuoteControllerIntegrationTest.java`, 9 tests passing)
 - [x] Newman Postman collection updated with 9 TC-Quote-01 requests in designated `quotes` subfolder
 - [x] `tests/package.json` updated with `test:api:quotes` helper script targeting `--folder quotes`
-- [x] Full backend test suite verified (188/188 tests passing)
+- [x] Full backend test suite verified (200+ tests passing)
 - [x] RTM and Test Execution Matrix retain `Not Run` pending independent Newman and load test runs
 
 ---
@@ -142,19 +142,21 @@ The following standard triage protocol is enforced for Sprint 1:
 
 ---
 
-## 8. Day 5 (23 Oct 2026) Sprint 1 Close, Smoke Run & Bug Triage Log
+## 8. Day 5 (23 Oct 2026) Sprint 1 Close, Feature Integration Verification & Bug Triage Log
 
-### 8.1 P1-15 Independent Execution of TC-Acc-01 & TC-KYC-01
-- **Executor:** Thijil Thejaswi M.N. (QA Lead & Independent Executor for Account/KYC test cases).
-- **Execution Target:** Commit `72dda0a5b011f5de1fd0793d4ffb293543858ac9`.
-- **TC-Acc-01 (Register and Log In, Issue #57):**
-  - **Status:** **Passed**.
-  - **Evidence:** Executed `AuthControllerIntegrationTest.java` (7/7 tests passed) and `AuthenticationServiceTest.java` (15/15 tests passed). Verified user registration returning HTTP 201 with `userId`, duplicate email rejection with HTTP 409 `STATE-409`, missing field validation with HTTP 422 `VALID-422`, valid customer login returning HTTP 200 with JWT `accessToken` (900s expiry) and role `CUSTOMER`, invalid credentials returning HTTP 401 `AUTH-401`, and 5 consecutive failed attempts triggering account lockout with HTTP 423 `AUTH-423`.
-- **TC-KYC-01 (KYC Verification and Blocking, Issue #64):**
-  - **Status:** **Blocked**.
-  - **Reason:** Blocked because the KYC document upload endpoint (`POST /api/v1/kyc/upload`) and customer KYC verification service are not implemented in Sprint 1. Recorded as **Blocked** (not Fail or Pass), and carried over to Sprint 2 under work items P2-07 and P2-08.
+### 8.1 Automated Build Verification & STP Status Audit
+- **QA Lead:** Thijil Thejaswi M.N. (Repository Owner)
+- **Verified Build:** Commit `72dda0a5b011f5de1fd0793d4ffb293543858ac9` / `main`.
+- **Automated Developer Test Suite Status:**
+  - All 28 frontend Vitest tests passing across 9 test suites.
+  - All 200+ backend unit and integration tests passing in CI.
+- **Formal STP Execution Audit:**
+  - In compliance with STP §8 and academic honesty guidelines, developer unit tests are tracked separately under "Developer Tests (Author)" and are not recorded as independent STP system/integration test results.
+  - **TC-Acc-01:** Developer unit/integration tests pass (`AuthControllerIntegrationTest.java` 7 tests, `AuthenticationServiceTest.java` 15 tests). Full STP system test requiring browser UI dashboard appearance and identical 401 error responses against running app has not yet been executed by an independent tester; remains **Not Run**.
+  - **TC-KYC-01:** Officially recorded as **Blocked**. The KYC document upload endpoint (`POST /api/v1/kyc/upload`) is not implemented in Sprint 1; carried over to Sprint 2 under P2-07 and P2-08.
+  - **End-to-End Smoke Run:** The end-to-end user workflow smoke run could not be completed because policy issuance (P3-05) is not yet built.
 
-### 8.2 Sprint 1 Final Smoke Run Bug Triage
+### 8.2 Sprint 1 Feature Integration Bug Triage
 
 | Defect ID | Summary | Module / Component | Severity | Owner | Date Opened | Resolution / Status |
 |---|---|---|---|---|---|---|
@@ -178,7 +180,5 @@ The following work items are formally carried over to Sprint 2 (refer to `docs/s
 5. **P2-09:** Automated Newman API Suite in CI Pipeline (Sharana, 3 SP)
 6. **P4-08:** Real Email & SMS Notification Dispatcher (Raghunandan, 3 SP)
 7. **P3-08:** Renewal & Cancellation End-to-End Workflow (Samarth, 5 SP)
-8. **P4-10:** Claims UI Integration & Settlement Wire (Raghunandan, 5 SP)
+8. **P4-10:** Sprint 1 Test Execution & Harness (Raghunandan, 5 SP)
 9. **P1-11:** Non-Functional JMeter & Security Pen-Test Scans (Samarth / Thijil, 5 SP)
-
-
