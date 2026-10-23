@@ -32,6 +32,8 @@ backend/*.nar
 backend/*.ear
 backend/*.log
 backend/coverage/
+backend/storage/
+storage/
 
 # IDE and Editor Files
 .idea/

@@ -33,6 +33,7 @@ import com.team11.insurance.payments.dto.ApplicationPaymentSummary;
 import com.team11.insurance.payments.dto.PaymentResponse;
 import com.team11.insurance.policies.Policy;
 import com.team11.insurance.policies.PolicyRepository;
+import com.team11.insurance.policies.PolicyService;
 import com.team11.insurance.policies.PolicyStatus;
 import com.team11.insurance.quotes.Quote;
 import com.team11.insurance.quotes.QuoteRepository;
@@ -60,6 +61,7 @@ public class PaymentService {
     private final QuoteRepository quoteRepository;
     private final PolicyRepository policyRepository;
     private final IPaymentService paymentAdapter;
+    private final PolicyService policyService;
     private final Clock clock;
 
     private final ConcurrentHashMap<Long, AtomicInteger> attemptCounters = new ConcurrentHashMap<>();
@@ -72,12 +74,14 @@ public class PaymentService {
             QuoteRepository quoteRepository,
             PolicyRepository policyRepository,
             IPaymentService paymentAdapter,
+            ObjectProvider<PolicyService> policyServiceProvider,
             ObjectProvider<Clock> clockProvider) {
         this.applicationRepository = Objects.requireNonNull(applicationRepository, "applicationRepository must not be null");
         this.applicationHistoryRepository = Objects.requireNonNull(applicationHistoryRepository, "applicationHistoryRepository must not be null");
         this.quoteRepository = Objects.requireNonNull(quoteRepository, "quoteRepository must not be null");
         this.policyRepository = Objects.requireNonNull(policyRepository, "policyRepository must not be null");
         this.paymentAdapter = Objects.requireNonNull(paymentAdapter, "paymentAdapter must not be null");
+        this.policyService = policyServiceProvider.getIfAvailable();
         this.clock = clockProvider.getIfAvailable(Clock::systemDefaultZone);
     }
 
@@ -88,11 +92,23 @@ public class PaymentService {
             PolicyRepository policyRepository,
             IPaymentService paymentAdapter,
             Clock clock) {
+        this(applicationRepository, applicationHistoryRepository, quoteRepository, policyRepository, paymentAdapter, null, clock);
+    }
+
+    public PaymentService(
+            ApplicationRepository applicationRepository,
+            ApplicationHistoryRepository applicationHistoryRepository,
+            QuoteRepository quoteRepository,
+            PolicyRepository policyRepository,
+            IPaymentService paymentAdapter,
+            PolicyService policyService,
+            Clock clock) {
         this.applicationRepository = applicationRepository;
         this.applicationHistoryRepository = applicationHistoryRepository;
         this.quoteRepository = quoteRepository;
         this.policyRepository = policyRepository;
         this.paymentAdapter = paymentAdapter;
+        this.policyService = policyService;
         this.clock = clock != null ? clock : Clock.systemDefaultZone();
     }
 
@@ -203,14 +219,25 @@ public class PaymentService {
                     auditReason
             ));
 
-            // Issue policy idempotently
-            Policy policy = policyRepository.findByApplicationId(application.getId())
-                    .orElseGet(() -> createPolicyForApplication(application, payableAmount));
+            // Issue policy idempotently (delegating to PolicyService with OpenPDF schedule generation)
+            Policy policy = null;
+            try {
+                if (policyService != null) {
+                    policy = policyService.issuePolicy(application, payableAmount);
+                } else {
+                    policy = policyRepository.findByApplicationId(application.getId())
+                            .orElseGet(() -> createPolicyForApplication(application, payableAmount));
+                }
+            } catch (Exception e) {
+                log.error("Policy issuance failed for paid application {}: {}", applicationId, e.getMessage(), e);
+                // Invariant (P3-05): Application status remains PAID; payment is never rolled back
+            }
 
-            log.info("Payment successful for application {}. Issued policy {}", applicationId, policy.getPolicyNo());
+            String policyNo = policy != null ? policy.getPolicyNo() : "ISSUING_PENDING";
+            log.info("Payment successful for application {}. Policy: {}", applicationId, policyNo);
 
             return PaymentResponse.success(
-                    policy.getPolicyNo(),
+                    policyNo,
                     result.transactionReference(),
                     payableAmount,
                     result.processedAt() != null ? result.processedAt() : clock.instant()
