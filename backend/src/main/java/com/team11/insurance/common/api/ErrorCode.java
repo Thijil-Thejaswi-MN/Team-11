@@ -15,6 +15,8 @@ public enum ErrorCode {
     NOTFOUND_404("NOTFOUND-404", HttpStatus.NOT_FOUND, "Record does not exist (or is not visible to this user)."),
     STATE_409("STATE-409", HttpStatus.CONFLICT, "Operation not allowed in the current state."),
     PAY_402("PAY-402", HttpStatus.PAYMENT_REQUIRED, "Payment or payout failed; the message says it can be retried; no policy is issued."),
+    FILE_413("FILE-413", HttpStatus.PAYLOAD_TOO_LARGE, "Uploaded file exceeds maximum allowed limit of 5 MB (STP TC-Sec-07)."),
+    FILE_415("FILE-415", HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Disallowed media type (only PDF, JPG, PNG allowed, STP TC-Sec-07)."),
     RATE_429("RATE-429", HttpStatus.TOO_MANY_REQUESTS, "Too many requests on login or quote endpoints."),
     SYS_500("SYS-500", HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error. Please contact support.");
 
