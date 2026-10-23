@@ -63,3 +63,13 @@
 | **TC-Sec-09** | Insurer isolation | System | High | Sprint 2 | Samarth | Thijil Thejaswi M.N. | [#111](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/111) | Not Run |
 | **TC-Sec-10** | Session inactivity timeout | System | High | Sprint 2 | Samarth | Sharana | [#112](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/112) | Not Run |
 | **TC-Sec-11** | No sensitive data in logs | Integration | Medium | Sprint 2 | Samarth | Raghunandan Kotary | [#113](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/113) | Not Run |
+
+---
+
+## Traceability and Fixture Audit Notes (Prep-Week Verification)
+
+1. **Test Case Register Verification:** All 52 test cases (`TC-Acc-01` through `TC-Sec-11`) have been independently audited on GitHub and verified to exist as active GitHub Issues ([#57](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/57) and [#63](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/63) through [#113](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/113)).
+2. **Fixture Data Alignment:**
+   - Fixtures located in `backend/src/test/resources/fixtures/` (`insurers.json`, `users.json`, `plans.json`, `policies.json`, `claims.json`) provide synthetic data conforming to STP Section 6.
+   - **Schema Reconciliation Finding:** `policies.json` contains legacy fixture fields (`premium`, `hasPaidClaim`, `type`, `sumInsured`) that differ from the normalized database entity [`Policy.java`](../backend/src/main/java/com/team11/insurance/policies/Policy.java) (which uses `premiumPaid` and derives claims from the claims table). The Person 4 test data loader must map `premium -> premiumPaid` to avoid ingestion failure.
+3. **Execution Policy Enforcement:** Every test case retains the `Not Run` status. In compliance with CONTRIBUTING Section 8, no test case is marked as passed until verified test evidence is attached during Sprint 1 / Sprint 2 execution.

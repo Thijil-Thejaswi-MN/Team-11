@@ -1,7 +1,7 @@
 # Team Decisions Log — Insurance Workflow Automation System
 
 **Team:** 11  
-**Updated:** 15 October 2026  
+**Updated:** 17 October 2026
 **Repository:** `Thijil-Thejaswi-MN/Team-11`  
 **Purpose:** Record confirmed working practices and distinguish them from proposals that still need team sign-off.
 
@@ -19,91 +19,146 @@ If a decision changes the approved SRS, SAD, or STP, record the change and ratio
 
 | ID | Decision area | Current position | Status | Owner | Due / review point |
 |---|---|---|---|---|---|
-| D-01 | Repository ownership and protected `main` | Thijil (`Thijil-Thejaswi-MN`) owns the repository and is the merge owner. Every PR requires another member's approval and the required CI check. | Provisional until the settings evidence is attached to this PR | Thijil (Person 1) | 15 Oct 2026 — attach settings evidence before re-review |
-| D-02 | Frontend build tool | Vite is proposed. Verify `frontend/package.json` and the actual build command before sign-off. | Proposed | Thijil (Person 1), with Raghunandan (Person 4) verifying the frontend | 15 Oct 2026 team sign-off |
-| D-03 | Database migration tool | Flyway is proposed. Verify `org.flywaydb:flyway-core` in `backend/pom.xml` and whether migration scripts exist before sign-off. | Proposed | Raghunandan (Person 4), with Thijil (Person 1) recording the decision | 15 Oct 2026 team sign-off |
-| D-04 | STP test-role baseline and implementation split | Preserve the submitted STP §8 role mapping unless the team explicitly agrees and records an exception. | Provisional | All four members; Thijil records the outcome | 15 Oct 2026 team sign-off |
-| D-05 | Planning-capacity assumption | Use 5 story-point-equivalent units per person-day only as a provisional planning heuristic; it is not observed velocity. | Provisional | Thijil (Person 1) facilitates; all four estimate | Review at Sprint 1 planning and after Sprint 1 completes |
+| D-01 | Repository ownership and protected `main` | Thijil (`Thijil-Thejaswi-MN`) owns the repository and is the merge owner. Every PR requires another member's approval and all required CI checks (`Validate repository structure`, `Frontend CI`, `Backend CI`). Branch protection verified via GitHub API. | Confirmed | Thijil (Person 1) | Confirmed 16 Oct 2026 via live GitHub branch-protection audit |
+| D-02 | Frontend build tool | Vite 5.4.8 + React 18 is the standard frontend build tool. Verified via `frontend/package.json` (`build: "vite build"`, `test: "vitest run"`), with 100% passing automated builds in GitHub Actions Frontend CI. | Confirmed | Thijil (Person 1) / Raghunandan (Person 4) | Confirmed 16 Oct 2026 via package.json & CI execution evidence |
+| D-03 | Database migration strategy | MySQL 8 with Hibernate `ddl-auto: update` for development and `create-drop` for automated tests during Sprint 1. Planned Sprint 2 work: introduce Flyway and versioned database migrations. Flyway is planned, not already implemented. Update and create-drop are strictly non-production strategies. | Confirmed | Raghunandan (Person 4) & Thijil (Person 1) | Confirmed 17 Oct 2026 by team agreement |
+| D-04 | STP test-role baseline and implementation split | Preserve the submitted STP §8 role mapping: Person 1 (QA Lead), Person 2 (Functional Test), Person 3 (NF & Security), Person 4 (Developer/Environment). Verified preserved across all Day 1–4 deliverables. | Confirmed | All four members; Thijil records the outcome | Confirmed 16 Oct 2026 across prep-week deliverables |
+| D-05 | Planning-capacity assumption | 5 story points per person-day planning heuristic. Backlog estimation accounting verified across all 102 items (31 positive estimates totalling 118 pts, 2 explicit zeros, 69 unestimated; 118 pts represents total positively estimated project scope, not a Sprint 1 commitment). | Provisional | Thijil (Person 1) facilitates; all four estimate | Review during Sprint 1 execution and Sprint 1 retrospective |
 | D-06 | Repository folder layout and existing course documents | `backend/`, `frontend/`, and `docs/` are the intended top-level layout. `backend/` and `frontend/` are on `main` following PRs #49 and #47. Existing Deliverable 1 files remain at the root as original submission artifacts; all new supporting documentation goes under `docs/`. | Confirmed | Thijil (Person 1) | 15 Oct 2026 — maintain for new documents |
 | D-07 | Source of truth for backlog and story points | Use GitHub Issues and the existing GitHub Project as the source of truth; the Day 2 plan replaces Jira tracking with GitHub. Do not maintain duplicate points in Jira. | Confirmed | Thijil (Person 1); all owners maintain their own issues | Effective immediately |
 | D-08 | `tier-b` label convention | Apply `tier-b` only to medium-priority work explicitly identified as deferrable to Sprint 2. The label does not replace or change the SRS priority. | Confirmed | Thijil (Person 1); each issue owner applies it to their own eligible issues | During backlog review; before Sprint 1 starts |
-| D-09 | API-contract sign-off | Outcomes from contracts P1-03, P2-01, P3-01, and P4-03 must be recorded after the team sign-off; listed open points remain proposals until agreed. | Proposed | Person 1: Thijil; Person 2: Sharana; Person 3: Samarth; Person 4: Raghunandan | 15 Oct 2026 contract sign-off meeting |
+| D-09 | API-contract sign-off | Contract documents drafted and merged for P1-03 (PR #53), P2-01 (PR #54), and P3-01 (PR #46); P4-03 interface contracts drafted in PR #128. Formal joint sign-off across all four members remains pending until technical contract discrepancies (DTO naming, IFileStore signatures, Clock usage) are resolved. D-09.5 business rule confirmed (claims paid only when SETTLED). | Proposed | Person 1: Thijil; Person 2: Sharana; Person 3: Samarth; Person 4: Raghunandan | Pre-Sprint 1 sign-off meeting |
 
 ## Decision details
 
 ### D-01 — Repository ownership and pull-request approval
 
-**Status: Provisional until settings evidence is attached.**
+**Status: Confirmed.**
 
 - **Repository owner / merge owner:** Thijil, using the `Thijil-Thejaswi-MN` GitHub account (Person 1 / QA Lead).
-- **Workflow:** changes enter `main` through pull requests; each PR needs at least one approval from a team member other than the PR author; the required GitHub Actions check must pass.
-- **Configured `main` rules shown in Settings:** require a pull request before merging; require one approval; require approval from someone other than the most recent pusher; require status check `Validate repository structure`; require the branch to be up to date before merging; require conversation resolution.
-- **Evidence needed for the review:** attach a screenshot from **Settings → Branches** (or **Settings → Rules**) to PR #50 showing the `main` rule and its required approval/status-check settings. Also note in the PR that the required `Repository CI / Validate repository structure` check passed. A passing repository-structure check does not mean application tests have run.
-- **Rule for owner-authored PRs:** another teammate must review and approve; Thijil does not approve their own PR.
+- **Workflow:** Changes enter `main` exclusively through pull requests; each PR requires at least one approving review from a team member other than the PR author; all required GitHub Actions checks must pass.
+- **Configured `main` Branch Protection (Verified via GitHub API):**
+  - `strict: true` (Branch must be strictly up to date with `main` before merging)
+  - `required_status_checks`: `Validate repository structure`, `Frontend CI`, `Backend CI`
+  - `required_approving_review_count: 1`
+  - `require_last_push_approval: true` (New pushes dismiss approvals, requiring re-review)
+  - `dismiss_stale_reviews: true`
+  - `required_conversation_resolution: true`
+  - `enforce_admins: true` (Admin enforcement active; owner cannot bypass rules)
+- **Rule for owner-authored PRs:** Another teammate must independently review and approve (e.g., Samarth approved PR #117 and approved PR #115, merged at `9acef3d`); Thijil never self-approves.
 
 ### D-02 — Frontend build tool
 
-**Status: Proposed.** Vite was proposed, but this log does not treat the choice as final until the team confirms it.
+**Status: Confirmed.**
 
-- **Files to inspect:** `frontend/package.json` (dependencies and scripts) and the frontend lockfile.
-- **Verification:** confirm the actual build command in `scripts` and run that command from `frontend/` when the environment is available. Record the real outcome; do not infer an application build passed from the repository-structure CI check.
-- **Owner:** Thijil records the team decision; Raghunandan verifies the current frontend setup.
+- **Selected Toolchain:** Vite 5.4.8 with `@vitejs/plugin-react` (4.3.1), React 18.3.1, React Router DOM 6.26.2, and Bootstrap 5.3.3.
+- **Verification Evidence:**
+  - `frontend/package.json` contains:
+    - `"build": "vite build"`
+    - `"dev": "vite"`
+    - `"test": "vitest run"`
+  - Automated build and test pipeline in `.github/workflows/ci.yml` (`Frontend CI`) runs `npm run build` and `npm test` on Node 20, passing consistently on all PRs.
+- **Owner:** Confirmed by Person 4 (Raghunandan, frontend setup) and Person 1 (Thijil, QA lead).
 
-### D-03 — Database migration tool
+### D-03 — Database migration strategy (Hibernate ddl-auto for Sprint 1, Flyway for Sprint 2)
 
-**Status: Proposed.** Flyway was proposed for schema migrations; confirm it against the backend project and with the team.
+**Status: Confirmed.** (Agreed by team 17 October 2026)
 
-- **Files to inspect:** `backend/pom.xml` for `org.flywaydb:flyway-core`, plus the backend migration directory (for example, `backend/src/main/resources/db/migration/`) if present.
-- **Verification:** note whether the dependency and actual versioned migration scripts are present. A dependency alone does not prove migrations have been created or run.
-- **Owner:** Raghunandan verifies the backend state; Thijil records the team outcome.
+#### Agreed Strategy
+1. **Database Platform:** The backend application continues to use MySQL 8 as the primary relational database.
+2. **Development Environment (Sprint 1):** Hibernate `ddl-auto: update` is used in `application-dev.yml` to allow rapid feature iteration while entity models are actively being established across modules.
+3. **Automated Tests (Sprint 1):** Hibernate `ddl-auto: create-drop` is used in `application-test.yml` against the in-memory H2 test database to guarantee clean test fixture isolation.
+4. **Planned Sprint 2 Work:** Introduce Flyway (`org.flywaydb:flyway-core`) and versioned database migrations (`V1__baseline.sql`, etc.) once the core schema stabilizes at the conclusion of Sprint 1. Flyway is planned, not already implemented.
+5. **Production Safeguard:** Neither `update` nor `create-drop` will be permitted as the production schema-management strategy. Production deployments will strictly use versioned, audited SQL migrations.
+
+#### Current Repository State
+- `backend/pom.xml` does **not** include `org.flywaydb:flyway-core`.
+- `backend/src/main/resources/db/migration` directory does **not** exist.
+- `application-dev.yml` uses: `spring.jpa.hibernate.ddl-auto: update` (against MySQL 8).
+- `application-test.yml` uses: `spring.jpa.hibernate.ddl-auto: create-drop` (against in-memory H2).
+- PR #124 description explicitly notes: *"Database migration: D-03 (Flyway) remains undecided by the team. This PR uses Hibernate ddl-auto consistent with existing branches without unilaterally introducing migration scripts."*
+
+#### Comparative Analysis
+| Evaluation Criteria | Option A: Immediate Flyway (`org.flywaydb:flyway-core`) | Option B (Selected): Hibernate `ddl-auto` for Sprint 1 + Flyway for Sprint 2 |
+| :--- | :--- | :--- |
+| **Schema Reproducibility** | High: Every environment migrates through exact, versioned `V1__...sql` scripts. | Phased: Rapid prototyping in Sprint 1; strict migration versioning in Sprint 2. |
+| **Sprint 1 Development Friction** | High: Every JPA entity modification requires manual DDL migration scripts; frequent checksum conflicts during parallel branch merges. | Low: Entity annotations (`@Entity`, `@Table`, `@Column`) automatically update schema in dev/test; zero overhead for rapid feature iteration. |
+| **Risk of Schema Drift** | Very Low: Migrations fail if checksums do not match. | Mitigated: Entity definitions are version-controlled in Git; schema baseline will freeze before Sprint 2 Flyway introduction. |
+| **Impact on Existing Codebase** | Requires baseline DDL for 10+ JPA entities, adjusting H2 test configuration, and adding dependency to `pom.xml`. | Zero code changes or dependency changes required for Sprint 1 kickoff; all automated test suites continue running cleanly. |
 
 ### D-04 — STP §8 testing-role baseline and implementation split
 
-**Status: Provisional until the team confirms it.** The names and roles below preserve the submitted STP §8 baseline:
+**Status: Confirmed.**
 
-| Person | Member | STP role | Important responsibility |
+The formal STP §8 testing-role baseline is confirmed and actively maintained across all project tasks:
+
+| Person | Member | STP role | Verified Prep-Week Scope |
 |---|---|---|---|
-| Person 1 | Thijil | QA Lead | RTM, test coordination, defect triage and Test Summary Report; independently tested by another member on his own implementation |
-| Person 2 | Sharana | Functional Test Engineer | Functional, UI and acceptance testing; Selenium/Newman where appropriate |
-| Person 3 | Samarth | Non-functional and Security Test Engineer | Performance, availability, backup, compatibility and security testing |
-| Person 4 | Raghunandan | Developer / Environment Owner | Build and test environment, fixtures/mocks/test clock, unit-test infrastructure and fixes |
+| Person 1 | Thijil | QA Lead | RTM, test coordination, defect triage, TSR, and P1-05 / P1-17 implementation; reviewed by Samarth |
+| Person 2 | Sharana | Functional Test Engineer | Functional & UI testing, Selenium/Newman frameworks (P2-04), security baseline (P2-05), and auth (P2-05); reviewed by Thijil |
+| Person 3 | Samarth | Non-functional and Security Test Engineer | JMeter load/perf skeletons (P3-03), pen-test checklist, and P3-02 data model; reviewed by Thijil |
+| Person 4 | Raghunandan | Developer / Environment Owner | CI pipeline (P4-04), frontend setup (P4-01), backend setup (P4-02), and environment requirements |
 
-All developers write unit tests for their own code, but their own work must also receive independent testing/review. If the team agrees to change a formal STP role, record the specific exception and rationale rather than silently rewriting the baseline.
+Every developer writes unit tests for their own implementation, and every PR undergoes mandatory independent review by another team member before merge.
 
 ### D-05 — Planning-capacity assumption and Sprint 1 comparison
 
-**Status: Provisional.** The working assumption is 5 story-point-equivalent units per person-day. This is a planning heuristic, not a statement of measured velocity.
+**Status: Provisional.**
 
-- **Nominal capacity arithmetic:** 4 people × 5 working days × 5 points per person-day = **100 points** for the Sprint 1 week (19–23 October 2026).
-- **Current visible Sprint 1 estimates:** the tracker screenshot reviewed so far shows 8 points estimated on Person 3's Sprint 1 work (`INS-F-007` = 3 and `INS-F-009` = 5). Several other Sprint 1 issues still have blank estimates, so **8 is only the currently known subtotal, not the Sprint 1 total**.
-- **Comparison:** a reliable planned-total-versus-100 comparison cannot be made until every Sprint 1 issue has an agreed story-point estimate. The team should complete planning poker, sum the actual Sprint 1 issue estimates from the GitHub Project, and record `planned Sprint 1 total = ___ points` here. Do not use 100 as a promise or force the team to fill capacity artificially.
-- **Owner:** Thijil facilitates; all four team members estimate together. Compare the assumption with actual throughput after Sprint 1.
+- **Planning Heuristic:** 5 story-point units per person-day (100 nominal points for a 5-day sprint with 4 members).
+- **Backlog Estimation Accounting:** On 16 Oct 2026, the team completed the story-point estimation audit across all 102 items in GitHub Project #1:
+  - **31 issues with positive estimates**, totalling **118 story points** using Fibonacci sizing (1, 2, 3, 5, 8).
+  - **2 documentation issues** (#52 and #121) explicitly assigned numeric `0`.
+  - **69 items unestimated** under the team's estimation policy: 16 requirement-tracking issues, 52 individual test cases, and 1 duplicate issue (#58).
+  - **Scope Distinction:** 118 points represents the total positively estimated work across the project under the team's current estimation policy, not a commitment to complete 118 points in Sprint 1. Sprint 1 scope is prioritized and sized against the nominal 100-point capacity heuristic.
+- **Review Point:** Actual team velocity will be measured at the conclusion of Sprint 1 (23 Oct 2026) to calibrate Sprint 2 capacity.
 
 ### D-06 — Repository folder layout and existing course documents
 
-**Status: Confirmed.** As of 15 October 2026, `frontend/` is present on `main` after PR #47 and `backend/` is present on `main` after PR #49. The intended top-level layout is:
-
+**Status: Confirmed.** Top-level layout remains:
 ```text
 backend/
 frontend/
 docs/
 .github/
 ```
-
-The existing `SRS.docx`, `SAD.docx`, and `STP.docx` at the repository root are the previously submitted Deliverable 1 artifacts and will remain there for continuity and easy course-submission access unless the instructor asks for them to be moved. **All new working documentation**—API contracts, decisions, test plans, and supporting notes—must be placed under `docs/`.
+Deliverable 1 documents remain at the repository root; all new working documentation resides under `docs/`.
 
 ### D-07 — Source of truth for backlog and story points
 
-**Status: Confirmed from the Day 2 GitHub-only work plan.** GitHub Issues plus the existing `SE Mini Project - Team 11 - Insurance Workflow Automation System` GitHub Project are the source of truth for backlog status, assignments, priority, sprint and story points. Jira was superseded by the GitHub-only workflow; avoid keeping parallel or conflicting story-point values in Jira.
+**Status: Confirmed.** GitHub Issues and GitHub Project #1 (`SE Mini Project - Team 11 - Insurance Workflow Automation System`) are the sole sources of truth. Jira tracking is discontinued.
 
 ### D-08 — `tier-b` convention
 
-**Status: Confirmed from the Day 2 work plan.** Use the `tier-b` label only on medium-priority Sprint 2 items explicitly agreed to be deferrable. It is a deferral/capacity label, not an alternative priority. Keep the issue's SRS priority unchanged and make deferral decisions based on agreed scope, dependencies and observed Sprint 1 progress.
+**Status: Confirmed.** The `tier-b` label is strictly reserved for medium-priority Sprint 2 items agreed to be deferrable if capacity requires. SRS priorities remain unaltered.
 
-### D-09 — Contract sign-off topics still to record
+### D-09 — Contract sign-off topics
 
-**Status: Proposed until the meeting records the outcomes.** Do not invent or pre-fill decisions. Update this section after review of each contract:
+**Status: Proposed.** (Pending formal joint team sign-off)
 
+The contract documents define cross-module API payloads, status models, and shared Java interfaces. While initial contract drafts have been reviewed and merged (or submitted as draft PRs), **formal joint team sign-off has not yet been recorded**. Implementation PRs passing CI do not constitute architectural sign-off.
+
+| Contract | Owner | Contract Document & PR | Downstream Implementation | Contract Lifecycle State | Next Action for Sign-off |
+|---|---|---|---|---|---|
+| **P1-03** — Quotes, underwriting, claim decisions, audit | Thijil (Person 1) | [`api-contract/01-quotes-underwriting-claims-audit.md`](api-contract/01-quotes-underwriting-claims-audit.md)<br>Issue #52, Merged in PR #53 | P1-05 quote/audit stubs (PR #115 merged at `9acef3d`); P1-17 plan rules (PR #117 merged) | Contract Drafted & Merged to `main`; Implementation in progress; **Formal Sign-Off Pending** | Review endpoint signatures and transaction semantics in joint team meeting |
+| **P2-01** — Authentication, KYC, CurrentUser, plans | Sharana (Person 2) | [`api-contract/02-auth-kyc-plans.md`](api-contract/02-auth-kyc-plans.md)<br>Merged in PR #54 | P2-02 CurrentUser stub (PR #118 merged); P2-05 backend auth (PR #124 in review) | Contract Drafted & Merged to `main`; Implementation in progress; **Formal Sign-Off Pending** | Confirm KYC payload, role scoping, and auth contract alignment in joint team meeting |
+| **P3-01** — Applications, issuance, policies, renewal, cancellation | Samarth (Person 3) | [`contracts/p3-contract.md`](contracts/p3-contract.md)<br>Merged in PR #46 | P3-02 data models for application, policy, cancellation (PR #56 merged) | Contract Drafted & Merged to `main`; Implementation in progress; **Formal Sign-Off Pending** | Confirm policy number format, cancellation refund state transitions in joint team meeting |
+| **P4-03** — Payments, notifications, claims, file store, test clock | Raghunandan (Person 4) | Shared Java interfaces in branch `p4-03-interface-contracts`<br>Submitted in PR #128 (Draft) | P4-04 CI pipeline (PR #60 merged) is infrastructure, not contract implementation | Contract Drafted (PR #128 Draft); Not yet merged to `main`; **Formal Sign-Off Pending** | Resolve DTO naming (`reason`), `IFileStore` signatures, and clock usage before merging PR #128 |
+
+#### D-09.5 — Claim and Cancellation-Refund Rule (INS-F-020, SAD §4.1.5, p3-contract §3.5)
+
+**Status: Confirmed Business Decision (Pending Contract Update & Implementation Verification).**
+
+- **Agreed Business Rule:** For policy cancellation-refund eligibility under INS-F-020, a claim counts as paid **only when its status is `SETTLED`**, not merely `APPROVED`. If a claim is in `APPROVED` status but has not completed settlement payout, it does not disqualify the policyholder from cancellation refund calculation.
+- **Traceability and Lifecycle Status:**
+  - **Business Decision:** Confirmed by team agreement on 17 October 2026.
+  - **Contract Update Required:** Raghunandan (Person 4) must update `docs/contracts/p4-contract.md` (specifically `IClaimService.hasPaidClaim` specification lines 285–287 and Decision Table 8 item D-09.5) to change the condition from `APPROVED or SETTLED` to strictly `SETTLED`.
+  - **Implementation & QA Verification:** Once the contract and backend services (`ClaimService.java` / `CancellationService.java`) are updated, Person 2 and Person 1 will execute automated test cases verifying that `hasPaidClaim` returns `false` for `APPROVED` claims and `true` only for `SETTLED` claims.
+  - *Distinction:* The code does not yet implement this behavior; this entry documents the agreed business requirement.
+
+---
+
+## TEAM-03 Sign-Off Checklist & Pre-Sprint-1 Architecture Agenda
 | Contract | Owner | Topics to confirm | Outcome |
 |---|---|---|---|
 | P1-03 — Quotes, underwriting, claim decisions and audit | Thijil (Person 1) | Quote/underwriting endpoint request and response shape; rule data format and fixtures; manual decision signature and reason; audit-log query/interface and requirement mapping | Pending team sign-off |
@@ -111,8 +166,16 @@ The existing `SRS.docx`, `SAD.docx`, and `STP.docx` at the repository root are t
 | P3-01 — Applications, issuance, policies, renewal and cancellation | Samarth (Person 3) | Add `vehicleRegNo` and confirm `existsActivePolicyForVehicle`; whether policy becomes `Cancelled` at approval or refund; whether zero-refund cases skip gateway calls; policy number format; PDF library; whether `/payments` returns `policyNo` directly or the UI polls policies; server-stored renewal quote semantics | Pending team sign-off |
 | P4-03 — Payments, notifications, claims, file store and test clock | Raghunandan (Person 4) | Draft v0.2 in `docs/contracts/p4-contract.md` ([#127](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/127), PR [#128](https://github.com/Thijil-Thejaswi-MN/Team-11/pull/128)): server-generated idempotency key (`applicationId-attemptNo`); 16 notification events (SAD §4.1.7); claim states aligned with SAD §4.1.3/SRS §4.7.1; D-09.5 agreed: `hasPaidClaim` checks `SETTLED` claims only; 15-day stale claim closure; file store `put/get/delete` with HTTP 413/415; clock injection with zone preservation and `/api/v1/test/clock` endpoint | Pending team sign-off |
 
-Record the agreed answer, who agreed, date, and rationale. If an answer changes the SRS/SAD/STP, add a deviation entry.
+Before beginning Sprint 1 on Monday, 19 October 2026, the team must hold a 15-minute architecture sign-off meeting to address the following outstanding agenda:
 
+- [x] **Item 1: D-03 Database Migration Sign-Off**
+  - **Outcome:** Confirmed on 17 Oct 2026. MySQL 8 with Hibernate `ddl-auto: update` (dev) and `create-drop` (test) for Sprint 1; Flyway versioned migrations planned for Sprint 2.
+- [x] **Item 2: PR #115 (P1-05) Closure**
+  - **Outcome:** Completed. Samarth (Person 3) approved re-review at commit `57e289f` / `9dabe20`; CI checks passed; merged into `main` at `9acef3d`.
+- [ ] **Item 3: PR #124 (P2-05) Remediation**
+  - **Action:** Sharana (Person 2) addresses the critical Spring constructor injection defect in `FieldEncryptionService` preventing production fail-secure key validation.
+- [ ] **Item 4: API Contracts Final Approval (D-09)**
+  - **Action:** Joint sign-off across Person 1, Person 2, Person 3, and Person 4 on unified endpoint signatures, D-09.5 `SETTLED` rule, and data fixtures.
 #### D-09.5 — `hasPaidClaim()` Semantics for Cancellation Refunds
 
 - **Status: Agreed by QA Lead review on PR #128; pending final PR sign-off.**
@@ -120,16 +183,30 @@ Record the agreed answer, who agreed, date, and rationale. If an answer changes 
 - **Rationale:** An `Approved` or `Payment Processing` claim that has not completed payout must not count as paid for the cancellation refund oracle. If true, the cancellation refund is Rs 0 (SAD §4.1.5, P3 Contract §3.5).
 - **Other D-09 choices (D-09.1 to D-09.4, D-09.6 to D-09.9):** Remain **Proposed** awaiting team sign-off. Virus scanning is marked **Proposed**.
 
+#### D-09.10 — Day-16 Cancellation Refund Rounding Oracle Discrepancy (TC-Can-02)
+
+- **Status: Proposed (Pending Formal Team / Guide Clarification).**
+- **Discrepancy Analysis:**
+  - In TC-Can-02, for a 365-day policy with gross premium ₹12,000 cancelled on Day 16 (unused days = 349) with a 5% fee (₹600):
+    $$\text{Unexpired Premium} = 12000 \times \frac{349}{365} = 11,473.9726\dots$$
+    $$\text{Net Refund} = 11,473.9726\dots - 600 = 10,873.9726\dots$$
+  - Under SRS §4.6.2 and SAD §4.1.6, all monetary refund calculations must round down (floor) to the nearest whole rupee (`RoundingMode.DOWN`). Applying floor rounding yields **₹10,873**.
+  - The submitted STP document specifies an expected refund of **₹10,874** due to flawed premature intermediate rounding: $12000 - (12000 \times 16 / 365) = 12000 - 526.02 = 11473.97 \approx 11474$, minus $600 = 10874$.
+- **Agreed Implementation Position:**
+  - The backend implementation in `RefundCalculator.java` preserves mathematically exact integer-numerator arithmetic with floor rounding yielding ₹10,873, strictly adhering to the SRS/SAD round-down mandate.
+  - This 1-rupee difference is recorded here as an identified oracle discrepancy pending formal team/guide clarification and sign-off during Sprint 2 test execution.
+
 ## Review and change control
 
-- Revisit Proposed and Provisional items at the stated meeting or review point; change a status to Confirmed only after explicit team agreement or sufficient evidence is available.
-- Record decision date, participants/forum, rationale and any deviations when an item is confirmed or changed.
-- Keep implementation/test claims truthful. A configured workflow or passing repository-structure check is not evidence that the frontend, backend, or application-level tests pass.
+---
 
 ## Decision history
 
 | Date | Change |
 |---|---|
+| 15 October 2026 | Standardized statuses to Confirmed / Proposed / Provisional; named owners and due/review points. |
+| 17 October 2026 | Updated D-01 (confirmed via live GitHub branch protection audit), D-02 (confirmed via package.json & CI build evidence), D-04 (confirmed via role baseline audit), and D-05 (provisional accounting across 102 items: 31 positive estimates totalling 118 pts, 2 explicit zeros, 69 unestimated). Expanded D-03 with comparative analysis, migration impact assessment, and Sprint 1/2 recommendation (undecided pending formal sign-off). Clarified D-09 contract documents and PR references (P1-03 PR #53, P2-01 PR #54, P3-01 PR #46, P4-03 PR #128) distinguishing drafted contracts from downstream implementations, retaining D-09 as pending formal joint sign-off. Noted PR #115 closure (approved by Samarth, merged into main at `9acef3d`) in D-01, D-09, and agenda checklist. Added TEAM-03 pre-Sprint 1 sign-off checklist and agenda. |
+| 17 October 2026 | Confirmed D-03 (database migration strategy: MySQL 8 with Hibernate ddl-auto: update in dev and create-drop in test for Sprint 1; Flyway versioned migrations planned for Sprint 2; update/create-drop strictly non-production). Confirmed D-09.5 business rule (cancellation-refund eligibility: a claim counts as paid only when SETTLED, not merely APPROVED; contract update and implementation verification pending). Retained D-09 as Proposed pending technical contract alignment across PR #128. |
 | 15 October 2026 | Revised after PR review: standardized statuses to Confirmed / Proposed / Provisional; named owners and due/review points; expanded repository-rule evidence, build-tool and migration-tool verification, capacity arithmetic, GitHub tracking source of truth, `tier-b` convention and outstanding contract sign-off questions. |
 | 17 October 2026 | Person 4 prepared draft shared contract specification in `docs/contracts/p4-contract.md` covering IPaymentService, INotify, IClaimService, IFileStore, and injectable test Clock (Issue #127); decision options D-09.1 through D-09.9 submitted for team review. |
 | 18 October 2026 | Person 4 updated P4 contract to v0.2 following PR #128 review: aligned claim states with SAD §4.1.3 (Document Verification, Assessment, Payment Processing), 15-day stale claim closure (SRS §4.7.1), SAD 16-event notification catalogue, HTTP 413/415 file upload errors, P1 claim-decision DTO alignment, settled-only `hasPaidClaim` semantics (D-09.5), clock zone preservation, and SAD Table 3.4b method naming. |
