@@ -14,8 +14,7 @@
 | **19 Oct 2026 (Mon)** | Developer test suite for motor quote engine (29 focused unit/integration tests). Official **TC-Quote-01** (Issue #68) integration test not yet run. | **0 formal test cases passed** (29 developer tests passed; 188 backend total passed). Official TC-Quote-01 status: **Not Run**. | 0 | 0 | None | N/A | Thijil | 19 Oct 2026 | Sharana to execute Newman collection (`npm run test:api:quotes`) against running backend for independent peer validation; Samarth to run JMeter load test for INS-NF-001; Thijil to implement health quote engine (INS-F-006 / TC-Quote-02) on Day 2. |
 | **20 Oct 2026 (Tue)** | Health quote engine (TC-Quote-02 / INS-F-006) rating rules & member breakdown tests. | 14 unit tests, 4 integration tests passed. | 0 | 0 | None | N/A | Thijil | 20 Oct 2026 | Merged via PR #137 to main. |
 | **21 Oct 2026 (Wed)** | Underwriting engine integration tests (TC-UW-01 to TC-UW-04), rule configuration validation, and manual decision overrides. | 18 tests passed. | 0 | 0 | None | N/A | Thijil / Raghu | 21 Oct 2026 | Merged via PR #136 to main. |
-| **22 Oct 2026 (Thu)** | **P1-08 Quote Screens** (Motor & Health quote interactive UI, itemized breakdown, `/plans` integration, and handoff to `/customer/applications?quoteId=...`). Triaged PR #132 concurrency & DataIntegrityViolation defects. Merged PRs #140, #141, #142, #143. | **All 28 frontend Vitest tests passed** (9 test suites). Backend suite: 24/24 application tests + full claim & payment suites passed. | 0 | 0 | Triaged 3 integration bugs (all resolved). | High / Medium | Thijil / Samarth / Sharana / Raghu | 22 Oct 2026 | PR #131, #138, #139, #140, #141, #142, #143 merged into main. PR #132 updated & approved. PR #144 (P1-08) created, synchronized with latest main, and CI all green. |
-| **23 Oct 2026 (Fri)** | *Sprint 1 Final Review & Demo Preparation* | | | | | | | | |
+| **23 Oct 2026 (Fri)** | **Sprint 1 Close & Final Smoke Run.** Independently executed **TC-Acc-01** (Passed) and **TC-KYC-01** (Blocked). Full frontend (28/28 Vitest) and backend suites passing on `main`. | **17 test cases passed**, 1 blocked (`TC-KYC-01`), 34 not run (Sprint 2). All 28 frontend tests passed. | 0 | 1 | 0 High open (2 Low logged for Sprint 2 polish). | Low / Info | Thijil / Team 11 | 23 Oct 2026 | Merged PRs #144 (P1-08), #132 (P3-04a), #145 (P4-06), #146 (P2-06) into `main`. RTM v1 and TEAM-07 carry-over list submitted for Sprint 2 grooming. |
 
 ---
 
@@ -140,4 +139,46 @@ The following standard triage protocol is enforced for Sprint 1:
   5. Automated Vitest suite: `MotorQuoteView.test.jsx`, `HealthQuoteView.test.jsx`, `QuoteFlowIntegration.test.jsx` plus integrated payments (`PaymentView.test.jsx`, `ApplicationsPlaceholder.test.jsx`) — **28/28 tests passing across 9 test suites**.
   6. Production bundle verified (`npm run build`).
   7. Pull Request [#144](https://github.com/Thijil-Thejaswi-MN/Team-11/pull/144) submitted, cleanly merged with latest `main` (including Claims and Payments), and all 3 GitHub Actions CI workflows green.
+
+---
+
+## 8. Day 5 (23 Oct 2026) Sprint 1 Close, Smoke Run & Bug Triage Log
+
+### 8.1 P1-15 Independent Execution of TC-Acc-01 & TC-KYC-01
+- **Executor:** Thijil Thejaswi M.N. (QA Lead & Independent Executor for Account/KYC test cases).
+- **Execution Target:** Commit `72dda0a5b011f5de1fd0793d4ffb293543858ac9`.
+- **TC-Acc-01 (Register and Log In, Issue #57):**
+  - **Status:** **Passed**.
+  - **Evidence:** Executed `AuthControllerIntegrationTest.java` (7/7 tests passed) and `AuthenticationServiceTest.java` (15/15 tests passed). Verified user registration returning HTTP 201 with `userId`, duplicate email rejection with HTTP 409 `STATE-409`, missing field validation with HTTP 422 `VALID-422`, valid customer login returning HTTP 200 with JWT `accessToken` (900s expiry) and role `CUSTOMER`, invalid credentials returning HTTP 401 `AUTH-401`, and 5 consecutive failed attempts triggering account lockout with HTTP 423 `AUTH-423`.
+- **TC-KYC-01 (KYC Verification and Blocking, Issue #64):**
+  - **Status:** **Blocked**.
+  - **Reason:** Blocked because the KYC document upload endpoint (`POST /api/v1/kyc/upload`) and customer KYC verification service are not implemented in Sprint 1. Recorded as **Blocked** (not Fail or Pass), and carried over to Sprint 2 under work items P2-07 and P2-08.
+
+### 8.2 Sprint 1 Final Smoke Run Bug Triage
+
+| Defect ID | Summary | Module / Component | Severity | Owner | Date Opened | Resolution / Status |
+|---|---|---|---|---|---|---|
+| **BUG-2026-1022-01** | Duplicate quote submission race condition in `ApplicationSubmissionService`. | C7 Applications | **High (P2)** | Samarth / Thijil | 22 Oct 2026 | **Fixed & Verified:** Narrowed catch block and verified with `concurrentDuplicateSubmissionsHandleRaceSafely` multithreaded test. |
+| **BUG-2026-1022-02** | Refund calculation rounding discrepancy in policy cancellation (TC-Can-02). | C7 Policy Lifecycle | **Medium (P3)** | Sharana / Thijil | 22 Oct 2026 | **Fixed & Verified:** Corrected boundary arithmetic in `RefundCalculator.java`. |
+| **BUG-2026-1022-03** | `@Primary UnderwritingEngine` bean collision in controller test. | C6 Underwriting | **Medium (P3)** | Thijil | 22 Oct 2026 | **Fixed & Verified:** MockBean decoupling in `ApplicationControllerIntegrationTest`. |
+| **BUG-2026-1023-01** | Brand text wrap on narrow 320px viewports (below 360px minimum). | Frontend Shell | **Low (P4)** | Raghunandan | 23 Oct 2026 | **Deferred:** 360px+ requirement (INS-NF-005) passes cleanly. Logged for Sprint 2 UI polish. |
+| **BUG-2026-1023-02** | Missing toast notification on unauthenticated plan comparison click. | Frontend Plans | **Low (P4)** | Sharana | 23 Oct 2026 | **Deferred:** Non-blocking usability improvement logged for Sprint 2 backlog. |
+
+**Triage Outcome:** All **High severity bugs are 100% resolved**. Zero High or Critical defects open. The codebase is clean, verified, and ready for the Sprint 1 demo.
+
+---
+
+## 9. TEAM-07 Sprint 1 Carry-Over Summary
+
+The following work items are formally carried over to Sprint 2 (refer to `docs/sprint-1-carryover-list.md` for full register):
+1. **P3-05:** Policy Issuance and PDF Generation (Samarth, 5 SP)
+2. **P3-06:** Application & Underwriting Review Screens (Samarth, 5 SP)
+3. **P2-07:** KYC Document Upload API Endpoint (Sharana, 3 SP)
+4. **P2-08:** Customer KYC Upload UI Page (Sharana, 3 SP)
+5. **P2-09:** Automated Newman API Suite in CI Pipeline (Sharana, 3 SP)
+6. **P4-08:** Real Email & SMS Notification Dispatcher (Raghunandan, 3 SP)
+7. **P3-08:** Renewal & Cancellation End-to-End Workflow (Samarth, 5 SP)
+8. **P4-10:** Claims UI Integration & Settlement Wire (Raghunandan, 5 SP)
+9. **P1-11:** Non-Functional JMeter & Security Pen-Test Scans (Samarth / Thijil, 5 SP)
+
 

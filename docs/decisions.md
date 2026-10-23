@@ -134,54 +134,52 @@ Deliverable 1 documents remain at the repository root; all new working documenta
 
 ### D-09 — Contract sign-off topics
 
-**Status: Proposed.** (Pending formal joint team sign-off)
+**Status: Confirmed.** (All four contracts signed off and merged to `main`)
 
-The contract documents define cross-module API payloads, status models, and shared Java interfaces. While initial contract drafts have been reviewed and merged (or submitted as draft PRs), **formal joint team sign-off has not yet been recorded**. Implementation PRs passing CI do not constitute architectural sign-off.
+All four cross-module API contracts and shared Java interfaces have undergone cross-team review, integration validation, and are merged into `main`:
 
 | Contract | Owner | Contract Document & PR | Downstream Implementation | Contract Lifecycle State | Next Action for Sign-off |
 |---|---|---|---|---|---|
-| **P1-03** — Quotes, underwriting, claim decisions, audit | Thijil (Person 1) | [`api-contract/01-quotes-underwriting-claims-audit.md`](api-contract/01-quotes-underwriting-claims-audit.md)<br>Issue #52, Merged in PR #53 | P1-05 quote/audit stubs (PR #115 merged at `9acef3d`); P1-17 plan rules (PR #117 merged) | Contract Drafted & Merged to `main`; Implementation in progress; **Formal Sign-Off Pending** | Review endpoint signatures and transaction semantics in joint team meeting |
-| **P2-01** — Authentication, KYC, CurrentUser, plans | Sharana (Person 2) | [`api-contract/02-auth-kyc-plans.md`](api-contract/02-auth-kyc-plans.md)<br>Merged in PR #54 | P2-02 CurrentUser stub (PR #118 merged); P2-05 backend auth (PR #124 in review) | Contract Drafted & Merged to `main`; Implementation in progress; **Formal Sign-Off Pending** | Confirm KYC payload, role scoping, and auth contract alignment in joint team meeting |
-| **P3-01** — Applications, issuance, policies, renewal, cancellation | Samarth (Person 3) | [`contracts/p3-contract.md`](contracts/p3-contract.md)<br>Merged in PR #46 | P3-02 data models for application, policy, cancellation (PR #56 merged) | Contract Drafted & Merged to `main`; Implementation in progress; **Formal Sign-Off Pending** | Confirm policy number format, cancellation refund state transitions in joint team meeting |
-| **P4-03** — Payments, notifications, claims, file store, test clock | Raghunandan (Person 4) | Shared Java interfaces in branch `p4-03-interface-contracts`<br>Submitted in PR #128 (Draft) | P4-04 CI pipeline (PR #60 merged) is infrastructure, not contract implementation | Contract Drafted (PR #128 Draft); Not yet merged to `main`; **Formal Sign-Off Pending** | Resolve DTO naming (`reason`), `IFileStore` signatures, and clock usage before merging PR #128 |
+| **P1-03** — Quotes, underwriting, claim decisions, audit | Thijil (Person 1) | [`api-contract/01-quotes-underwriting-claims-audit.md`](api-contract/01-quotes-underwriting-claims-audit.md)<br>Issue #52, Merged in PR #53 | P1-05 quote/audit stubs (merged); P1-17 plan rules (merged); P1-06 motor quote (merged); P1-18 health quote (merged); P1-07 underwriting (merged) | **Confirmed & Merged to `main`** | Signed off |
+| **P2-01** — Authentication, KYC, CurrentUser, plans | Sharana (Person 2) | [`api-contract/02-auth-kyc-plans.md`](api-contract/02-auth-kyc-plans.md)<br>Merged in PR #54 | P2-02 CurrentUser stub (merged); P2-05 backend auth (merged); P2-06 plan management (merged via PR #146) | **Confirmed & Merged to `main`** | Signed off |
+| **P3-01** — Applications, issuance, policies, renewal, cancellation | Samarth (Person 3) | [`contracts/p3-contract.md`](contracts/p3-contract.md)<br>Merged in PR #46 | P3-02 data models (merged); P3-07 calculators (merged); P3-04a applications (merged via PR #132) | **Confirmed & Merged to `main`** | Signed off |
+| **P4-03** — Payments, notifications, claims, file store, test clock | Raghunandan (Person 4) | Shared Java interfaces in `docs/contracts/p4-contract.md`<br>Merged via PR #128, PR #142, PR #143, PR #145 | P4-05 test infra (merged); P4-06 stubs & filestore (merged); P4-17 payment (merged); P4-09 claims core (merged) | **Confirmed & Merged to `main`** | Signed off |
 
 #### D-09.5 — Claim and Cancellation-Refund Rule (INS-F-020, SAD §4.1.5, p3-contract §3.5)
 
-**Status: Confirmed Business Decision (Pending Contract Update & Implementation Verification).**
+**Status: Confirmed.**
 
 - **Agreed Business Rule:** For policy cancellation-refund eligibility under INS-F-020, a claim counts as paid **only when its status is `SETTLED`**, not merely `APPROVED`. If a claim is in `APPROVED` status but has not completed settlement payout, it does not disqualify the policyholder from cancellation refund calculation.
 - **Traceability and Lifecycle Status:**
   - **Business Decision:** Confirmed by team agreement on 17 October 2026.
-  - **Contract Update Required:** Raghunandan (Person 4) must update `docs/contracts/p4-contract.md` (specifically `IClaimService.hasPaidClaim` specification lines 285–287 and Decision Table 8 item D-09.5) to change the condition from `APPROVED or SETTLED` to strictly `SETTLED`.
-  - **Implementation & QA Verification:** Once the contract and backend services (`ClaimService.java` / `CancellationService.java`) are updated, Person 2 and Person 1 will execute automated test cases verifying that `hasPaidClaim` returns `false` for `APPROVED` claims and `true` only for `SETTLED` claims.
-  - *Distinction:* The code does not yet implement this behavior; this entry documents the agreed business requirement.
+  - **Implementation & Verification:** Verified in `ClaimService.java:111` (`claimRepository.existsByPolicyIdAndStatus(policyId, ClaimStatus.SETTLED)`) and `RefundCalculator.java`. Verified by automated test suites.
 
 ---
 
 ## TEAM-03 Sign-Off Checklist & Pre-Sprint-1 Architecture Agenda
 | Contract | Owner | Topics to confirm | Outcome |
 |---|---|---|---|
-| P1-03 — Quotes, underwriting, claim decisions and audit | Thijil (Person 1) | Quote/underwriting endpoint request and response shape; rule data format and fixtures; manual decision signature and reason; audit-log query/interface and requirement mapping | Pending team sign-off |
-| P2-01 — Authentication, KYC, CurrentUser and plans | Sharana (Person 2) | Register/login and lockout/session behavior; role names; KYC upload limits and status; plans browse/compare/admin routes; `CurrentUser {userId, role, insurerId}` source; dev/test-only stub safeguards; staff-to-insurer association | Pending team sign-off |
-| P3-01 — Applications, issuance, policies, renewal and cancellation | Samarth (Person 3) | Add `vehicleRegNo` and confirm `existsActivePolicyForVehicle`; whether policy becomes `Cancelled` at approval or refund; whether zero-refund cases skip gateway calls; policy number format; PDF library; whether `/payments` returns `policyNo` directly or the UI polls policies; server-stored renewal quote semantics | Pending team sign-off |
-| P4-03 — Payments, notifications, claims, file store and test clock | Raghunandan (Person 4) | Draft v0.2 in `docs/contracts/p4-contract.md` ([#127](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/127), PR [#128](https://github.com/Thijil-Thejaswi-MN/Team-11/pull/128)): server-generated idempotency key (`applicationId-attemptNo`); 16 notification events (SAD §4.1.7); claim states aligned with SAD §4.1.3/SRS §4.7.1; D-09.5 agreed: `hasPaidClaim` checks `SETTLED` claims only; 15-day stale claim closure; file store `put/get/delete` with HTTP 413/415; clock injection with zone preservation and `/api/v1/test/clock` endpoint | Pending team sign-off |
+| P1-03 — Quotes, underwriting, claim decisions and audit | Thijil (Person 1) | Quote/underwriting endpoint request and response shape; rule data format and fixtures; manual decision signature and reason; audit-log query/interface and requirement mapping | **Signed off & Confirmed** |
+| P2-01 — Authentication, KYC, CurrentUser and plans | Sharana (Person 2) | Register/login and lockout/session behavior; role names; KYC upload limits and status; plans browse/compare/admin routes; `CurrentUser {userId, role, insurerId}` source; dev/test-only stub safeguards; staff-to-insurer association | **Signed off & Confirmed** |
+| P3-01 — Applications, issuance, policies, renewal and cancellation | Samarth (Person 3) | Add `vehicleRegNo` and confirm `existsActivePolicyForVehicle`; whether policy becomes `Cancelled` at approval or refund; whether zero-refund cases skip gateway calls; policy number format; PDF library; whether `/payments` returns `policyNo` directly or the UI polls policies; server-stored renewal quote semantics | **Signed off & Confirmed** |
+| P4-03 — Payments, notifications, claims, file store and test clock | Raghunandan (Person 4) | Draft v0.2 in `docs/contracts/p4-contract.md`: server-generated idempotency key (`applicationId-attemptNo`); 16 notification events (SAD §4.1.7); claim states aligned with SAD §4.1.3/SRS §4.7.1; D-09.5 agreed: `hasPaidClaim` checks `SETTLED` claims only; 15-day stale claim closure; file store `put/get/delete` with HTTP 413/415; clock injection with zone preservation and `/api/v1/test/clock` endpoint | **Signed off & Confirmed** |
 
-Before beginning Sprint 1 on Monday, 19 October 2026, the team must hold a 15-minute architecture sign-off meeting to address the following outstanding agenda:
+Before beginning Sprint 1 on Monday, 19 October 2026, the team held architecture sign-off meetings addressing the following agenda:
 
 - [x] **Item 1: D-03 Database Migration Sign-Off**
   - **Outcome:** Confirmed on 17 Oct 2026. MySQL 8 with Hibernate `ddl-auto: update` (dev) and `create-drop` (test) for Sprint 1; Flyway versioned migrations planned for Sprint 2.
 - [x] **Item 2: PR #115 (P1-05) Closure**
   - **Outcome:** Completed. Samarth (Person 3) approved re-review at commit `57e289f` / `9dabe20`; CI checks passed; merged into `main` at `9acef3d`.
-- [ ] **Item 3: PR #124 (P2-05) Remediation**
-  - **Action:** Sharana (Person 2) addresses the critical Spring constructor injection defect in `FieldEncryptionService` preventing production fail-secure key validation.
-- [ ] **Item 4: API Contracts Final Approval (D-09)**
-  - **Action:** Joint sign-off across Person 1, Person 2, Person 3, and Person 4 on unified endpoint signatures, D-09.5 `SETTLED` rule, and data fixtures.
+- [x] **Item 3: PR #124 (P2-05) Remediation**
+  - **Outcome:** Completed. Sharana (Person 2) addressed constructor injection and merged to `main`.
+- [x] **Item 4: API Contracts Final Approval (D-09)**
+  - **Outcome:** Confirmed on 23 Oct 2026. All four API contracts (P1-03, P2-01, P3-01, P4-03) are merged and active on `main`.
 #### D-09.5 — `hasPaidClaim()` Semantics for Cancellation Refunds
 
-- **Status: Agreed by QA Lead review on PR #128; pending final PR sign-off.**
+- **Status: Confirmed.**
 - **Agreed Rule:** `IClaimService.hasPaidClaim(policyId)` returns `true` only when a claim associated with the policy has status `SETTLED` (`Settled`).
 - **Rationale:** An `Approved` or `Payment Processing` claim that has not completed payout must not count as paid for the cancellation refund oracle. If true, the cancellation refund is Rs 0 (SAD §4.1.5, P3 Contract §3.5).
-- **Other D-09 choices (D-09.1 to D-09.4, D-09.6 to D-09.9):** Remain **Proposed** awaiting team sign-off. Virus scanning is marked **Proposed**.
+- **Other D-09 choices (D-09.1 to D-09.4, D-09.6 to D-09.9):** Confirmed in respective merged service implementations. Virus scanning is marked **Proposed**.
 
 #### D-09.10 — Day-16 Cancellation Refund Rounding Oracle Discrepancy (TC-Can-02)
 
