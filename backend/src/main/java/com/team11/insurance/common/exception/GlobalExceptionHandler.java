@@ -21,9 +21,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+
+import com.team11.insurance.applications.exception.ApplicationRejectedException;
 
 /**
  * Centralized REST Error Handler according to SAD Section 4.4:
@@ -55,6 +60,28 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(ec.getHttpStatus()).body(response);
+    }
+
+    /**
+     * Handles business underwriting rejection according to contract p3-contract.md §3.1:
+     * { timestamp, status: 422, errorCode: "VALID-422", message: "Application rejected",
+     *   details: [{ "reason": "<underwriting reason>" }], correlationId }
+     */
+    @ExceptionHandler(ApplicationRejectedException.class)
+    public ResponseEntity<Map<String, Object>> handleApplicationRejected(
+            ApplicationRejectedException ex, HttpServletRequest request) {
+        String correlationId = resolveCorrelationId(request);
+        log.warn("Application rejected (VALID-422): {} (correlationId={})", ex.getReason(), correlationId);
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", Instant.now());
+        body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
+        body.put("errorCode", ErrorCode.VALID_422.getCode());
+        body.put("message", "Application rejected");
+        body.put("details", List.of(Map.of("reason", ex.getReason())));
+        body.put("correlationId", correlationId);
+
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
     }
 
     /**

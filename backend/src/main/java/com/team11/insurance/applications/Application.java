@@ -16,6 +16,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 
+import jakarta.persistence.UniqueConstraint;
+
 /**
  * An insurance application (INS-F-007). Columns that point at other modules (customer, insurer,
  * plan, quote) are plain ids on purpose: no foreign keys until those modules' tables are merged.
@@ -24,6 +26,8 @@ import jakarta.persistence.Table;
 @Table(name = "applications", indexes = {
         @Index(name = "idx_app_customer", columnList = "customer_id"),
         @Index(name = "idx_app_insurer_status", columnList = "insurer_id, status")
+}, uniqueConstraints = {
+        @UniqueConstraint(name = "uq_application_quote", columnNames = "quote_id")
 })
 public class Application {
 
@@ -40,7 +44,7 @@ public class Application {
     @Column(name = "plan_id", nullable = false)
     private Long planId;
 
-    @Column(name = "quote_id", nullable = false)
+    @Column(name = "quote_id", nullable = false, unique = true)
     private Long quoteId;
 
     /** TWO_WHEELER, FOUR_WHEELER or HEALTH. A String until the quotes module fixes a shared enum. */
@@ -64,6 +68,10 @@ public class Application {
 
     @Column(name = "rejection_reason", length = 500)
     private String rejectionReason;
+
+    /** Ids of the uploaded supporting documents, comma separated (for example "301,302"). */
+    @Column(name = "document_ids", length = 500)
+    private String documentIds;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -96,6 +104,8 @@ public class Application {
     public void setStatus(ApplicationStatus status) { this.status = status; }
     public String getRejectionReason() { return rejectionReason; }
     public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+    public String getDocumentIds() { return documentIds; }
+    public void setDocumentIds(String documentIds) { this.documentIds = documentIds; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

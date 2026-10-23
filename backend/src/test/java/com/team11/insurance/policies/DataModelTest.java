@@ -30,12 +30,14 @@ class DataModelTest {
     @Autowired private PolicyRepository policies;
     @Autowired private CancellationRequestRepository cancellations;
 
+    private final java.util.concurrent.atomic.AtomicLong quoteSeq = new java.util.concurrent.atomic.AtomicLong(1000L);
+
     private Application newApplication() {
         Application a = new Application();
         a.setCustomerId(1L);
         a.setInsurerId(10L);
         a.setPlanId(100L);
-        a.setQuoteId(1000L);
+        a.setQuoteId(quoteSeq.getAndIncrement());
         a.setProductType("TWO_WHEELER");
         a.setVehicleRegNo("KA22AB1234");
         a.setPremium(new BigDecimal("12000.00"));
@@ -77,6 +79,20 @@ class DataModelTest {
         policies.saveAndFlush(newPolicy("POL-2026-000001", newApplication().getId(), null));
         Policy duplicate = newPolicy("POL-2026-000001", newApplication().getId(), null);
         assertThrows(DataIntegrityViolationException.class, () -> policies.saveAndFlush(duplicate));
+    }
+
+    @Test
+    void quoteIdMustBeUnique() {
+        Application first = newApplication();
+        Application duplicate = new Application();
+        duplicate.setCustomerId(1L);
+        duplicate.setInsurerId(10L);
+        duplicate.setPlanId(100L);
+        duplicate.setQuoteId(first.getQuoteId());
+        duplicate.setProductType("TWO_WHEELER");
+        duplicate.setVehicleRegNo("KA22AB1234");
+        duplicate.setPremium(new BigDecimal("12000.00"));
+        assertThrows(DataIntegrityViolationException.class, () -> applications.saveAndFlush(duplicate));
     }
 
     @Test
