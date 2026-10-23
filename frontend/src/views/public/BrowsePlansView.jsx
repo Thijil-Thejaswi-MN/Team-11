@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AppLayout from '../../components/layout/AppLayout';
+import { ROUTES } from '../../routes/routePaths';
 
 export default function BrowsePlansView() {
+  const navigate = useNavigate();
   const [filterType, setFilterType] = useState('ALL');
 
   // Sample static plans demonstrating layout and SAD schema
@@ -109,7 +112,18 @@ export default function BrowsePlansView() {
                   </div>
                 </div>
                 <div className="mt-auto pt-2 border-top">
-                  <button className="btn btn-outline-primary btn-sm w-100">Calculate Instant Quote</button>
+                  <button
+                    className="btn btn-outline-primary btn-sm w-100"
+                    id={`calculate-quote-plan-${plan.id}`}
+                    onClick={() => {
+                      const target = plan.type.startsWith('HEALTH')
+                        ? `${ROUTES.CUSTOMER_QUOTE_HEALTH}?planId=${plan.id}`
+                        : `${ROUTES.CUSTOMER_QUOTE_MOTOR}?planId=${plan.id}`;
+                      navigate(target);
+                    }}
+                  >
+                    <i className="bi bi-calculator me-1"></i>Calculate Instant Quote
+                  </button>
                 </div>
               </div>
             </div>
