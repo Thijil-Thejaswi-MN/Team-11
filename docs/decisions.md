@@ -46,6 +46,7 @@ If a decision changes the approved SRS, SAD, or STP, record the change and ratio
   - `required_conversation_resolution: true`
   - `enforce_admins: true` (Admin enforcement active; owner cannot bypass rules)
 - **Rule for owner-authored PRs:** Another teammate must independently review and approve (e.g., Samarth approved PR #117 and approved PR #115, merged at `9acef3d`); Thijil never self-approves.
+- **Process Deviation Log (23 Oct 2026):** PR #147 merged on 23 Oct with admin override and no independent review; reviewed retrospectively by Sharana on 23 Oct 2026. Correcting PR submitted for normal peer review and approval before merging. Strict enforcement reinstated: no `--admin` merges, no changes to branch protection, and no self-approvals.
 
 ### D-02 — Frontend build tool
 
@@ -208,3 +209,4 @@ Before beginning Sprint 1 on Monday, 19 October 2026, the team held architecture
 | 15 October 2026 | Revised after PR review: standardized statuses to Confirmed / Proposed / Provisional; named owners and due/review points; expanded repository-rule evidence, build-tool and migration-tool verification, capacity arithmetic, GitHub tracking source of truth, `tier-b` convention and outstanding contract sign-off questions. |
 | 17 October 2026 | Person 4 prepared draft shared contract specification in `docs/contracts/p4-contract.md` covering IPaymentService, INotify, IClaimService, IFileStore, and injectable test Clock (Issue #127); decision options D-09.1 through D-09.9 submitted for team review. |
 | 18 October 2026 | Person 4 updated P4 contract to v0.2 following PR #128 review: aligned claim states with SAD §4.1.3 (Document Verification, Assessment, Payment Processing), 15-day stale claim closure (SRS §4.7.1), SAD 16-event notification catalogue, HTTP 413/415 file upload errors, P1 claim-decision DTO alignment, settled-only `hasPaidClaim` semantics (D-09.5), clock zone preservation, and SAD Table 3.4b method naming. |
+| 23 October 2026 | Process deviation noted: PR #147 merged on 23 Oct with admin override and no independent review; reviewed retrospectively by Sharana on 23 Oct 2026. Correcting PR submitted to restore independent testing and review policy compliance. Strict enforcement reinstated: no admin overrides and no protection bypass. |
