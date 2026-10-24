@@ -198,6 +198,35 @@ class NotificationServiceIntegrationTest {
         NotificationOutbox fallbackUpdated = outboxRepository.findById(fallbackOutbox.getId()).orElseThrow();
         assertThat(fallbackUpdated.getStatus()).isEqualTo(NotificationStatus.SENT);
         assertThat(fallbackUpdated.getSentAt()).isNotNull();
+        assertThat(fallbackUpdated.getFailureReason()).contains("FALLBACK_DELIVERY");
+    }
+
+    @Test
+    @DisplayName("Requirement 5b: ALL routing with partial delivery (Email succeeds, SMS fails) records SMS failure details in outbox")
+    void test5b_allRoutingPartialDeliveryRecordsFailureReasonWithoutLosingSmsError() {
+        String emailDest = "valid-email@example.test";
+        String phoneDest = "+919999988888";
+        simulator.setFailNTimesThenSucceed(phoneDest, 10); // SMS fails
+
+        NotificationOutbox outbox = createPendingOutbox(
+                NotificationEvent.POLICY_ISSUED,
+                emailDest,
+                phoneDest,
+                NotificationChannel.ALL,
+                Map.of("policyNo", "POL-PARTIAL-01", "amount", "10000.00")
+        );
+
+        boolean dispatched = dispatcher.dispatch(outbox.getId());
+        assertThat(dispatched).isTrue();
+
+        NotificationOutbox updated = outboxRepository.findById(outbox.getId()).orElseThrow();
+        assertThat(updated.getStatus()).isEqualTo(NotificationStatus.SENT);
+        assertThat(updated.getSentAt()).isNotNull();
+        assertThat(updated.getFailureReason()).isNotNull();
+        assertThat(updated.getFailureReason()).contains("PARTIAL_DELIVERY");
+        assertThat(updated.getFailureReason()).contains("SMS delivery failed");
+        assertThat(updated.getLastError()).isNotNull();
+        assertThat(updated.getLastError()).contains("Simulated transient connection timeout");
     }
 
     @Test

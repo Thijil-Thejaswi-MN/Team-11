@@ -9,8 +9,20 @@ import org.springframework.stereotype.Component;
 /**
  * Retry Policy implementing the P4 Contract (Section 4) & SAD §4.1.7 backoff schedule.
  * <p>
- * Transient delivery failures retry with backoff schedule: 2s, 10s, 30s (up to 3 retries).
- * Terminal failures or failures exceeding 3 consecutive retries transition to dead-letter log (FAILED).
+ * <b>Contract Discrepancy & Interpretation:</b>
+ * The P4 contract Section 4.3 contains two related specifications:
+ * <ul>
+ *   <li>"Transient network/gateway faults retry up to 3 times with exponential backoff (2s, 10s, 30s)."</li>
+ *   <li>"On 3 consecutive failures, status moves to FAILED in the dead-letter log."</li>
+ * </ul>
+ * <i>Discrepancy:</i> If "3 consecutive failures" terminated the lifecycle after attempt 3 (initial attempt + 2 retries),
+ * the third backoff interval (30s) would be unreachable and dead code.
+ * <p>
+ * <i>Chosen Interpretation:</i> To honor all three contract-defined backoff intervals (2s, 10s, 30s),
+ * the system allows an initial dispatch (attempt 1) followed by up to 3 retries (attempts 2, 3, 4 with delays of 2s, 10s, 30s).
+ * Upon failure of the 3rd retry (attempt 4, representing 3 consecutive retried failures after the initial fault),
+ * the record is transitioned to {@code FAILED} in the dead-letter log.
+ * Terminal/non-retryable errors transition immediately to {@code FAILED} without consuming retries.
  */
 @Component
 public class NotificationRetryPolicy {

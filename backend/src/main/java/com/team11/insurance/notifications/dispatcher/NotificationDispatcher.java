@@ -118,18 +118,24 @@ public class NotificationDispatcher {
 
         // 3. Deliver across channels with fallback
         try {
-            deliverPayload(outbox, payload);
+            DeliveryResult deliveryResult = deliverPayload(outbox, payload);
 
-            // Successful delivery
+            // Successful delivery (clean, partial, or fallback)
             outbox.setStatus(NotificationStatus.SENT);
             outbox.setSentAt(clock.instant());
-            outbox.setFailureReason(null);
-            outbox.setLastError(null);
+            outbox.setFailureReason(deliveryResult.failureReason());
+            outbox.setLastError(deliveryResult.lastError());
             outbox.setNextRetryAt(null);
             outbox.setUpdatedAt(clock.instant());
             outboxRepository.save(outbox);
-            log.info("Notification [id={}] event=[{}] successfully SENT via channel [{}]",
-                    outboxId, outbox.getEvent(), outbox.getChannel());
+
+            if (deliveryResult.failureReason() != null) {
+                log.warn("Notification [id={}] event=[{}] SENT with delivery caveat: {}",
+                        outboxId, outbox.getEvent(), deliveryResult.failureReason());
+            } else {
+                log.info("Notification [id={}] event=[{}] successfully SENT via channel [{}]",
+                        outboxId, outbox.getEvent(), outbox.getChannel());
+            }
             return true;
         } catch (Exception e) {
             handleDeliveryFailure(outbox, e);
@@ -137,7 +143,9 @@ public class NotificationDispatcher {
         }
     }
 
-    private void deliverPayload(NotificationOutbox outbox, NotificationPayload payload) throws NotificationDeliveryException {
+    private record DeliveryResult(String failureReason, String lastError) {}
+
+    private DeliveryResult deliverPayload(NotificationOutbox outbox, NotificationPayload payload) throws NotificationDeliveryException {
         NotificationChannel channel = outbox.getChannel() != null ? outbox.getChannel() : NotificationChannel.EMAIL;
         String email = outbox.getRecipientEmail();
         String phone = outbox.getRecipientPhone();
@@ -149,13 +157,20 @@ public class NotificationDispatcher {
                         throw new NotificationDeliveryException("Recipient email address is missing", true);
                     }
                     channelSender.sendEmail(email, payload.subject(), payload.emailBody());
+                    return new DeliveryResult(null, null);
                 } catch (NotificationDeliveryException e) {
                     // Multi-channel fallback: if phone number is available, attempt SMS delivery
                     if (phone != null && !phone.isBlank()) {
                         log.warn("Email delivery failed for notification [{}]: {}. Attempting fallback to SMS [{}]",
                                 outbox.getId(), e.getMessage(), maskPhone(phone));
-                        channelSender.sendSms(phone, payload.smsBody());
-                        log.info("Notification [{}] successfully delivered via SMS fallback.", outbox.getId());
+                        try {
+                            channelSender.sendSms(phone, payload.smsBody());
+                            log.info("Notification [{}] successfully delivered via SMS fallback.", outbox.getId());
+                            String warning = "FALLBACK_DELIVERY: Primary Email delivery failed (" + e.getMessage() + "); delivered via SMS fallback to " + maskPhone(phone);
+                            return new DeliveryResult(warning, e.getMessage());
+                        } catch (NotificationDeliveryException smsEx) {
+                            throw new NotificationDeliveryException("Email failed (" + e.getMessage() + ") and SMS fallback also failed (" + smsEx.getMessage() + ")", smsEx.isTerminal());
+                        }
                     } else {
                         throw e;
                     }
@@ -167,13 +182,20 @@ public class NotificationDispatcher {
                         throw new NotificationDeliveryException("Recipient phone number is missing", true);
                     }
                     channelSender.sendSms(phone, payload.smsBody());
+                    return new DeliveryResult(null, null);
                 } catch (NotificationDeliveryException e) {
                     // Multi-channel fallback: if email is available, attempt Email delivery
                     if (email != null && !email.isBlank()) {
                         log.warn("SMS delivery failed for notification [{}]: {}. Attempting fallback to Email [{}]",
                                 outbox.getId(), e.getMessage(), maskEmail(email));
-                        channelSender.sendEmail(email, payload.subject(), payload.emailBody());
-                        log.info("Notification [{}] successfully delivered via Email fallback.", outbox.getId());
+                        try {
+                            channelSender.sendEmail(email, payload.subject(), payload.emailBody());
+                            log.info("Notification [{}] successfully delivered via Email fallback.", outbox.getId());
+                            String warning = "FALLBACK_DELIVERY: Primary SMS delivery failed (" + e.getMessage() + "); delivered via Email fallback to " + maskEmail(email);
+                            return new DeliveryResult(warning, e.getMessage());
+                        } catch (NotificationDeliveryException emailEx) {
+                            throw new NotificationDeliveryException("SMS failed (" + e.getMessage() + ") and Email fallback also failed (" + emailEx.getMessage() + ")", emailEx.isTerminal());
+                        }
                     } else {
                         throw e;
                     }
@@ -182,13 +204,14 @@ public class NotificationDispatcher {
             case ALL -> {
                 boolean emailSent = false;
                 boolean smsSent = false;
-                NotificationDeliveryException lastEx = null;
+                NotificationDeliveryException emailEx = null;
+                NotificationDeliveryException smsEx = null;
 
                 if (email != null && !email.isBlank()) {
                     try {
                         emailSent = channelSender.sendEmail(email, payload.subject(), payload.emailBody());
                     } catch (NotificationDeliveryException e) {
-                        lastEx = e;
+                        emailEx = e;
                         log.warn("ALL routing: Email delivery failed for notification [{}]: {}", outbox.getId(), e.getMessage());
                     }
                 }
@@ -197,18 +220,35 @@ public class NotificationDispatcher {
                     try {
                         smsSent = channelSender.sendSms(phone, payload.smsBody());
                     } catch (NotificationDeliveryException e) {
-                        lastEx = e;
+                        smsEx = e;
                         log.warn("ALL routing: SMS delivery failed for notification [{}]: {}", outbox.getId(), e.getMessage());
                     }
                 }
 
                 if (!emailSent && !smsSent) {
-                    if (lastEx != null) {
-                        throw lastEx;
+                    if (emailEx != null || smsEx != null) {
+                        String msg = "ALL delivery failed across all channels." +
+                                (emailEx != null ? " Email: " + emailEx.getMessage() : "") +
+                                (smsEx != null ? " SMS: " + smsEx.getMessage() : "");
+                        boolean terminal = (emailEx != null && emailEx.isTerminal()) && (smsEx != null && smsEx.isTerminal());
+                        throw new NotificationDeliveryException(msg, terminal);
                     }
                     throw new NotificationDeliveryException("Neither email nor phone destination was provided for ALL channel", true);
                 }
+
+                if (emailSent && !smsSent) {
+                    String reason = "PARTIAL_DELIVERY: Email delivered successfully; SMS delivery failed: " + (smsEx != null ? smsEx.getMessage() : "recipient phone missing or invalid");
+                    String lastError = smsEx != null ? smsEx.getMessage() : "SMS delivery failed";
+                    return new DeliveryResult(reason, lastError);
+                } else if (!emailSent && smsSent) {
+                    String reason = "PARTIAL_DELIVERY: SMS delivered successfully; Email delivery failed: " + (emailEx != null ? emailEx.getMessage() : "recipient email missing or invalid");
+                    String lastError = emailEx != null ? emailEx.getMessage() : "Email delivery failed";
+                    return new DeliveryResult(reason, lastError);
+                } else {
+                    return new DeliveryResult(null, null);
+                }
             }
+            default -> throw new NotificationDeliveryException("Unsupported notification channel: " + channel, true);
         }
     }
 
