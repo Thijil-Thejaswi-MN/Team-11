@@ -15,7 +15,7 @@ import MotorQuoteView from '../views/customer/MotorQuoteView';
 import HealthQuoteView from '../views/customer/HealthQuoteView';
 import QuotingPlaceholder from '../views/customer/QuotingPlaceholder';
 import ApplicationsPlaceholder from '../views/customer/ApplicationsPlaceholder';
-import PoliciesPlaceholder from '../views/customer/PoliciesPlaceholder';
+import MyPoliciesView from '../views/customer/MyPoliciesView';
 import PaymentView from '../views/customer/PaymentView';
 import ClaimsPlaceholder from '../views/customer/ClaimsPlaceholder';
 
@@ -86,7 +86,7 @@ export default function AppRoutes() {
       />
       <Route
         path={ROUTES.CUSTOMER_POLICIES}
-        element={<PoliciesPlaceholder />}
+        element={<MyPoliciesView />}
       />
 
       {/* Person 4 Customer Hook: Claims Tracker & Filing */}
