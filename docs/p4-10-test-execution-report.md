@@ -73,7 +73,7 @@ All tests were executed against clean working checkouts on the designated test h
 
 ### 3.2 Backend Payments, Claims & Test Infrastructure Suites (JUnit 5 / MockMvc)
 
-- **Execution Command:** `mvnw.cmd test -Dtest=PaymentServiceTest,PaymentControllerTest,PaymentGatewaySimulatorTest,ClaimStateMachineTest,ClaimServiceTest,ClaimControllerIntegrationTest,ClaimServiceStubTest,TestClockControllerTest,MutableTestClockTest,DiskFileStoreTest -Dspring.profiles.active=test` (in `backend/`)
+- **Execution Command:** `mvnw.cmd test -Dtest=PaymentServiceTest,PaymentControllerTest,PaymentGatewaySimulatorTest,ClaimStateMachineTest,ClaimServiceTest,ClaimControllerIntegrationTest,ClaimServiceStubTest,MutableTestClockTest,DiskFileStoreTest -Dspring.profiles.active=test` (in `backend/`)
 - **Execution Start Time:** `2026-10-24T22:19:00.409679`
 - **Execution End Time:** `2026-10-24T22:19:33.340724`
 - **Total Duration:** 32.93 seconds (Maven build time: 31.538s)
@@ -94,6 +94,12 @@ All tests were executed against clean working checkouts on the designated test h
 | `MutableTestClockTest` | Test Infrastructure | 5 | 0 | 0 | 0.009s | Virtual time advance, set fixed instant, system clock reset, zone offset preservation. |
 | `DiskFileStoreTest` | Test Infrastructure | 13 | 0 | 0 | 0.263s | AES-256-GCM encryption at rest, UUID storage keys, 5 MB file size limit (HTTP 413), media type whitelist (HTTP 415), path traversal defense. |
 
+> [!NOTE]
+> **Audit Reconciliation on `TestClockControllerTest` & Backend Total (124 tests):**
+> 1. **Zero Runs for `TestClockControllerTest`**: The test clock REST integration test in the codebase is named `TestClockControllerIntegrationTest.java` (4 tests), not `TestClockControllerTest`. An initial command line parameter referencing `TestClockControllerTest` was evaluated by Maven Surefire as a non-matching pattern (0 tests executed).
+> 2. **Class-by-Class Reconciliation**: Exactly 9 test classes matched and executed, yielding precisely 124 tests (Payment Core & REST: 17 + 9 = 26; Claims Core, Logic, Stubs & REST: 31 + 27 + 12 + 3 = 73; Infrastructure Harness: 7 + 5 + 13 = 25. Total: 26 + 73 + 25 = 124). All 124 tests passed with 0 failures, 0 errors, and 0 skips.
+> 3. **Infrastructure Test Count**: Acceptance Criterion AC-4 records 25 test harness/simulator tests, which exactly matches `PaymentGatewaySimulatorTest` (7) + `MutableTestClockTest` (5) + `DiskFileStoreTest` (13) = 25 tests.
+
 ---
 
 ### 3.3 Newman API Automated Regression Suite (Postman Runner)
@@ -105,6 +111,11 @@ All tests were executed against clean working checkouts on the designated test h
 - **Exit Code:** 0
 - **Outcome:** **15 requests executed, 35 assertions passed, 0 failures (100% pass rate)**
 - **Average API Latency:** 20 ms [min: 5ms, max: 154ms, s.d.: 35ms] (Strictly satisfies INS-NF-001 < 5000ms SLA).
+
+> [!NOTE]
+> **Newman Command & Report Execution Details:**
+> - The Newman runner was invoked with `--reporters cli,json --reporter-json-export tests/reports/p4_10_newman_evidence.json` to capture machine-verified timing, latency, and assertion metrics during the test harness run.
+> - For interactive terminal verification, running `npx newman run tests/postman/insurance-workflow-api.postman_collection.json -e tests/postman/insurance-workflow-environment.postman_environment.json --folder quotes` provides identical assertion verification with direct terminal CLI output.
 
 #### Executed Newman Requests & Contract Assertions
 
