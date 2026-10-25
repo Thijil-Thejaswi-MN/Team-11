@@ -15,6 +15,7 @@
 | **20 Oct 2026 (Tue)** | Health quote engine (TC-Quote-02 / INS-F-006) rating rules & member breakdown tests. | 14 unit tests, 4 integration tests passed. | 0 | 0 | None | N/A | Thijil | 20 Oct 2026 | Merged via PR #137 to main. |
 | **21 Oct 2026 (Wed)** | Underwriting engine integration tests (TC-UW-01 to TC-UW-04), rule configuration validation, and manual decision overrides. | 18 tests passed. | 0 | 0 | None | N/A | Thijil / Raghu | 21 Oct 2026 | Merged via PR #136 to main. |
 | **23 Oct 2026 (Fri)** | **Sprint 1 Close — Feature Integration & Automated Build Verification.** Verified automated test suites across all integrated Sprint 1 modules on `main` (28/28 frontend Vitest tests, 200+ backend tests passing in CI). End-to-end smoke test could not be completed because policy issuance (P3-05) is not yet built. STP execution status: **0 passed, 1 blocked (`TC-KYC-01`), 51 Not Run**. | **0 formal STP test cases passed** (Automated build suites: 28/28 frontend, 200+ backend passing). | 0 | 1 | 0 High open (2 Low logged for Sprint 2 polish). | Low / Info | Thijil / Team 11 | 23 Oct 2026 | Merged PRs #144 (P1-08), #132 (P3-04a), #145 (P4-06), #146 (P2-06) into `main`. RTM v1 and TEAM-07 carry-over list submitted for Sprint 2 grooming. |
+| **25 Oct 2026 (Sun)** | **P4-10 Test Execution Evidence & Harness Verification.** Real automated test suites executed and evidenced across assigned Payments (INS-F-008, TC-Pay-02: 34 tests), Claims (INS-F-013, TC-Clm-02: 70 tests), test harness/simulators (25 tests), and Newman API quote suite (15 requests, 35 assertions passed in 1533ms). Formal STP executions by independent testers remain `Not Run` per academic honesty policy. Full evidence logged in `docs/p4-10-test-execution-report.md`. | **124 backend tests, 28 frontend tests, 15 Newman API requests (35 assertions) passed.** (Formal STP: 0 passed, 1 blocked, 51 Not Run). | 0 | 1 | 0 High open | N/A | Raghunandan | 25 Oct 2026 | Carryover P4-10 completed; PR submitted for review. |
 
 ---
 
@@ -180,5 +181,5 @@ The following work items are formally carried over to Sprint 2 (refer to `docs/s
 5. **P2-09:** Automated Newman API Suite in CI Pipeline (Sharana, 3 SP)
 6. **P4-08:** Real Email & SMS Notification Dispatcher (Raghunandan, 3 SP)
 7. **P3-08:** Renewal & Cancellation End-to-End Workflow (Samarth, 5 SP)
-8. **P4-10:** Sprint 1 Test Execution & Harness (Raghunandan, 5 SP)
+8. **P4-10:** Sprint 1 Test Execution & Harness (Raghunandan, 5 SP) — **Execution evidence recorded and verified** in `docs/p4-10-test-execution-report.md`; automated suites passing (34 payment, 70 claims, 25 test harness/simulator, 35 Newman API assertions); independent STP executions remain `Not Run` awaiting designated peer executors.
 9. **P1-11:** Non-Functional JMeter & Security Pen-Test Scans (Samarth / Thijil, 5 SP)
