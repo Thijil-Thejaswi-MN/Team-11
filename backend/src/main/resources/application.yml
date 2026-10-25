@@ -25,6 +25,13 @@ management:
       show-details: always
       probes:
         enabled: true
+    info:
+      enabled: true
+
+info:
+  app:
+    name: ${spring.application.name}
+    instance-id: ${INSTANCE_ID:backend-local}
 
 # Security Configuration (SAD §4.4, INS-SR-003, INS-SR-004)
 # In production, these MUST be injected via environment variables (JWT_SECRET, ENCRYPTION_KEY).
