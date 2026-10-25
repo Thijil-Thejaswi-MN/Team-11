@@ -58,3 +58,11 @@ storage/
 scratch/
 temp/
 tmp/
+
+# SSL / TLS Test Certificates & Private Keys (Never commit private keys or secrets)
+nginx/certs/*.key
+nginx/certs/*.crt
+nginx/certs/*.pem
+nginx/certs/*.p12
+nginx/certs/*.csr
+!nginx/certs/.gitkeep
