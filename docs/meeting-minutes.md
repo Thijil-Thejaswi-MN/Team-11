@@ -116,8 +116,77 @@ Following the review from Thijil (`CHANGES_REQUESTED` on 17 October 2026), Perso
 
 | Action Item | Assignee | Target Date | Status |
 |---|---|---|---|
-| Re-review and sign off on P4-03 Draft Contract v0.2 ([PR #128](https://github.com/Thijil-Thejaswi-MN/Team-11/pull/128)) | Thijil (P1), Sharana (P2), Samarth (P3) | Before Sprint 1 start (19 Oct 2026) | Pending Team Sign-off |
-| Add Issue #127 to GitHub Project #1 Board View | Thijil-Thejaswi-MN (Project Admin) | 18 Oct 2026 | Pending Admin Action |
-| Implement P4-05 (Test Infrastructure & Docker Compose) | Raghunandan Kotary (P4) | Post Contract Approval | Blocked on P4-03 Sign-off |
-| Implement P4-06 (Interface Stubs) | Raghunandan Kotary (P4) | Post Contract Approval | Blocked on P4-03 Sign-off |
-| Sprint 1 Planning Poker & Final Story Point Summation | All 4 Members | 19 Oct 2026 | Scheduled |
+| Re-review and sign off on P4-03 Draft Contract v0.2 ([PR #128](https://github.com/Thijil-Thejaswi-MN/Team-11/pull/128)) | Thijil (P1), Sharana (P2), Samarth (P3) | Before Sprint 1 start (19 Oct 2026) | Complete (Merged) |
+| Add Issue #127 to GitHub Project #1 Board View | Thijil-Thejaswi-MN (Project Admin) | 18 Oct 2026 | Complete |
+| Implement P4-05 (Test Infrastructure & Docker Compose) | Raghunandan Kotary (P4) | Post Contract Approval | Complete |
+| Implement P4-06 (Interface Stubs) | Raghunandan Kotary (P4) | Post Contract Approval | Complete |
+| Sprint 1 Planning Poker & Final Story Point Summation | All 4 Members | 19 Oct 2026 | Complete |
+
+---
+
+# Team 11 Meeting Minutes — Sprint 2 Planning & Deferral Meeting (TEAM-08)
+
+**Project:** Insurance Workflow Automation System  
+**Repository:** [Thijil-Thejaswi-MN/Team-11](https://github.com/Thijil-Thejaswi-MN/Team-11)  
+**Date:** 26 October 2026 (09:30 – 11:00 IST)  
+**Forum:** Sprint 2 Planning, Scope Calibration & Claims Ownership Alignment  
+**Facilitator:** Thijil Thejaswi M N (Person 1 / QA Lead & Repo Owner)  
+**Document Status:** Approved & Formally Recorded in Decisions Register (`docs/decisions.md`)  
+
+---
+
+## 1. Attendees and Role Mapping
+
+| Member | STP Role | Attendance |
+|---|---|---|
+| **Thijil Thejaswi M N** (`Thijil-Thejaswi-MN`) | Person 1 / QA Lead & Merge Owner | Present |
+| **Sharana K** (`sharanabasavagouda113-debug`) | Person 2 / Functional Test Engineer | Present |
+| **Samarth B M** (`Samarth-S-Maladkar`) | Person 3 / Non-Functional & Security Test Engineer | Present |
+| **Raghunandan Kotary** (`Raghunandan-Kotary`) | Person 4 / Developer & Environment Owner | Present |
+
+---
+
+## 2. Agenda Items
+
+1. **Sprint 1 Actuals & Velocity Presentation:** Review of completed Story Points vs original 83 SP commitment.
+2. **Carry-Over Analysis:** Review of 18 SP carry-over from Sprint 1 (`docs/sprint-1-carryover-list.md`).
+3. **Sprint 2 Scope Calibration & Deferral Decision (TEAM-08 / D-10):** Apply deferral order to drop deferrable items so total Sprint 2 scope matches demonstrated velocity.
+4. **Claims Module Ownership Division (D-11):** Split claims responsibilities between Raghunandan (Person 4) and Thijil (Person 1).
+5. **Day 1 (26 Oct) Execution Priorities:** P1-11 Underwriter Queue Screen, P1-12 Claims Officer Screens, and Daily QA Coordination (P1-14).
+
+---
+
+## 3. Discussions & Key Decisions
+
+### 3.1 Sprint 1 Review & Velocity Calibration (D-10)
+- **Delivered Velocity:** Team 11 achieved 60 Story Points delivered and verified in Sprint 1 out of 83 planned SP.
+- **Carry-Over:** 18 SP carried over to Sprint 2 (`P3-05` 5 SP, `P3-06` 5 SP, `P2-07` 3 SP, `P2-08` 3 SP, `P4-08` 2 SP).
+- **Recalibrated Sprint 2 Capacity:** Realistic team capacity is set at 60–65 SP for Sprint 2.
+- **Deferral Decision:** Total backlog plus carry-over would total 92 SP without scope adjustment. The team reviewed the deferral priority list and agreed to drop the bottom 4 deferrable items (from `tier-b` order):
+  1. `INS-NF-007` (Audit Log Multi-Region Replication / Long-Term Archival, 3 SP) -> Deferred (Single-instance audit logging sufficient).
+  2. `INS-F-025` (Claims Payout Batch Payment Schedule Export, 3 SP) -> Deferred (Immediate STP payout sufficient).
+  3. `INS-F-023` (External Assessor Video-Inspection Stream Integration, 3 SP) -> Deferred (Document upload inspection sufficient).
+  4. `INS-F-021` (Bulk Renewal Batch File Processing, 3 SP) -> Deferred (Single-policy renewal workflow sufficient).
+- **Resulting Sprint 2 Target:** Net committed scope is **62 SP**, perfectly aligned with demonstrated 60 SP velocity.
+- **Action:** Requirements marked **"D"** in RTM with rationale and recorded in `docs/decisions.md` (Decision D-10).
+
+### 3.2 Claims Ownership Agreement (D-11)
+- Raghunandan (Person 4) has completed the backend core for claim verification, decisioning, and payout execution (`/api/v1/claims/**`).
+- To balance Sprint 2 workload and uphold STP §8 independent testing principles:
+  - **Raghunandan (P4):** Retains backend core service, repository, and payout simulator execution.
+  - **Thijil (P1):** Takes full ownership of the frontend appraisal screens (`P1-12` / `/claims/desk`), the 15-day stale auto-closure scheduled job (`P1-19`), and independent verification against STP requirements (`TC-Clm-01` through `TC-Clm-04`).
+- **Action:** Recorded in `docs/decisions.md` (Decision D-11).
+
+---
+
+## 4. Sprint 2 Action Items
+
+| Action Item | Owner | Target Date | Status |
+|---|---|---|---|
+| Complete P1-11 Underwriter Queue Screen (`UnderwriterDashboardView.jsx`) | Thijil (P1) | 26 Oct 2026 | Completed, PR in review |
+| Review P1-11 Pull Request & Execute TC-UW-04 Manual Verification | Sharana (P2) | 26–27 Oct 2026 | In Progress |
+| Begin P1-12 Claims Officer Queue & Detail Screen | Thijil (P1) | 26–28 Oct 2026 | In Progress |
+| Complete P3-05 Policy Issuance & PDF Generation | Samarth (P3) | 27 Oct 2026 | In Progress |
+| Complete P2-07/P2-08 KYC Document Upload Endpoint & Screen | Sharana (P2) | 27 Oct 2026 | In Progress |
+| Daily 17:00 QA Status & Bug Triage (P1-14) | Thijil (P1) | Daily 17:00 IST | Active |
+
