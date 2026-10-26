@@ -32,7 +32,7 @@ This security baseline covers:
 
 | Req ID | Requirement Title | STP Test Case(s) | GitHub Issue(s) | Status | Risk |
 |--------|------------------|-------------------|-----------------|--------|------|
-| INS-SR-001 | HTTPS and TLS 1.2+ | TC-Sec-01 | #103 | 🔲 Not Implemented | Medium — local dev uses HTTP; production will require reverse proxy |
+| INS-SR-001 | HTTPS and TLS 1.2+ | TC-Sec-01 | #103 | ✅ Implemented | Low — Nginx reverse proxy enforces TLS 1.2/1.3, HSTS (31536000s), HTTP-to-HTTPS redirect; verified via OpenSSL test suite |
 | INS-SR-002 | Salted password hashing | TC-Sec-02 | #104, #22 | ✅ Implemented | Low — BCrypt factor 12 implemented in PasswordService; verified by unit/integration tests |
 | INS-SR-003 | Role-based access control and insurer isolation | TC-Sec-03, TC-Dash-01 | #105, #95, #23 | ✅ Implemented | Low — RoleSecurity + CurrentUser + JwtAuthenticationFilter + staff insurer linkage |
 | INS-SR-004 | Encryption at rest | TC-Sec-04 | #106 | ⚠️ Partial — AES-256-GCM field encryption implemented for PAN/Aadhaar in DB; file encryption in Sprint 2 | Low (database) / Medium (file store) |
@@ -50,19 +50,27 @@ This security baseline covers:
 **SRS Requirement:** All communication between clients and servers MUST use HTTPS with TLS 1.2 or higher.
 
 **Current State:**
-- Local development runs on HTTP (`localhost:8080` for backend, `localhost:5173` for frontend)
-- No reverse proxy (Nginx) configured in the development environment
-- No TLS certificates provisioned
+- Fully configured and verified in Docker Compose test environment (`docker-compose.yml`, `nginx/nginx.conf`, `nginx/conf.d/default.conf`)
+- Nginx 1.27 Alpine reverse proxy terminates TLS with support exclusively for `TLSv1.2` and `TLSv1.3` (TLS 1.0 and 1.1 disabled)
+- Automatic HTTP-to-HTTPS 301 permanent redirect on port 80
+- Strict-Transport-Security (HSTS) header enforced with `max-age=31536000; includeSubDomains`
+- Standard security headers enforced: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, `Referrer-Policy: strict-origin-when-cross-origin`
+- Dual backend application instances (`backend-1`, `backend-2`) load-balanced behind Nginx via `least_conn`
+- Reproducible test certificate generation scripts provided (`scripts/generate-test-certs.ps1`, `scripts/generate-test-certs.sh`) with SAN for `localhost`, `127.0.0.1`, `insurance.local`, and `host.docker.internal`
+- Automated test verification script provided (`scripts/verify-tls-environment.ps1`, `scripts/verify-tls-environment.sh`)
+- Full documentation in [Test Environment Guide](docs/test-environment-guide.md)
 
-**Implementation Plan:**
-- [ ] Configure Nginx reverse proxy with TLS termination (Person 4 — infrastructure)
-- [ ] Redirect all HTTP requests to HTTPS
-- [ ] Disable TLS 1.0 and TLS 1.1
-- [ ] Add HSTS header (`Strict-Transport-Security`)
+**Implementation Status:**
+- [x] Configure Nginx reverse proxy with TLS termination (Person 4 — infrastructure, P4-11)
+- [x] Redirect all HTTP requests to HTTPS (301 redirect)
+- [x] Disable TLS 1.0 and TLS 1.1
+- [x] Add HSTS header (`Strict-Transport-Security`)
+- [x] Dual backend load balancing with independent health checks
+- [x] Reproducible self-signed SAN certificate generation harness
 
-**Verification:** TC-Sec-01 — TLS scan using `testssl.sh` or equivalent; HTTP redirect confirmation
+**Verification:** TC-Sec-01 — Tested via OpenSSL `s_client` against live Nginx test environment. TLS 1.2 handshakes succeeded (`ECDHE-RSA-AES256-GCM-SHA384`), TLS 1.3 handshakes succeeded (`TLS_AES_256_GCM_SHA384`), TLS 1.0/1.1 connections rejected, and HSTS header confirmed. Independent security test execution scheduled by Sharana (P2) in Sprint 2.
 
-**Risk Level:** Medium — acceptable in local dev; must be enforced before any shared/staging deployment
+**Risk Level:** Low — Control fully provisioned in test infrastructure.
 
 ---
 
@@ -246,7 +254,7 @@ This security baseline covers:
 | PR #118 awaiting review | RBAC guards on main branch | Team reviewer | ASAP |
 | KYC upload and document storage | TC-Sec-07, FC-09 through FC-11, INS-SR-004 (files) | Person 4 (IFileStore / PR #127) | Sprint 2 |
 | Audit log implementation | TC-Sec-08, FC-16 | Person 1 (IAuditLog) | Sprint 2 |
-| Nginx/TLS not configured | TC-Sec-01 | Person 4 (infra) | Sprint 3 |
+| Nginx/TLS not configured | TC-Sec-01 | Person 4 (infra) | ✅ Resolved (Sprint 2 / P4-11) |
 
 ---
 
@@ -255,8 +263,8 @@ This security baseline covers:
 | Risk Level | Count | Requirements |
 |-----------|-------|-------------|
 | 🔴 High | 3 | INS-SR-002, INS-SR-003, INS-SR-006 |
-| 🟡 Medium | 5 | INS-SR-001, INS-SR-004, INS-SR-005, INS-SR-007, INS-SR-008 |
-| 🟢 Low | 0 | — |
+| 🟡 Medium | 4 | INS-SR-004, INS-SR-005, INS-SR-007, INS-SR-008 |
+| 🟢 Low | 1 | INS-SR-001 |
 
 ### Top Risks
 

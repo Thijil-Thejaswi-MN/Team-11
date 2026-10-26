@@ -98,3 +98,83 @@ jobs:
           name: backend-jacoco-report
           path: backend/target/site/jacoco/
           if-no-files-found: warn
+
+  api-tests:
+    name: API Tests (Newman)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: tests/package-lock.json
+
+      - name: Install Newman test runner
+        working-directory: tests
+        run: npm ci
+
+      - name: Make Maven wrapper executable
+        working-directory: backend
+        run: chmod +x mvnw
+
+      - name: Start backend server with test profile
+        working-directory: backend
+        run: |
+          ./mvnw spring-boot:run -Dspring-boot.run.useTestClasspath=true -Dspring-boot.run.profiles=test > ../backend.log 2>&1 &
+          echo "Backend process launched in background (PID: $!)."
+
+      - name: Wait for backend health endpoint
+        run: |
+          echo "Waiting for backend service to become healthy at http://localhost:8080/api/v1/actuator/health..."
+          for i in {1..60}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/v1/actuator/health || true)
+            if [ "$STATUS" -eq 200 ]; then
+              echo "Backend is healthy! (attempt $i, HTTP 200)"
+              curl -s http://localhost:8080/api/v1/actuator/health
+              echo ""
+              exit 0
+            fi
+            echo "Attempt $i: status $STATUS, retrying in 2 seconds..."
+            sleep 2
+          done
+          echo "Backend failed to become healthy within 120 seconds. Backend log output:"
+          cat backend.log
+          exit 1
+
+      - name: Run Newman API tests (Quotes suite)
+        working-directory: tests
+        run: |
+          mkdir -p reports
+          npx newman run postman/insurance-workflow-api.postman_collection.json \
+            -e postman/insurance-workflow-environment.postman_environment.json \
+            --folder quotes \
+            --reporters cli,json \
+            --reporter-json-export reports/newman-results.json
+
+      - name: Upload Newman API test report artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: newman-api-test-report
+          path: tests/reports/
+          if-no-files-found: warn
+
+      - name: Dump backend log on failure
+        if: failure()
+        run: |
+          if [ -f backend.log ]; then
+            echo "=== BACKEND LOG ==="
+            cat backend.log
+          fi
