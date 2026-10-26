@@ -307,6 +307,46 @@ class DiskFileStoreTest {
         // Valid 32-byte key in production succeeds
         assertDoesNotThrow(() ->
                 new DiskFileStore(tempStorageDir.toString(), "0123456789abcdef0123456789abcdef", prodEnv, Clock.systemDefaultZone(), objectMapper));
+
+        // Valid 64-character hex key in production succeeds
+        assertDoesNotThrow(() ->
+                new DiskFileStore(tempStorageDir.toString(), "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcde0", prodEnv, Clock.systemDefaultZone(), objectMapper));
+
+        // Compose default hex key in production fails closed
+        IllegalStateException exComposeDev = assertThrows(IllegalStateException.class, () ->
+                new DiskFileStore(tempStorageDir.toString(), DiskFileStore.DEFAULT_COMPOSE_HEX_KEY, prodEnv, Clock.systemDefaultZone(), objectMapper));
+        assertTrue(exComposeDev.getMessage().contains("Default dev key cannot be used in production"));
+
+        // Invalid 64-character non-hex key in production fails closed
+        IllegalStateException exNonHex = assertThrows(IllegalStateException.class, () ->
+                new DiskFileStore(tempStorageDir.toString(), "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz", prodEnv, Clock.systemDefaultZone(), objectMapper));
+        assertTrue(exNonHex.getMessage().contains("must be exactly 32 bytes"));
+    }
+
+    @Test
+    @DisplayName("Dev profile with Compose default 64-character hex key initializes and performs file round trip")
+    void testDevProfileWithComposeDefaultHexKey() throws Exception {
+        MockEnvironment devEnv = new MockEnvironment();
+        devEnv.setActiveProfiles("dev");
+
+        DiskFileStore devStore = new DiskFileStore(tempStorageDir.toString(), DiskFileStore.DEFAULT_COMPOSE_HEX_KEY, devEnv, Clock.systemDefaultZone(), objectMapper);
+        devStore.init();
+
+        StoredDocument stored = devStore.storeStream(
+                new java.io.ByteArrayInputStream(VALID_PDF_BYTES),
+                "compose_key_test.pdf",
+                "application/pdf",
+                VALID_PDF_BYTES.length,
+                DocumentCategory.POLICY,
+                customerUser.getUserId()
+        );
+
+        assertNotNull(stored);
+        LoadedDocument loaded = devStore.get(stored.id(), customerUser);
+        assertNotNull(loaded);
+        try (java.io.InputStream is = loaded.resource().getInputStream()) {
+            assertArrayEquals(VALID_PDF_BYTES, is.readAllBytes());
+        }
     }
 
     @Test

@@ -205,4 +205,80 @@ class FieldEncryptionServiceSpringTest {
                             .hasMessageContaining("CRITICAL SECURITY VIOLATION");
                 });
     }
+
+    @Test
+    @DisplayName("Test C3 — Production with valid 64-character Hex AES-256 key: service initializes and operates securely")
+    void testC3_productionWithValid64CharHexKey_initializesSuccessfully() {
+        String testProdKeyHex = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcde0"; // valid hex, not dev key
+        contextRunner
+                .withPropertyValues(
+                        "spring.profiles.active=prod",
+                        "insurance.security.encryption-key=" + testProdKeyHex
+                )
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    FieldEncryptionService service = context.getBean(FieldEncryptionService.class);
+                    assertThat(service).isNotNull();
+
+                    String plaintext = "PROD_HEX_KEY_TEST_PAYLOAD";
+                    String encrypted = service.encrypt(plaintext);
+                    assertThat(encrypted).startsWith(FieldEncryptionService.VERSION_PREFIX);
+                    assertThat(service.decrypt(encrypted)).isEqualTo(plaintext);
+                });
+    }
+
+    @Test
+    @DisplayName("Test F1 — Dev profile with Compose default 64-char hex key: bootstrap succeeds and encrypts/decrypts")
+    void testF1_devProfileWithComposeDefaultHexKey_initializesSuccessfully() {
+        contextRunner
+                .withPropertyValues(
+                        "spring.profiles.active=dev",
+                        "insurance.security.encryption-key=" + FieldEncryptionService.DEFAULT_COMPOSE_HEX_KEY
+                )
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    FieldEncryptionService service = context.getBean(FieldEncryptionService.class);
+                    assertThat(service).isNotNull();
+
+                    String sample = "DEV_COMPOSE_BOOTSTRAP_DATA";
+                    String enc = service.encrypt(sample);
+                    assertThat(service.decrypt(enc)).isEqualTo(sample);
+                });
+    }
+
+    @Test
+    @DisplayName("Test F2 — Production profile with Compose default hex key: fails closed (cannot use dev key in prod)")
+    void testF2_productionWithComposeDefaultHexKey_failsClosed() {
+        contextRunner
+                .withPropertyValues(
+                        "spring.profiles.active=prod",
+                        "insurance.security.encryption-key=" + FieldEncryptionService.DEFAULT_COMPOSE_HEX_KEY
+                )
+                .run(context -> {
+                    assertThat(context).hasFailed();
+                    Throwable failure = context.getStartupFailure();
+                    assertThat(failure).isNotNull();
+                    assertThat(failure)
+                            .hasRootCauseInstanceOf(IllegalStateException.class)
+                            .rootCause()
+                            .hasMessageContaining("CRITICAL SECURITY VIOLATION")
+                            .hasMessageContaining("cannot use default dev key");
+                });
+    }
+
+    @Test
+    @DisplayName("Test F3 — Invalid 64-character non-hex key: fails initialization")
+    void testF3_invalid64CharNonHexKey_failsInitialization() {
+        String invalidNonHex64 = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"; // 64 chars, not hex
+        contextRunner
+                .withPropertyValues(
+                        "spring.profiles.active=prod",
+                        "insurance.security.encryption-key=" + invalidNonHex64
+                )
+                .run(context -> {
+                    assertThat(context).hasFailed();
+                    Throwable failure = context.getStartupFailure();
+                    assertThat(failure).isNotNull();
+                });
+    }
 }
