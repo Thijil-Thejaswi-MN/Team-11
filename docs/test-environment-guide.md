@@ -81,6 +81,17 @@ The P4-11 test environment provisions a containerized, production-like deploymen
    - Multi-stage build (Node 20 Alpine builder -> Nginx 1.27 Alpine runtime).
    - Serves pre-compiled production assets with client-side SPA routing support (`try_files $uri $uri/ /index.html;`).
 
+5. **Security Keys & Encryption Management (INS-SR-004, SAD §4.4):**
+   - **Environment Variable:** `ENCRYPTION_KEY` mapped to `insurance.security.encryption-key`.
+   - **Supported Key Formats:** Both `FieldEncryptionService` and `DiskFileStore` accept 256-bit AES keys in any of three formats:
+     1. *64-character Hexadecimal:* (e.g. `openssl rand -hex 32` or dev default `0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef`).
+     2. *44-character Base64:* 32-byte Base64-encoded string (e.g. `openssl rand -base64 32`).
+     3. *32-byte UTF-8 String:* Exactly 32 ASCII characters (e.g. `dev-aes256-key-team11-workflow!!`).
+   - **Fail-Secure Behavior:**
+     - In `dev` or `test` profile, omitting `ENCRYPTION_KEY` triggers a clear warning log and safely falls back to a development key.
+     - In `prod` or `production` profile, missing, malformed, or insecure keys (including all known dev/test keys) halt application startup with a `CRITICAL SECURITY VIOLATION` exception.
+     - Production deployments must inject a high-entropy 256-bit key via `ENCRYPTION_KEY`.
+
 ---
 
 ## 2. Test Certificate Provisioning

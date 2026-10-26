@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HexFormat;
 
 /**
  * Production-grade AES-256-GCM authenticated field encryption service (INS-SR-004, SAD §4.4).
@@ -42,6 +43,8 @@ public class FieldEncryptionService {
     public static final String VERSION_PREFIX = "v1:";
 
     public static final String DEFAULT_DEV_KEY = "dev-aes256-key-team11-workflow!!"; // exactly 32 bytes UTF-8
+    public static final String DEFAULT_COMPOSE_HEX_KEY = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"; // 64-char hex dev key
+    public static final String DEFAULT_DEV_KEY_LEGACY = "0123456789abcdef0123456789abcdef"; // 32-byte UTF-8 dev key
 
     private static volatile FieldEncryptionService defaultInstance;
 
@@ -104,7 +107,7 @@ public class FieldEncryptionService {
             log.warn("insurance.security.encryption-key is not set. Using default dev encryption key. DO NOT USE IN PRODUCTION.");
             keyToUse = DEFAULT_DEV_KEY;
         } else if (isProduction) {
-            if (DEFAULT_DEV_KEY.equals(keyToUse.trim())) {
+            if (isDefaultDevKey(keyToUse)) {
                 throw new IllegalStateException("CRITICAL SECURITY VIOLATION: Production encryption key cannot use default dev key! Configure a secure AES-256 key via 'insurance.security.encryption-key' or ENCRYPTION_KEY.");
             }
             byte[] rawBytes;
@@ -196,12 +199,31 @@ public class FieldEncryptionService {
         this.secretKey = new SecretKeySpec(keyBytes, KEY_ALGORITHM);
     }
 
+    public static boolean isDefaultDevKey(String key) {
+        if (key == null) {
+            return false;
+        }
+        String trimmed = key.trim();
+        return DEFAULT_DEV_KEY.equals(trimmed)
+                || DEFAULT_COMPOSE_HEX_KEY.equalsIgnoreCase(trimmed)
+                || DEFAULT_DEV_KEY_LEGACY.equals(trimmed);
+    }
+
     private byte[] getRawKeyBytes(String keyString) {
         if (keyString == null || keyString.trim().isEmpty()) {
             throw new IllegalArgumentException("Encryption key cannot be null or empty.");
         }
         String trimmed = keyString.trim();
-        // Check if key is Base64 encoded 32 bytes
+
+        // 1. Check if key is 64-character hexadecimal (256-bit AES key)
+        if (trimmed.length() == 64 && isHex(trimmed)) {
+            try {
+                return HexFormat.of().parseHex(trimmed);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+
+        // 2. Check if key is Base64 encoded 32 bytes
         try {
             byte[] decoded = Base64.getDecoder().decode(trimmed);
             if (decoded.length == 32) {
@@ -210,7 +232,19 @@ public class FieldEncryptionService {
         } catch (IllegalArgumentException ignored) {
             // Not base64, fall back to UTF-8
         }
+
+        // 3. Fall back to raw UTF-8 bytes
         return trimmed.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static boolean isHex(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
