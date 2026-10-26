@@ -555,7 +555,11 @@ public class DiskFileStore implements IFileStore {
 
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
-        return cipher.doFinal(cipherText);
+        try {
+            return cipher.doFinal(cipherText);
+        } catch (javax.crypto.AEADBadTagException ex) {
+            throw new SecurityException("Ciphertext authentication failed: document file has been tampered with or corrupted.", ex);
+        }
     }
 
     private String computeSha256(byte[] data) {

@@ -38,4 +38,12 @@ public class LoginRequest {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    @Override
+    public String toString() {
+        return "LoginRequest{" +
+                "email='" + com.team11.insurance.common.logging.SensitiveDataMasker.maskEmail(email) + '\'' +
+                ", password='[PROTECTED]'" +
+                '}';
+    }
 }
