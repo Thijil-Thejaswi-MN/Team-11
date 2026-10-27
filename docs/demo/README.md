@@ -11,6 +11,6 @@ The quote screens are shown before calculation (no premium is computed in the vi
 Working on main (backend, verified by automated tests): plans browse/compare API,
 motor/health quote engines, underwriting, application submission, simulated payment,
 policy issuance + PDF.
-Not yet working: real login screen (the role selector is a dev stub), KYC upload,
-live data on admin/claims screens. These are Sprint 2 carry-over
-(see docs/sprint-1-carryover-list.md).
+Not yet working at the time of recording: real login screen (the role selector was a dev stub),
+KYC upload, live data on admin/claims screens. Real login (PR #162) and KYC upload (PR #161) were
+merged later on 27 Oct and will be shown in the Sprint 2 video.
