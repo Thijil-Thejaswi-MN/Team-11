@@ -185,4 +185,16 @@ public class User {
         this.failedLoginAttempts = 0;
         this.lockedUntil = null;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + com.team11.insurance.common.logging.SensitiveDataMasker.maskEmail(email) + '\'' +
+                ", phone='" + com.team11.insurance.common.logging.SensitiveDataMasker.maskPhone(phone) + '\'' +
+                ", role=" + role +
+                ", insurerId=" + insurerId +
+                '}';
+    }
 }

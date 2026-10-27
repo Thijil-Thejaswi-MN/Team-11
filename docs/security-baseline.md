@@ -35,7 +35,7 @@ This security baseline covers:
 | INS-SR-001 | HTTPS and TLS 1.2+ | TC-Sec-01 | #103 | ✅ Implemented | Low — Nginx reverse proxy enforces TLS 1.2/1.3, HSTS (31536000s), HTTP-to-HTTPS redirect; verified via OpenSSL test suite |
 | INS-SR-002 | Salted password hashing | TC-Sec-02 | #104, #22 | ✅ Implemented | Low — BCrypt factor 12 implemented in PasswordService; verified by unit/integration tests |
 | INS-SR-003 | Role-based access control and insurer isolation | TC-Sec-03, TC-Dash-01 | #105, #95, #23 | ✅ Implemented | Low — RoleSecurity + CurrentUser + JwtAuthenticationFilter + staff insurer linkage |
-| INS-SR-004 | Encryption at rest | TC-Sec-04 | #106 | ⚠️ Partial — AES-256-GCM field encryption implemented for PAN/Aadhaar in DB; file encryption in Sprint 2 | Low (database) / Medium (file store) |
+| INS-SR-004 | Encryption at rest | TC-Sec-04, TC-Sec-11 | #106, #113 | ✅ Implemented | Low — AES-256-GCM authenticated encryption implemented for PAN/Aadhaar in DB (FieldEncryptionService) and file uploads (DiskFileStore); sensitive-data log masking implemented (SensitiveDataMasker) |
 | INS-SR-005 | Account lockout and session timeout | TC-Sec-05, TC-Sec-10 | #107, #112, #24 | ✅ Implemented | Low — 5-attempt lockout (15 min) + 15 min server session idle timeout in UserSession |
 | INS-SR-006 | Input validation and injection defence | TC-Sec-06 | #108, #25 | ✅ Implemented | Low — Jakarta Bean Validation on all DTOs + JPA parameterized queries |
 | INS-SR-007 | Secure file upload | TC-Sec-07 | #109, #27 | ⚠️ Partial — KycRecord & IKycStatus implemented; file multipart storage in Sprint 2 | Medium |
@@ -127,19 +127,20 @@ This security baseline covers:
 - ✅ AES-256-GCM authenticated field encryption implemented in `FieldEncryptionService` with 96-bit random IV, 128-bit authentication tag, and versioned ciphertext (`v1:...`).
 - ✅ JPA AttributeConverter (`EncryptedStringConverter`) applied to `KycRecord.panNumber` and `KycRecord.aadhaarNumber`.
 - ✅ Database columns store only ciphertext; native SQL inspection confirms no plaintext PAN or Aadhaar in persistent storage.
-- ✅ Key management: External configuration via `insurance.security.encryption-key` with fail-secure validation refusing startup in production if missing, malformed, or insecure.
-- ✅ Data compatibility and migration plan: Unencrypted legacy data cannot be read without migration (fails fast); data migration procedure documented for legacy database migration prior to cutover.
-- ⚠️ Encrypted file storage for KYC document binaries is scheduled for Sprint 2 with `IFileStore` (Person 4 / issue #127).
+- ✅ Key management: External configuration via `insurance.security.encryption-key` with fail-secure validation refusing startup in production if missing, malformed, or insecure. Keys are kept in memory and never stored on disk alongside encrypted files.
+- ✅ Encrypted file storage implemented in `DiskFileStore` using AES-256-GCM for uploaded documents (KYC, policies, claims), with tamper detection and integrity verification (`AEADBadTagException` / `SecurityException`).
+- ✅ Sensitive-data log masking implemented in `SensitiveDataMasker` covering PAN, Aadhaar, email, phone, credit cards, CVVs, passwords, and tokens across application logs, DTO `toString()` methods, and global exception handlers.
 
 **Implementation Plan:**
 - [x] Implement JPA `@Convert` with AES-256-GCM authenticated encryption for sensitive columns (`panNumber`, `aadhaarNumber`)
 - [x] Enforce fail-secure startup in production profile for encryption key configuration
 - [x] Verify tamper-evident decryption failure (`AEADBadTagException`) and unique nonces
-- [ ] Configure encrypted storage volume or application-level encryption for KYC binary uploads via `IFileStore` (Sprint 2)
+- [x] Configure application-level authenticated encryption (AES-256-GCM) for binary uploads via `DiskFileStore`
+- [x] Implement sensitive data log masking (`SensitiveDataMasker`) and sanitize logging call sites (TC-Sec-11)
 
-**Verification:** TC-Sec-04 — Automated tests in `FieldEncryptionServiceTest` and `KycServiceTest` verifying ciphertext persistence, tampering defense, unique IVs, and production key fail-secure startup.
+**Verification:** TC-Sec-04, TC-Sec-11 — Automated unit and integration tests in `FieldEncryptionServiceTest` (10 tests), `FieldEncryptionServiceSpringTest` (23 tests), `DiskFileStoreTest` (16 tests), and `SensitiveDataMaskerTest` (11 tests) verifying ciphertext persistence, tampering defense, unique IVs, external key isolation, and log masking.
 
-**Risk Level:** Low for database fields (mitigated by AES-256-GCM); Medium for binary file storage until `IFileStore` lands in Sprint 2.
+**Risk Level:** Low — Mitigated by AES-256-GCM authenticated encryption at rest for both database fields and binary document storage, and sensitive data log masking.
 
 ---
 
