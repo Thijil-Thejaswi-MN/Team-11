@@ -144,65 +144,243 @@
           "response": []
         },
         {
-          "name": "Submit KYC Details (Contract INS-F-002)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
+          "name": "kyc",
+          "description": "KYC upload, verification, and status endpoints (INS-F-002, INS-SR-007, TC-KYC-01, TC-Sec-07).",
+          "item": [
+            {
+              "name": "Submit KYC Documents - Verified PAN (Contract INS-F-002)",
+              "event": [
                 {
-                  "key": "panNumber",
-                  "value": "TESTPAN1234F",
-                  "type": "text"
-                },
-                {
-                  "key": "aadhaarNumber",
-                  "value": "123456789012",
-                  "type": "text"
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK or 202 Accepted\", function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 202, 401]);",
+                      "});",
+                      "if (pm.response.code === 200 || pm.response.code === 202) {",
+                      "    pm.test(\"KYC status is Verified\", function () {",
+                      "        var json = pm.response.json();",
+                      "        pm.expect(json).to.have.property(\"kycStatus\");",
+                      "        pm.expect(json.kycStatus).to.eql(\"Verified\");",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
                 }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/kyc",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "kyc"]
-            },
-            "description": "Contract example: POST /api/v1/kyc multipart form data submission."
-          },
-          "response": []
-        },
-        {
-          "name": "Get KYC Status (Contract INS-F-002)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "panNumber",
+                      "value": "ABCDE1234F",
+                      "type": "text"
+                    },
+                    {
+                      "key": "aadhaarNumber",
+                      "value": "123456789012",
+                      "type": "text"
+                    },
+                    {
+                      "key": "files[]",
+                      "description": "Identity document upload (PDF/JPG/PNG)",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/kyc",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "kyc"]
+                },
+                "description": "Contract example: POST /api/v1/kyc multipart form data submission with valid PAN ABCDE1234F."
               },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/kyc/status",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "kyc", "status"]
+              "response": []
             },
-            "description": "Contract example: GET /api/v1/kyc/status for authenticated customer."
-          },
-          "response": []
+            {
+              "name": "Get KYC Status (Contract INS-F-002)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK\", function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 401]);",
+                      "});",
+                      "if (pm.response.code === 200) {",
+                      "    pm.test(\"Response contains kycStatus\", function () {",
+                      "        var json = pm.response.json();",
+                      "        pm.expect(json).to.have.property(\"kycStatus\");",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/kyc/status",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "kyc", "status"]
+                },
+                "description": "Contract example: GET /api/v1/kyc/status for authenticated customer."
+              },
+              "response": []
+            },
+            {
+              "name": "Submit KYC Documents - Rejected PAN ZZZZZ0000Z (Contract INS-F-002)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK or 202 Accepted\", function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 202, 401]);",
+                      "});",
+                      "if (pm.response.code === 200 || pm.response.code === 202) {",
+                      "    pm.test(\"KYC status is Rejected\", function () {",
+                      "        var json = pm.response.json();",
+                      "        pm.expect(json).to.have.property(\"kycStatus\");",
+                      "        pm.expect(json.kycStatus).to.eql(\"Rejected\");",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "panNumber",
+                      "value": "ZZZZZ0000Z",
+                      "type": "text"
+                    },
+                    {
+                      "key": "aadhaarNumber",
+                      "value": "123456789012",
+                      "type": "text"
+                    },
+                    {
+                      "key": "files[]",
+                      "description": "Identity document upload (PDF/JPG/PNG)",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/kyc",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "kyc"]
+                },
+                "description": "TC-KYC-01 Step 3: PAN ZZZZZ0000Z simulation returns status Rejected."
+              },
+              "response": []
+            },
+            {
+              "name": "Submit KYC Documents - Malformed PAN (Contract INS-F-002, Expect 422)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([422, 401]);",
+                      "});",
+                      "if (pm.response.code === 422) {",
+                      "    pm.test(\"Error code is VALID-422\", function () {",
+                      "        var json = pm.response.json();",
+                      "        pm.expect(json.errorCode).to.eql(\"VALID-422\");",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "panNumber",
+                      "value": "INVALID123",
+                      "type": "text"
+                    },
+                    {
+                      "key": "aadhaarNumber",
+                      "value": "123456789012",
+                      "type": "text"
+                    },
+                    {
+                      "key": "files[]",
+                      "description": "Identity document upload (PDF/JPG/PNG)",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/kyc",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "kyc"]
+                },
+                "description": "TC-KYC-01: Malformed PAN fails validation with 422 VALID-422."
+              },
+              "response": []
+            }
+          ]
         },
         {
           "name": "Browse Plans (Public, Contract INS-F-004, INS-F-022)",

@@ -12,6 +12,7 @@ export const ROUTES = {
 
   // Customer Portal
   CUSTOMER_DASHBOARD: '/customer',
+  CUSTOMER_KYC: '/customer/kyc',
   CUSTOMER_QUOTE_MOTOR: '/customer/quote/motor',
   CUSTOMER_QUOTE_HEALTH: '/customer/quote/health',
   CUSTOMER_APPLICATIONS: '/customer/applications',

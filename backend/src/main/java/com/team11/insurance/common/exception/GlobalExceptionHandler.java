@@ -146,7 +146,8 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException ex, HttpServletRequest request) {
         String correlationId = resolveCorrelationId(request);
 
-        log.warn("Malformed HTTP request body (correlationId={}): {}", correlationId, ex.getMessage());
+        log.warn("Malformed HTTP request body (correlationId={}): {}", correlationId,
+                com.team11.insurance.common.logging.SensitiveDataMasker.maskGeneric(ex.getMessage()));
 
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
@@ -228,9 +229,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUnexpectedError(Throwable ex, HttpServletRequest request) {
         String correlationId = resolveCorrelationId(request);
 
-        // Internal details and stack trace are logged ONLY to server logs with correlationId
+        // Internal details and stack trace are logged ONLY to server logs with correlationId and masked PII
         log.error("Unhandled system error [SYS-500] (correlationId={}) for URI {}: {}",
-                correlationId, request.getRequestURI(), ex.getMessage(), ex);
+                correlationId, request.getRequestURI(), com.team11.insurance.common.logging.SensitiveDataMasker.maskGeneric(ex.getMessage()), ex);
 
         // User sees only a generic message with the correlationId per SAD Section 4.4
         ErrorResponse response = new ErrorResponse(

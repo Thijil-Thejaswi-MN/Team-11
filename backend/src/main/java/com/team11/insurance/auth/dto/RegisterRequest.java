@@ -64,4 +64,14 @@ public class RegisterRequest {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    @Override
+    public String toString() {
+        return "RegisterRequest{" +
+                "name='" + name + '\'' +
+                ", email='" + com.team11.insurance.common.logging.SensitiveDataMasker.maskEmail(email) + '\'' +
+                ", phone='" + com.team11.insurance.common.logging.SensitiveDataMasker.maskPhone(phone) + '\'' +
+                ", password='[PROTECTED]'" +
+                '}';
+    }
 }

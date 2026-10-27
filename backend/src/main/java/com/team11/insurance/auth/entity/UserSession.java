@@ -24,6 +24,7 @@ import java.time.Instant;
 public class UserSession {
 
     public static final int INACTIVITY_TIMEOUT_SECONDS = 900; // 15 minutes per SAD §4.3.1
+    public static final int MAX_SESSION_LIFETIME_SECONDS = 28800; // 8 hours absolute maximum per TC-Sec-10
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -65,7 +66,7 @@ public class UserSession {
         this.userId = userId;
         this.createdAt = now;
         this.lastAccessedAt = now;
-        this.expiresAt = now.plusSeconds(validitySeconds);
+        this.expiresAt = now.plusSeconds(validitySeconds > 0 ? validitySeconds : MAX_SESSION_LIFETIME_SECONDS);
         this.ipAddress = ipAddress;
         this.userAgent = userAgent;
         this.revoked = false;

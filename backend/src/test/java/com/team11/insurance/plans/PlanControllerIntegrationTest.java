@@ -64,6 +64,15 @@ public class PlanControllerIntegrationTest {
             insurerRepository.save(new Insurer("Bharat Care Insurance"));
         }
 
+        // Ensure canonical seeded plans exist
+        if (planRepository.count() == 0 
+                || planRepository.findByCode("PLAN-A-M1").isEmpty()
+                || planRepository.findByCode("PLAN-A-M2").isEmpty()
+                || planRepository.findByCode("PLAN-A-H1").isEmpty()) {
+            planRepository.deleteAll();
+            new PlanDataSeeder(planRepository).run();
+        }
+
         // Retrieve seeded plans from PlanDataSeeder
         Plan am1 = planRepository.findByCode("PLAN-A-M1").orElse(null);
         if (am1 != null) {
