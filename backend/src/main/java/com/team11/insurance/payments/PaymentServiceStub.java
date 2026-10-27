@@ -186,7 +186,7 @@ public class PaymentServiceStub implements IPaymentService {
     @Override
     public PaymentResult payout(long claimId, BigDecimal assessedAmount, String idempotencyKey, String destinationAccount) {
         log.info("PaymentServiceStub: Processing payout for claimId={}, assessedAmount={}, key={}, account={}",
-                claimId, assessedAmount, idempotencyKey, destinationAccount);
+                claimId, assessedAmount, idempotencyKey, com.team11.insurance.common.logging.SensitiveDataMasker.maskCard(destinationAccount));
 
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
             return recordedPayments.computeIfAbsent(idempotencyKey, k -> {

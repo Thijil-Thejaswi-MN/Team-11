@@ -3,6 +3,8 @@ package com.team11.insurance.notifications.dispatcher;
 import java.time.Clock;
 import java.util.List;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,6 +25,7 @@ public class NotificationRecoveryScheduler {
     private final NotificationOutboxRepository outboxRepository;
     private final NotificationDispatcher dispatcher;
     private final Clock clock;
+    private final AtomicBoolean pollingEnabled = new AtomicBoolean(true);
 
     public NotificationRecoveryScheduler(
             NotificationOutboxRepository outboxRepository,
@@ -38,15 +41,19 @@ public class NotificationRecoveryScheduler {
      */
     @Scheduled(fixedDelayString = "${app.notifications.recovery.fixed-delay-ms:5000}")
     public void pollPendingNotifications() {
+        if (!pollingEnabled.get()) {
+            return;
+        }
         triggerRecovery();
     }
 
     /**
      * Programmatic trigger for testing and administrative sweeps.
+     * Synchronized to prevent concurrent background recovery and manual sweeps from racing.
      *
      * @return number of notifications dispatched
      */
-    public int triggerRecovery() {
+    public synchronized int triggerRecovery() {
         List<NotificationOutbox> dueList = outboxRepository.findPendingDueForDelivery(clock.instant());
         if (dueList.isEmpty()) {
             return 0;
@@ -65,5 +72,25 @@ public class NotificationRecoveryScheduler {
             }
         }
         return dispatchedCount;
+    }
+
+    /**
+     * Controls whether automatic scheduled background polling is active.
+     * Defaults to {@code true}. May be set to {@code false} during integration tests
+     * to eliminate background polling races during explicit manual verification.
+     *
+     * @param pollingEnabled whether periodic scheduled recovery should run
+     */
+    public void setPollingEnabled(boolean pollingEnabled) {
+        this.pollingEnabled.set(pollingEnabled);
+    }
+
+    /**
+     * Returns true if scheduled background polling is currently enabled.
+     *
+     * @return polling state
+     */
+    public boolean isPollingEnabled() {
+        return this.pollingEnabled.get();
     }
 }
