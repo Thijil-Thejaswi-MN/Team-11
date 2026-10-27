@@ -15,6 +15,7 @@ frontend/yarn-debug.log*
 frontend/yarn-error.log*
 frontend/.pnpm-debug.log*
 frontend/coverage/
+tests/results/
 
 # Python / Pytest / Selenium
 __pycache__/

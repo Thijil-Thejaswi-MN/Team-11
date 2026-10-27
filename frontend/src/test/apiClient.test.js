@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import apiClient, { generateCorrelationId } from '../api/apiClient';
+import apiClient, { generateCorrelationId, setAuthToken, getAuthToken, onUnauthorized } from '../api/apiClient';
 import { ERROR_CODES } from '../api/errorCodes';
 import { errorBus } from '../api/errorBus';
 
@@ -20,8 +20,8 @@ describe('Shared API Client (SAD Section 4.3, 4.4, 4.5)', () => {
     expect(cid.length).toBeGreaterThan(10);
   });
 
-  it('injects Bearer token in request headers if present in localStorage', async () => {
-    localStorage.setItem('auth_token', 'mock-jwt-token-12345');
+  it('injects Bearer token in request headers if present in in-memory token store', async () => {
+    setAuthToken('mock-jwt-token-12345');
 
     // Simulate request interceptor execution
     const config = {
@@ -33,6 +33,7 @@ describe('Shared API Client (SAD Section 4.3, 4.4, 4.5)', () => {
 
     expect(modifiedConfig.headers['Authorization']).toBe('Bearer mock-jwt-token-12345');
     expect(modifiedConfig.headers['X-Correlation-Id']).toBeDefined();
+    expect(getAuthToken()).toBe('mock-jwt-token-12345');
   });
 
   it('normalizes error responses to the SAD 4.4 standard schema', async () => {
@@ -77,8 +78,10 @@ describe('Shared API Client (SAD Section 4.3, 4.4, 4.5)', () => {
     unsubscribe();
   });
 
-  it('clears token on 401 unauthorized session expiry', async () => {
-    localStorage.setItem('auth_token', 'expired-token');
+  it('clears in-memory token and invokes onUnauthorized on 401 unauthorized session expiry', async () => {
+    setAuthToken('expired-token');
+    const unauthorizedListener = vi.fn();
+    const unsubscribe = onUnauthorized(unauthorizedListener);
 
     const mock401Error = {
       config: { headers: {} },
@@ -99,6 +102,8 @@ describe('Shared API Client (SAD Section 4.3, 4.4, 4.5)', () => {
       // expected rejection
     }
 
-    expect(localStorage.getItem('auth_token')).toBeNull();
+    expect(getAuthToken()).toBeNull();
+    expect(unauthorizedListener).toHaveBeenCalledTimes(1);
+    unsubscribe();
   });
 });
