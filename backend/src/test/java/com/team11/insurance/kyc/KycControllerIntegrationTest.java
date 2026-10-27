@@ -15,8 +15,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import com.team11.insurance.kyc.service.KycService;
+import org.springframework.mock.web.MockMultipartFile;
 
+import java.nio.charset.StandardCharsets;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -31,6 +38,9 @@ class KycControllerIntegrationTest {
 
     @Autowired
     private KycRepository kycRepository;
+
+    @Autowired
+    private KycService kycService;
 
     @BeforeEach
     void setUp() {
@@ -130,11 +140,164 @@ class KycControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Finding 2 (Path B): Incomplete POST /kyc endpoint is deferred and not exposed (404 Not Found)")
-    void testPostKycEndpointIsNotExposed() throws Exception {
-        mockMvc.perform(post("/kyc")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"panNumber\":\"ABCDE1234F\",\"aadhaarNumber\":\"123456789012\"}"))
-                .andExpect(status().isNotFound());
+    @DisplayName("TC-KYC-01 Step 1-2: Valid PAN upload returns status Verified and updates customer record")
+    void testPostKyc_VerifiedPan() throws Exception {
+        MockMultipartFile validPdf = new MockMultipartFile(
+                "files[]",
+                "identity_doc.pdf",
+                "application/pdf",
+                "%PDF-1.4 sample identity document content".getBytes(StandardCharsets.UTF_8)
+        );
+
+        mockMvc.perform(multipart("/kyc")
+                        .file(validPdf)
+                        .param("panNumber", "ABCDE1234F")
+                        .param("aadhaarNumber", "123456789012"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kycStatus").value("Verified"));
+
+        mockMvc.perform(get("/kyc/status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kycStatus").value("Verified"));
+
+        assertTrue(kycService.isVerified(777L));
+    }
+
+    @Test
+    @DisplayName("TC-KYC-01 Step 3: PAN 'ZZZZZ0000Z' returns status Rejected via mock provider")
+    void testPostKyc_RejectedPan_ZZZZZ0000Z() throws Exception {
+        MockMultipartFile validPdf = new MockMultipartFile(
+                "files",
+                "kyc_pan_doc.pdf",
+                "application/pdf",
+                "%PDF-1.4 sample document".getBytes(StandardCharsets.UTF_8)
+        );
+
+        mockMvc.perform(multipart("/kyc")
+                        .file(validPdf)
+                        .param("panNumber", "ZZZZZ0000Z")
+                        .param("aadhaarNumber", "123456789012"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kycStatus").value("Rejected"));
+
+        mockMvc.perform(get("/kyc/status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kycStatus").value("Rejected"));
+
+        assertFalse(kycService.isVerified(777L));
+    }
+
+    @Test
+    @DisplayName("TC-KYC-01: Malformed PAN fails input validation and returns 422 VALID-422")
+    void testPostKyc_MalformedPan_Returns422() throws Exception {
+        MockMultipartFile validPdf = new MockMultipartFile(
+                "files",
+                "doc.pdf",
+                "application/pdf",
+                "%PDF-1.4 sample document".getBytes(StandardCharsets.UTF_8)
+        );
+
+        mockMvc.perform(multipart("/kyc")
+                        .file(validPdf)
+                        .param("panNumber", "INVALID123")
+                        .param("aadhaarNumber", "123456789012"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode").value("VALID-422"));
+    }
+
+    @Test
+    @DisplayName("TC-Sec-07 Step 3: Upload exceeding 5 MB limit returns 413 Payload Too Large (FILE-413)")
+    void testPostKyc_FileSizeOver5Mb_Returns413() throws Exception {
+        byte[] largeBytes = new byte[6 * 1024 * 1024];
+        byte[] pdfHeader = "%PDF-".getBytes(StandardCharsets.UTF_8);
+        System.arraycopy(pdfHeader, 0, largeBytes, 0, pdfHeader.length);
+
+        MockMultipartFile largePdf = new MockMultipartFile(
+                "files",
+                "large_document.pdf",
+                "application/pdf",
+                largeBytes
+        );
+
+        mockMvc.perform(multipart("/kyc")
+                        .file(largePdf)
+                        .param("panNumber", "ABCDE1234F")
+                        .param("aadhaarNumber", "123456789012"))
+                .andExpect(status().isPayloadTooLarge())
+                .andExpect(jsonPath("$.errorCode").value("FILE-413"));
+    }
+
+    @Test
+    @DisplayName("TC-Sec-07 Step 2: Uploading an executable file (.exe) returns 415 Unsupported Media Type (FILE-415)")
+    void testPostKyc_ExecutableFile_Returns415() throws Exception {
+        byte[] exeBytes = new byte[]{'M', 'Z', 0x00, 0x00, 0x01, 0x02};
+        MockMultipartFile exeFile = new MockMultipartFile(
+                "files",
+                "dangerous.exe",
+                "application/x-msdownload",
+                exeBytes
+        );
+
+        mockMvc.perform(multipart("/kyc")
+                        .file(exeFile)
+                        .param("panNumber", "ABCDE1234F")
+                        .param("aadhaarNumber", "123456789012"))
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(jsonPath("$.errorCode").value("FILE-415"));
+    }
+
+    @Test
+    @DisplayName("TC-KYC-01: Non-customer role is rejected with 403 Forbidden (ACCESS-403)")
+    void testPostKyc_NonCustomerRole_Returns403() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(new CurrentUser(2001L, UserRole.INSURER_ADMIN, 1L));
+
+        MockMultipartFile validPdf = new MockMultipartFile(
+                "files",
+                "doc.pdf",
+                "application/pdf",
+                "%PDF-1.4 sample document".getBytes(StandardCharsets.UTF_8)
+        );
+
+        mockMvc.perform(multipart("/kyc")
+                        .file(validPdf)
+                        .param("panNumber", "ABCDE1234F")
+                        .param("aadhaarNumber", "123456789012"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.errorCode").value("ACCESS-403"));
+    }
+
+    @Test
+    @DisplayName("TC-KYC-01 Step 5: A rejected customer may resubmit, and the latest record wins (Verified)")
+    void testPostKyc_ResubmissionAfterRejection() throws Exception {
+        MockMultipartFile validPdf = new MockMultipartFile(
+                "files[]",
+                "doc.pdf",
+                "application/pdf",
+                "%PDF-1.4 sample document".getBytes(StandardCharsets.UTF_8)
+        );
+
+        // First attempt with rejected PAN
+        mockMvc.perform(multipart("/kyc")
+                        .file(validPdf)
+                        .param("panNumber", "ZZZZZ0000Z")
+                        .param("aadhaarNumber", "123456789012"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kycStatus").value("Rejected"));
+
+        assertFalse(kycService.isVerified(777L));
+
+        // Customer resubmits with valid PAN
+        mockMvc.perform(multipart("/kyc")
+                        .file(validPdf)
+                        .param("panNumber", "ABCDE1234F")
+                        .param("aadhaarNumber", "123456789012"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kycStatus").value("Verified"));
+
+        assertTrue(kycService.isVerified(777L));
+
+        mockMvc.perform(get("/kyc/status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kycStatus").value("Verified"));
     }
 }
