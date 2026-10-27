@@ -43,3 +43,6 @@ insurance:
     expiration-seconds: 900
   security:
     encryption-key: ${ENCRYPTION_KEY:}
+  claims:
+    auto-close:
+      cron: ${CLAIMS_AUTO_CLOSE_CRON:0 0 2 * * ?}
