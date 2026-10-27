@@ -11,6 +11,9 @@ vi.mock('../api/apiClient', () => ({
     get: vi.fn(),
     post: vi.fn(),
   },
+  onUnauthorized: vi.fn(() => () => {}),
+  setAuthToken: vi.fn(),
+  getAuthToken: vi.fn(),
 }));
 
 const mockClaimsList = [
