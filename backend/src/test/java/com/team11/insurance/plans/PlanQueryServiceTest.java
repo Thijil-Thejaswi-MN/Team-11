@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,12 @@ class PlanQueryServiceTest {
         );
 
         planRepository.saveAll(List.of(motorPlan, healthPlanWithoutUw));
+    }
+
+    @AfterEach
+    void tearDown() {
+        planRepository.deleteAll();
+        new PlanDataSeeder(planRepository).run();
     }
 
     @Test
