@@ -19,6 +19,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
+import java.util.HexFormat;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -62,7 +63,9 @@ public class DiskFileStore implements IFileStore {
 
     public static final long MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024L; // 5 MB
 
-    private static final String DEFAULT_DEV_KEY = "0123456789abcdef0123456789abcdef"; // 32 bytes (256-bit)
+    public static final String DEFAULT_DEV_KEY = "0123456789abcdef0123456789abcdef"; // 32 bytes (256-bit)
+    public static final String DEFAULT_COMPOSE_HEX_KEY = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"; // 64-char hex dev key
+    public static final String DEFAULT_DEV_KEY_FALLBACK = "dev-aes256-key-team11-workflow!!"; // 32 bytes UTF-8
 
     private static final int GCM_IV_LENGTH_BYTES = 12;
     private static final int GCM_TAG_LENGTH_BITS = 128;
@@ -115,6 +118,20 @@ public class DiskFileStore implements IFileStore {
 
         if (keyString != null && !keyString.trim().isEmpty()) {
             String trimmed = keyString.trim();
+
+            if (!isDevOrTest && (DEFAULT_COMPOSE_HEX_KEY.equalsIgnoreCase(trimmed) || DEFAULT_DEV_KEY_FALLBACK.equals(trimmed))) {
+                throw new IllegalStateException("CRITICAL SECURITY VIOLATION: Production requires a secure 256-bit AES encryption key! Default dev key cannot be used in production.");
+            }
+
+            // 1. Check if key is 64-character hexadecimal (256-bit AES key)
+            if (trimmed.length() == 64 && isHex(trimmed)) {
+                try {
+                    return HexFormat.of().parseHex(trimmed);
+                } catch (IllegalArgumentException ignored) {
+                }
+            }
+
+            // 2. Check if key is Base64 encoded 32 bytes
             try {
                 byte[] decoded = Base64.getDecoder().decode(trimmed);
                 if (decoded.length == 32) {
@@ -122,11 +139,13 @@ public class DiskFileStore implements IFileStore {
                 }
             } catch (IllegalArgumentException ignored) {
             }
+
+            // 3. Fall back to raw UTF-8 32 bytes
             byte[] utf8 = trimmed.getBytes(StandardCharsets.UTF_8);
             if (utf8.length == 32) {
                 return utf8;
             }
-            throw new IllegalStateException("Configured encryption key ('insurance.security.encryption-key') must be exactly 32 bytes (256-bit) Base64 or UTF-8");
+            throw new IllegalStateException("Configured encryption key ('insurance.security.encryption-key') must be exactly 32 bytes (256-bit) as 64-character hex, Base64, or UTF-8");
         }
 
         // Key is missing/empty:
@@ -136,6 +155,16 @@ public class DiskFileStore implements IFileStore {
         }
 
         throw new IllegalStateException("CRITICAL SECURITY VIOLATION: Production requires a 256-bit AES encryption key configured via 'insurance.security.encryption-key'!");
+    }
+
+    private static boolean isHex(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @PostConstruct
@@ -526,7 +555,11 @@ public class DiskFileStore implements IFileStore {
 
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
-        return cipher.doFinal(cipherText);
+        try {
+            return cipher.doFinal(cipherText);
+        } catch (javax.crypto.AEADBadTagException ex) {
+            throw new SecurityException("Ciphertext authentication failed: document file has been tampered with or corrupted.", ex);
+        }
     }
 
     private String computeSha256(byte[] data) {

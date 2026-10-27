@@ -35,10 +35,11 @@ info:
 
 # Security Configuration (SAD §4.4, INS-SR-003, INS-SR-004)
 # In production, these MUST be injected via environment variables (JWT_SECRET, ENCRYPTION_KEY).
-# Startup fails securely if production keys are absent or insecure.
+# ENCRYPTION_KEY accepts 64-character hexadecimal, 44-character Base64, or 32-byte UTF-8 formats.
+# Startup fails securely if production keys are absent, default dev keys, or insecure.
 insurance:
   jwt:
     secret: ${JWT_SECRET:}
-    expiration-seconds: 900
+    expiration-seconds: 28800
   security:
     encryption-key: ${ENCRYPTION_KEY:}

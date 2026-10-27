@@ -43,8 +43,8 @@ public class JwtService {
     @Value("${insurance.jwt.secret:}")
     private String configuredSecret;
 
-    @Value("${insurance.jwt.expiration-seconds:900}")
-    private int expirationSeconds = 900;
+    @Value("${insurance.jwt.expiration-seconds:28800}")
+    private int expirationSeconds = 28800; // 8 hours absolute maximum per TC-Sec-10
 
     private final Environment environment;
     private final ObjectMapper objectMapper;

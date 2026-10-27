@@ -45,13 +45,17 @@ public class KycService implements IKycStatus {
     }
 
     public KycRecord submitKyc(long userId, String panNumber, String aadhaarNumber, String documentPath) {
+        return submitKyc(userId, panNumber, aadhaarNumber, documentPath, KycStatus.PENDING);
+    }
+
+    public KycRecord submitKyc(long userId, String panNumber, String aadhaarNumber, String documentPath, KycStatus status) {
         Optional<KycRecord> existing = kycRepository.findByUserId(userId);
-        KycRecord record = existing.orElseGet(() -> new KycRecord(userId, panNumber, aadhaarNumber, KycStatus.PENDING));
+        KycRecord record = existing.orElseGet(() -> new KycRecord(userId, panNumber, aadhaarNumber, status));
 
         record.setPanNumber(panNumber);
         record.setAadhaarNumber(aadhaarNumber);
         record.setDocumentPath(documentPath);
-        record.setStatus(KycStatus.PENDING);
+        record.setStatus(status != null ? status : KycStatus.PENDING);
 
         return kycRepository.save(record);
     }

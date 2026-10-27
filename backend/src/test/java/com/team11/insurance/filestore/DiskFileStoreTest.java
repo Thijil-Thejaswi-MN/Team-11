@@ -307,6 +307,46 @@ class DiskFileStoreTest {
         // Valid 32-byte key in production succeeds
         assertDoesNotThrow(() ->
                 new DiskFileStore(tempStorageDir.toString(), "0123456789abcdef0123456789abcdef", prodEnv, Clock.systemDefaultZone(), objectMapper));
+
+        // Valid 64-character hex key in production succeeds
+        assertDoesNotThrow(() ->
+                new DiskFileStore(tempStorageDir.toString(), "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcde0", prodEnv, Clock.systemDefaultZone(), objectMapper));
+
+        // Compose default hex key in production fails closed
+        IllegalStateException exComposeDev = assertThrows(IllegalStateException.class, () ->
+                new DiskFileStore(tempStorageDir.toString(), DiskFileStore.DEFAULT_COMPOSE_HEX_KEY, prodEnv, Clock.systemDefaultZone(), objectMapper));
+        assertTrue(exComposeDev.getMessage().contains("Default dev key cannot be used in production"));
+
+        // Invalid 64-character non-hex key in production fails closed
+        IllegalStateException exNonHex = assertThrows(IllegalStateException.class, () ->
+                new DiskFileStore(tempStorageDir.toString(), "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz", prodEnv, Clock.systemDefaultZone(), objectMapper));
+        assertTrue(exNonHex.getMessage().contains("must be exactly 32 bytes"));
+    }
+
+    @Test
+    @DisplayName("Dev profile with Compose default 64-character hex key initializes and performs file round trip")
+    void testDevProfileWithComposeDefaultHexKey() throws Exception {
+        MockEnvironment devEnv = new MockEnvironment();
+        devEnv.setActiveProfiles("dev");
+
+        DiskFileStore devStore = new DiskFileStore(tempStorageDir.toString(), DiskFileStore.DEFAULT_COMPOSE_HEX_KEY, devEnv, Clock.systemDefaultZone(), objectMapper);
+        devStore.init();
+
+        StoredDocument stored = devStore.storeStream(
+                new java.io.ByteArrayInputStream(VALID_PDF_BYTES),
+                "compose_key_test.pdf",
+                "application/pdf",
+                VALID_PDF_BYTES.length,
+                DocumentCategory.POLICY,
+                customerUser.getUserId()
+        );
+
+        assertNotNull(stored);
+        LoadedDocument loaded = devStore.get(stored.id(), customerUser);
+        assertNotNull(loaded);
+        try (java.io.InputStream is = loaded.resource().getInputStream()) {
+            assertArrayEquals(VALID_PDF_BYTES, is.readAllBytes());
+        }
     }
 
     @Test
@@ -366,5 +406,63 @@ class DiskFileStoreTest {
         // deleteInternal works without user context
         fileStore.deleteInternal(stored.id());
         assertFalse(fileStore.exists(stored.id()));
+    }
+
+    @Test
+    @DisplayName("Tampered encrypted file on disk fails decryption with AEAD / SecurityException (INS-SR-004)")
+    void testTamperedEncryptedFileFailsDecryption() throws Exception {
+        StoredDocument stored = fileStore.storeStream(
+                new ByteArrayInputStream(VALID_PDF_BYTES),
+                "tamper_proof.pdf",
+                "application/pdf",
+                VALID_PDF_BYTES.length,
+                DocumentCategory.POLICY,
+                customerUser.getUserId()
+        );
+
+        Path encFile = tempStorageDir.resolve("policies").resolve(stored.storageKey());
+        assertTrue(Files.exists(encFile), "Encrypted file must exist");
+
+        byte[] encBytes = Files.readAllBytes(encFile);
+        // Flip bits in the ciphertext / GCM auth tag portion
+        encBytes[encBytes.length - 1] ^= 0x5A;
+        Files.write(encFile, encBytes);
+
+        com.team11.insurance.common.exception.FileStorageException ex =
+                assertThrows(com.team11.insurance.common.exception.FileStorageException.class,
+                        () -> fileStore.get(stored.id(), customerUser));
+
+        assertTrue(ex.getMessage().contains("Failed to decrypt or read document"));
+        assertNotNull(ex.getCause());
+        assertTrue(ex.getCause() instanceof SecurityException, "Cause must be SecurityException due to tag validation failure");
+        assertTrue(ex.getCause().getMessage().contains("tampered with or corrupted"));
+    }
+
+    @Test
+    @DisplayName("Encryption keys are configured externally and never stored alongside encrypted documents on disk")
+    void testEncryptionKeyNotStoredAlongsideEncryptedFiles() throws Exception {
+        String testKey = "0123456789abcdef0123456789abcdef";
+        StoredDocument stored = fileStore.storeStream(
+                new ByteArrayInputStream(VALID_PDF_BYTES),
+                "key_isolation.pdf",
+                "application/pdf",
+                VALID_PDF_BYTES.length,
+                DocumentCategory.CLAIM,
+                customerUser.getUserId()
+        );
+
+        Path encFile = tempStorageDir.resolve("claims").resolve(stored.storageKey());
+        Path metaFile = tempStorageDir.resolve("claims").resolve(stored.storageKey().replace(".enc", ".meta"));
+
+        assertTrue(Files.exists(encFile));
+        assertTrue(Files.exists(metaFile));
+
+        byte[] encBytes = Files.readAllBytes(encFile);
+        byte[] metaBytes = Files.readAllBytes(metaFile);
+
+        // Neither raw bytes of key nor key string can appear in file content
+        assertFalse(new String(encBytes, StandardCharsets.ISO_8859_1).contains(testKey));
+        assertFalse(new String(metaBytes, StandardCharsets.UTF_8).contains(testKey));
+        assertFalse(new String(metaBytes, StandardCharsets.UTF_8).toLowerCase().contains("secretkey"));
     }
 }
