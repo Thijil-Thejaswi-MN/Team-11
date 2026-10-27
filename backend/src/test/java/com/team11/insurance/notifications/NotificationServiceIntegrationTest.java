@@ -60,6 +60,7 @@ class NotificationServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        recoveryScheduler.setPollingEnabled(false);
         simulator = channelSender.getSimulator();
         simulator.reset();
         outboxRepository.deleteAll();
@@ -69,6 +70,7 @@ class NotificationServiceIntegrationTest {
     void tearDown() {
         simulator.reset();
         outboxRepository.deleteAll();
+        recoveryScheduler.setPollingEnabled(true);
     }
 
     @Test
@@ -299,6 +301,28 @@ class NotificationServiceIntegrationTest {
 
         List<NotificationOutbox> pendingLeft = outboxRepository.findPendingDueForDelivery(Instant.now());
         assertThat(pendingLeft).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Requirement 10b: Scheduled polling respects pollingEnabled toggle and triggers recovery when enabled")
+    void test10b_scheduledPollingToggleAndExecution() {
+        try {
+            recoveryScheduler.setPollingEnabled(false);
+            createPendingOutbox(NotificationEvent.APPLICATION_APPROVED, "poll-test@example.test", null, NotificationChannel.EMAIL, Map.of("applicationId", "APP-POLL-1"));
+
+            // When polling is disabled, pollPendingNotifications does nothing
+            recoveryScheduler.pollPendingNotifications();
+            List<NotificationOutbox> stillPending = outboxRepository.findPendingDueForDelivery(Instant.now());
+            assertThat(stillPending).hasSize(1);
+
+            // When polling is enabled, pollPendingNotifications executes recovery
+            recoveryScheduler.setPollingEnabled(true);
+            recoveryScheduler.pollPendingNotifications();
+            List<NotificationOutbox> pendingLeft = outboxRepository.findPendingDueForDelivery(Instant.now());
+            assertThat(pendingLeft).isEmpty();
+        } finally {
+            recoveryScheduler.setPollingEnabled(false);
+        }
     }
 
     @Test

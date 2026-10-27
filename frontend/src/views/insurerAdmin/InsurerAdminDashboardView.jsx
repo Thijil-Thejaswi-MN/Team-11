@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import PortalLayout from '../../components/layout/PortalLayout';
+import { ROUTES } from '../../routes/routePaths';
 
 export default function InsurerAdminDashboardView() {
   const [activeTab, setActiveTab] = useState('OVERVIEW');
@@ -90,9 +92,11 @@ export default function InsurerAdminDashboardView() {
 
       {activeTab === 'PLANS' && (
         <div className="dashboard-card">
-          <div className="dashboard-card-header">
+          <div className="dashboard-card-header d-flex justify-content-between align-items-center">
             <span className="fw-bold">Active Insurance Plans</span>
-            <button className="btn btn-primary btn-sm">+ Create New Plan</button>
+            <Link to={ROUTES.INSURER_ADMIN_PLANS} className="btn btn-primary btn-sm">
+              <i className="bi bi-pencil-square me-1"></i>Open Plan Editor & Management
+            </Link>
           </div>
           <div className="dashboard-card-body p-0">
             <div className="table-responsive">
@@ -115,7 +119,9 @@ export default function InsurerAdminDashboardView() {
                     <td>2.5% of IDV + AddOns</td>
                     <td><span className="status-badge status-active">Active</span></td>
                     <td>
-                      <button className="btn btn-outline-secondary btn-sm">Edit Rules</button>
+                      <Link to={ROUTES.INSURER_ADMIN_PLANS} className="btn btn-outline-primary btn-sm">
+                        Edit in Plan Editor
+                      </Link>
                     </td>
                   </tr>
                   <tr>
@@ -125,7 +131,9 @@ export default function InsurerAdminDashboardView() {
                     <td>3.0% of IDV</td>
                     <td><span className="status-badge status-active">Active</span></td>
                     <td>
-                      <button className="btn btn-outline-secondary btn-sm">Edit Rules</button>
+                      <Link to={ROUTES.INSURER_ADMIN_PLANS} className="btn btn-outline-primary btn-sm">
+                        Edit in Plan Editor
+                      </Link>
                     </td>
                   </tr>
                 </tbody>

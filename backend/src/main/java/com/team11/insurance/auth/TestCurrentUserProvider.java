@@ -10,6 +10,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.Base64;
 
 /**
  * Development and Automated Testing Stub for CurrentUser identity.
@@ -76,6 +77,19 @@ public class TestCurrentUserProvider implements ICurrentUserProvider {
             if (userObj instanceof CurrentUser currentUser) {
                 return currentUser;
             }
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring("Bearer ".length()).trim();
+                CurrentUser syntheticUser = resolveSyntheticToken(token);
+                if (syntheticUser != null) {
+                    CurrentUser override = SYNTHETIC_OVERRIDE.get();
+                    return override != null ? override : syntheticUser;
+                }
+                if (isJwtStructure(token)) {
+                    throw new AuthenticationException("Authentication required: no active server-side session or valid token found.");
+                }
+                // Token failed JWT parsing / placeholder: allow fallback to synthetic user context below
+            }
         }
         CurrentUser override = SYNTHETIC_OVERRIDE.get();
         if (override != null) {
@@ -85,12 +99,77 @@ public class TestCurrentUserProvider implements ICurrentUserProvider {
         return SEEDED_CUSTOMER;
     }
 
+    private CurrentUser resolveSyntheticToken(String token) {
+        if (token == null || token.trim().isEmpty()) {
+            return null;
+        }
+        String clean = token.trim();
+        if (clean.equals("<customer-bearer-token-placeholder>") || clean.equals("{{customerToken}}")) {
+            return SEEDED_CUSTOMER;
+        }
+        if (clean.equals("<insurer-admin-bearer-token-placeholder>") || clean.equals("{{insurerAdminToken}}")) {
+            return SEEDED_INSURER_ADMIN;
+        }
+        if (clean.equals("<underwriter-bearer-token-placeholder>") || clean.equals("{{underwriterToken}}")) {
+            return SEEDED_UNDERWRITER;
+        }
+        if (clean.equals("<claims-officer-bearer-token-placeholder>") || clean.equals("{{claimsOfficerToken}}")) {
+            return SEEDED_CLAIMS_OFFICER;
+        }
+        if (clean.equals("<system-admin-bearer-token-placeholder>") || clean.equals("{{systemAdminToken}}")) {
+            return SEEDED_SYSTEM_ADMIN;
+        }
+        String lower = clean.toLowerCase();
+        if (lower.contains("underwriter")) {
+            return SEEDED_UNDERWRITER;
+        }
+        if (lower.contains("insurer-admin") || lower.contains("insureradmin")) {
+            return SEEDED_INSURER_ADMIN;
+        }
+        if (lower.contains("claims-officer") || lower.contains("claimsofficer")) {
+            return SEEDED_CLAIMS_OFFICER;
+        }
+        if (lower.contains("system-admin") || lower.contains("systemadmin")) {
+            return SEEDED_SYSTEM_ADMIN;
+        }
+        if (lower.contains("customer")) {
+            return SEEDED_CUSTOMER;
+        }
+        return null;
+    }
+
+    private boolean isJwtStructure(String token) {
+        if (token == null) {
+            return false;
+        }
+        String[] parts = token.trim().split("\\.");
+        if (parts.length != 3) {
+            return false;
+        }
+        for (String part : parts) {
+            if (part.trim().isEmpty()) {
+                return false;
+            }
+        }
+        try {
+            Base64.getUrlDecoder().decode(parts[0]);
+            Base64.getUrlDecoder().decode(parts[1]);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
     @Override
     public boolean isAuthenticated() {
         if (Boolean.TRUE.equals(UNAUTHENTICATED.get())) {
             return false;
         }
-        return true;
+        try {
+            return getCurrentUser() != null;
+        } catch (AuthenticationException ex) {
+            return false;
+        }
     }
 
     /**
