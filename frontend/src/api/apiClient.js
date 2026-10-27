@@ -28,22 +28,48 @@ const apiClient = axios.create({
   },
 });
 
+let inMemoryToken = null;
+
+export function setAuthToken(token) {
+  inMemoryToken = token || null;
+}
+
+export function getAuthToken() {
+  return inMemoryToken;
+}
+
+const unauthorizedListeners = new Set();
+
+export function onUnauthorized(callback) {
+  unauthorizedListeners.add(callback);
+  return () => {
+    unauthorizedListeners.delete(callback);
+  };
+}
+
 /**
  * Request Interceptor:
  * 1. Attaches X-Correlation-Id header for distributed tracing.
- * 2. Attaches Bearer JWT token if user session exists (Person 2 hook).
+ * 2. Attaches Bearer JWT token from in-memory token store if user session exists.
  */
 apiClient.interceptors.request.use(
   (config) => {
+    if (!config.headers) {
+      config.headers = {};
+    }
     // Inject Correlation-ID if not already supplied
     if (!config.headers['X-Correlation-Id']) {
       config.headers['X-Correlation-Id'] = generateCorrelationId();
     }
 
-    // Inject Bearer token from storage (supports Person 2's Auth Module)
-    const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-    if (token && !config.headers.Authorization) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Inject Bearer token strictly from in-memory storage (never localStorage/sessionStorage)
+    if (inMemoryToken && !config.headers.Authorization && !config.headers['Authorization']) {
+      config.headers['Authorization'] = `Bearer ${inMemoryToken}`;
+    }
+
+    // Let the browser/axios set the multipart boundary automatically for FormData
+    if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
     }
 
     return config;
@@ -94,9 +120,15 @@ apiClient.interceptors.response.use(
 
     // Special handling for 401 Session Expiry (SAD INS-SR-005: 15 min idle timeout)
     if (normalizedError.status === 401) {
-      // Clear token on confirmed 401 to prevent stale state
-      localStorage.removeItem('auth_token');
-      sessionStorage.removeItem('auth_token');
+      // Clear in-memory token on confirmed 401 to prevent stale state
+      setAuthToken(null);
+      unauthorizedListeners.forEach((fn) => {
+        try {
+          fn(normalizedError);
+        } catch (e) {
+          console.error('Error in onUnauthorized listener', e);
+        }
+      });
     }
 
     // Broadcast through ErrorBus for centralized UI feedback

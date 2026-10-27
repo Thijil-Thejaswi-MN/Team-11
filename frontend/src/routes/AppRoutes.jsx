@@ -11,6 +11,7 @@ import RegisterView from '../views/public/RegisterView';
 
 // Customer Portal Views
 import CustomerDashboardView from '../views/customer/CustomerDashboardView';
+import CustomerKycView from '../views/customer/CustomerKycView';
 import MotorQuoteView from '../views/customer/MotorQuoteView';
 import HealthQuoteView from '../views/customer/HealthQuoteView';
 import QuotingPlaceholder from '../views/customer/QuotingPlaceholder';
@@ -19,8 +20,14 @@ import MyPoliciesView from '../views/customer/MyPoliciesView';
 import PaymentView from '../views/customer/PaymentView';
 import ClaimsPlaceholder from '../views/customer/ClaimsPlaceholder';
 
+// Auth Guards & Session Listener
+import ProtectedRoute from '../components/auth/ProtectedRoute';
+import AuthSessionListener from '../components/auth/AuthSessionListener';
+import { ROLES } from '../context/AuthContext';
+
 // Insurer Admin Views
 import InsurerAdminDashboardView from '../views/insurerAdmin/InsurerAdminDashboardView';
+import InsurerAdminPlansView from '../views/insurerAdmin/InsurerAdminPlansView';
 
 // Underwriter Views
 import UnderwriterDashboardView from '../views/underwriter/UnderwriterDashboardView';
@@ -41,24 +48,34 @@ import NotFoundView from '../views/NotFoundView';
  */
 export default function AppRoutes() {
   return (
-    <Routes>
-      {/* ============================================================ */}
-      {/* 1. PUBLIC ROUTES (No Login Required)                        */}
-      {/* ============================================================ */}
-      <Route path={ROUTES.HOME} element={<HomeView />} />
-      <Route path={ROUTES.PLANS} element={<BrowsePlansView />} />
-      <Route path={ROUTES.PLANS_COMPARE} element={<ComparePlansView />} />
+    <>
+      <AuthSessionListener />
+      <Routes>
+        {/* ============================================================ */}
+        {/* 1. PUBLIC ROUTES (No Login Required)                        */}
+        {/* ============================================================ */}
+        <Route path={ROUTES.HOME} element={<HomeView />} />
+        <Route path={ROUTES.PLANS} element={<BrowsePlansView />} />
+        <Route path={ROUTES.PLANS_COMPARE} element={<ComparePlansView />} />
 
-      {/* ============================================================ */}
-      {/* 2. PERSON 2 MODULE: AUTH & KYC HOOKS                         */}
-      {/* ============================================================ */}
-      <Route path={ROUTES.LOGIN} element={<LoginView />} />
-      <Route path={ROUTES.REGISTER} element={<RegisterView />} />
+        {/* ============================================================ */}
+        {/* 2. PERSON 2 MODULE: AUTH & KYC HOOKS                         */}
+        {/* ============================================================ */}
+        <Route path={ROUTES.LOGIN} element={<LoginView />} />
+        <Route path={ROUTES.REGISTER} element={<RegisterView />} />
 
-      {/* ============================================================ */}
-      {/* 3. CUSTOMER PORTAL ROUTES                                    */}
-      {/* ============================================================ */}
-      <Route path={ROUTES.CUSTOMER_DASHBOARD} element={<CustomerDashboardView />} />
+        {/* ============================================================ */}
+        {/* 3. CUSTOMER PORTAL ROUTES                                    */}
+        {/* ============================================================ */}
+        <Route path={ROUTES.CUSTOMER_DASHBOARD} element={<CustomerDashboardView />} />
+        <Route
+          path={ROUTES.CUSTOMER_KYC}
+          element={
+            <ProtectedRoute allowedRoles={[ROLES.CUSTOMER]}>
+              <CustomerKycView />
+            </ProtectedRoute>
+          }
+        />
 
       {/* Person 1 Customer Screens: Motor & Health Quoting (P1-08) */}
       <Route
@@ -104,7 +121,7 @@ export default function AppRoutes() {
       />
       <Route
         path={ROUTES.INSURER_ADMIN_PLANS}
-        element={<InsurerAdminDashboardView />}
+        element={<InsurerAdminPlansView />}
       />
       <Route
         path={ROUTES.INSURER_ADMIN_CANCELLATIONS}
@@ -148,5 +165,6 @@ export default function AppRoutes() {
       {/* ============================================================ */}
       <Route path="*" element={<NotFoundView />} />
     </Routes>
-  );
+  </>
+);
 }

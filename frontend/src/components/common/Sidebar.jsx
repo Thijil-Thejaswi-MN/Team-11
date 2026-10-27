@@ -31,6 +31,14 @@ export default function Sidebar() {
               <span>Dashboard</span>
             </NavLink>
             <NavLink
+              to={ROUTES.CUSTOMER_KYC}
+              className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+              id="sidebar-link-kyc"
+            >
+              <i className="bi bi-person-check"></i>
+              <span>KYC Verification</span>
+            </NavLink>
+            <NavLink
               to={ROUTES.CUSTOMER_QUOTE_MOTOR}
               className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
             >
