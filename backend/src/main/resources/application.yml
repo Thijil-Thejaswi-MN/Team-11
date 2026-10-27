@@ -40,6 +40,6 @@ info:
 insurance:
   jwt:
     secret: ${JWT_SECRET:}
-    expiration-seconds: 900
+    expiration-seconds: 28800
   security:
     encryption-key: ${ENCRYPTION_KEY:}

@@ -19,10 +19,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.ObjectProvider;
 
 /**
  * Core authentication and session orchestration service (INS-F-001, INS-SR-002, INS-SR-003, INS-SR-005).
@@ -40,15 +42,35 @@ public class AuthenticationService {
     private final UserSessionRepository sessionRepository;
     private final PasswordService passwordService;
     private final JwtService jwtService;
+    private final Clock clock;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public AuthenticationService(UserRepository userRepository,
+                                 UserSessionRepository sessionRepository,
+                                 PasswordService passwordService,
+                                 JwtService jwtService,
+                                 ObjectProvider<Clock> clockProvider) {
+        this(userRepository, sessionRepository, passwordService, jwtService,
+                clockProvider != null ? clockProvider.getIfAvailable(Clock::systemDefaultZone) : Clock.systemDefaultZone());
+    }
+
+    public AuthenticationService(UserRepository userRepository,
+                                 UserSessionRepository sessionRepository,
+                                 PasswordService passwordService,
+                                 JwtService jwtService,
+                                 Clock clock) {
+        this.userRepository = userRepository;
+        this.sessionRepository = sessionRepository;
+        this.passwordService = passwordService;
+        this.jwtService = jwtService;
+        this.clock = clock != null ? clock : Clock.systemDefaultZone();
+    }
 
     public AuthenticationService(UserRepository userRepository,
                                  UserSessionRepository sessionRepository,
                                  PasswordService passwordService,
                                  JwtService jwtService) {
-        this.userRepository = userRepository;
-        this.sessionRepository = sessionRepository;
-        this.passwordService = passwordService;
-        this.jwtService = jwtService;
+        this(userRepository, sessionRepository, passwordService, jwtService, (Clock) null);
     }
 
     /**
@@ -94,7 +116,7 @@ public class AuthenticationService {
      * @throws AccountLockedException if account is locked due to 5 consecutive failures
      */
     public LoginResponse login(LoginRequest request, String ipAddress, String userAgent) {
-        Instant now = Instant.now();
+        Instant now = clock.instant();
         String normalizedEmail = request.getEmail().trim().toLowerCase();
 
         Optional<User> userOpt = userRepository.findByEmailIgnoreCase(normalizedEmail);
@@ -161,7 +183,7 @@ public class AuthenticationService {
 
         log.info("User id={} logged in successfully. Session created.", user.getId());
 
-        return new LoginResponse(token, user.getRole().getValue(), jwtService.getExpirationSeconds());
+        return new LoginResponse(token, user.getRole().getValue(), UserSession.INACTIVITY_TIMEOUT_SECONDS);
     }
 
     /**
@@ -173,7 +195,8 @@ public class AuthenticationService {
      * @throws AuthenticationException if token is invalid, expired, or session is revoked/timed out
      */
     public CurrentUser validateTokenAndSession(String token, Instant now) {
-        Map<String, Object> claims = jwtService.parseAndValidateToken(token, now);
+        Instant effectiveNow = now != null ? now : clock.instant();
+        Map<String, Object> claims = jwtService.parseAndValidateToken(token, effectiveNow);
 
         String sessionId = (String) claims.get(JwtService.CLAIM_SESSION_ID);
         if (sessionId == null || sessionId.trim().isEmpty()) {
@@ -201,8 +224,8 @@ public class AuthenticationService {
                 .orElseThrow(() -> new AuthenticationException("Session not found or has been terminated"));
 
         // 4. Verify session is valid, not revoked, not expired, and not beyond inactivity timeout
-        if (!session.isValid(now)) {
-            session.revoke(now);
+        if (!session.isValid(effectiveNow)) {
+            session.revoke(effectiveNow);
             sessionRepository.save(session);
             throw new AuthenticationException("Session expired due to inactivity or revocation");
         }
@@ -216,7 +239,7 @@ public class AuthenticationService {
         }
 
         // 7. Only after ownership and session checks succeed, touch session to record activity
-        session.touch(now);
+        session.touch(effectiveNow);
         sessionRepository.save(session);
 
         String role = (String) claims.get(JwtService.CLAIM_ROLE);
@@ -234,11 +257,12 @@ public class AuthenticationService {
      */
     public void logout(String token) {
         try {
-            Map<String, Object> claims = jwtService.parseAndValidateToken(token, Instant.now());
+            Instant now = clock.instant();
+            Map<String, Object> claims = jwtService.parseAndValidateToken(token, now);
             String sessionId = (String) claims.get(JwtService.CLAIM_SESSION_ID);
             if (sessionId != null) {
                 sessionRepository.findBySessionId(sessionId).ifPresent(s -> {
-                    s.revoke(Instant.now());
+                    s.revoke(now);
                     sessionRepository.save(s);
                 });
             }

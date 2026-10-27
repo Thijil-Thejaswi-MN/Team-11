@@ -29,9 +29,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     public static final String BEARER_PREFIX = "Bearer ";
 
     private final AuthenticationService authenticationService;
+    private final java.time.Clock clock;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public JwtAuthenticationFilter(AuthenticationService authenticationService,
+                                   org.springframework.beans.factory.ObjectProvider<java.time.Clock> clockProvider) {
+        this.authenticationService = authenticationService;
+        this.clock = clockProvider != null ? clockProvider.getIfAvailable(java.time.Clock::systemDefaultZone) : java.time.Clock.systemDefaultZone();
+    }
+
+    public JwtAuthenticationFilter(AuthenticationService authenticationService, java.time.Clock clock) {
+        this.authenticationService = authenticationService;
+        this.clock = clock != null ? clock : java.time.Clock.systemDefaultZone();
+    }
 
     public JwtAuthenticationFilter(AuthenticationService authenticationService) {
-        this.authenticationService = authenticationService;
+        this(authenticationService, (java.time.Clock) null);
     }
 
     @Override
@@ -43,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
             String token = authHeader.substring(BEARER_PREFIX.length()).trim();
             try {
-                CurrentUser currentUser = authenticationService.validateTokenAndSession(token, Instant.now());
+                CurrentUser currentUser = authenticationService.validateTokenAndSession(token, clock.instant());
                 request.setAttribute(ProductionCurrentUserProvider.CURRENT_USER_ATTRIBUTE, currentUser);
             } catch (AuthenticationException ex) {
                 // Invalid or expired token: do not set CurrentUser attribute.

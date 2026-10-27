@@ -132,4 +132,98 @@ class AdminControllerIntegrationTest {
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.errorCode").value("ACCESS-403"));
     }
+
+    @Test
+    @DisplayName("TC-Acc-02: Duplicate user email returns 409 Conflict")
+    void testDuplicateUserEmailReturns409() throws Exception {
+        Insurer insurer = insurerRepository.save(new Insurer("Dupe Shield"));
+
+        CreateUserRequest req1 = new CreateUserRequest(
+                "First Staff",
+                "dupe.staff@shield.invalid",
+                "9876543210",
+                "StaffPass123!",
+                UserRole.UNDERWRITER,
+                insurer.getId()
+        );
+
+        mockMvc.perform(post("/admin/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req1)))
+                .andExpect(status().isCreated());
+
+        CreateUserRequest req2 = new CreateUserRequest(
+                "Second Staff",
+                "dupe.staff@shield.invalid",
+                "9876543211",
+                "StaffPass123!",
+                UserRole.CLAIMS_OFFICER,
+                insurer.getId()
+        );
+
+        mockMvc.perform(post("/admin/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req2)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.errorCode").value("STATE-409"));
+    }
+
+    @Test
+    @DisplayName("TC-Acc-02: Staff with non-existent insurerId is rejected with 422 Unprocessable Entity")
+    void testStaffWithNonExistentInsurerIdRejected422() throws Exception {
+        CreateUserRequest invalidStaff = new CreateUserRequest(
+                "Bad Insurer Staff",
+                "badinsurer@test.invalid",
+                "1231231234",
+                "StaffPassword123!",
+                UserRole.INSURER_ADMIN,
+                999999L // Non-existent insurerId
+        );
+
+        mockMvc.perform(post("/admin/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidStaff)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode").value("VALID-422"));
+    }
+
+    @Test
+    @DisplayName("Non-staff user (CUSTOMER) can be created by SYSTEM_ADMIN without insurerId (201 Created)")
+    void testNonStaffUserCreatedWithoutInsurerIdSuccess() throws Exception {
+        CreateUserRequest customerReq = new CreateUserRequest(
+                "Admin Created Customer",
+                "admin.created.cust@test.invalid",
+                "1234567890",
+                "CustomerPass123!",
+                UserRole.CUSTOMER,
+                null // Non-staff does not require insurerId
+        );
+
+        mockMvc.perform(post("/admin/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(customerReq)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").isNumber());
+    }
+
+    @Test
+    @DisplayName("TC-Acc-02: Non-admin caller (CUSTOMER) is denied POST /admin/users with 403 Forbidden")
+    void testCustomerDeniedUserCreationAccess() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_CUSTOMER);
+
+        CreateUserRequest req = new CreateUserRequest(
+                "Unauthorized User",
+                "unauth@test.invalid",
+                "1112223333",
+                "Password123!",
+                UserRole.CUSTOMER,
+                null
+        );
+
+        mockMvc.perform(post("/admin/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.errorCode").value("ACCESS-403"));
+    }
 }

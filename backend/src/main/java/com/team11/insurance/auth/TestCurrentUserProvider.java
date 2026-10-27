@@ -76,6 +76,10 @@ public class TestCurrentUserProvider implements ICurrentUserProvider {
             if (userObj instanceof CurrentUser currentUser) {
                 return currentUser;
             }
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                throw new AuthenticationException("Authentication required: no active server-side session or valid token found.");
+            }
         }
         CurrentUser override = SYNTHETIC_OVERRIDE.get();
         if (override != null) {
@@ -90,7 +94,11 @@ public class TestCurrentUserProvider implements ICurrentUserProvider {
         if (Boolean.TRUE.equals(UNAUTHENTICATED.get())) {
             return false;
         }
-        return true;
+        try {
+            return getCurrentUser() != null;
+        } catch (AuthenticationException ex) {
+            return false;
+        }
     }
 
     /**
