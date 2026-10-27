@@ -5,6 +5,8 @@ import com.team11.insurance.auth.dto.LoginRequest;
 import com.team11.insurance.auth.dto.RegisterRequest;
 import com.team11.insurance.auth.repository.UserRepository;
 import com.team11.insurance.auth.repository.UserSessionRepository;
+import com.team11.insurance.common.time.MutableTestClock;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
@@ -40,10 +44,19 @@ class AuthControllerIntegrationTest {
     @Autowired
     private UserSessionRepository sessionRepository;
 
+    @Autowired
+    private MutableTestClock clock;
+
     @BeforeEach
     void cleanUp() {
+        clock.reset();
         sessionRepository.deleteAll();
         userRepository.deleteAll();
+    }
+
+    @AfterEach
+    void tearDown() {
+        clock.reset();
     }
 
     @Test
@@ -148,6 +161,24 @@ class AuthControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(wrongLogin)))
                 .andExpect(status().isLocked())
                 .andExpect(jsonPath("$.errorCode").value("AUTH-423"));
+
+        // During 15-minute lockout, even correct password returns 423 Locked (TC-Sec-05)
+        LoginRequest correctLogin = new LoginRequest("lock@test.invalid", "Password12345!");
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(correctLogin)))
+                .andExpect(status().isLocked())
+                .andExpect(jsonPath("$.errorCode").value("AUTH-423"));
+
+        // Advance clock by 15 minutes + 1 second
+        clock.advance(Duration.ofMinutes(15).plusSeconds(1));
+
+        // After lockout duration expires, login with correct password succeeds (TC-Sec-05)
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(correctLogin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").isNotEmpty());
     }
 
     @Test
@@ -200,5 +231,87 @@ class AuthControllerIntegrationTest {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Logged out successfully."));
+    }
+
+    @Test
+    @DisplayName("TC-Sec-10: Session inactivity timeout (15 minutes idle triggers 401)")
+    void testSessionInactivityTimeout() throws Exception {
+        clock.setFixed(Instant.parse("2026-10-27T10:00:00Z"));
+
+        RegisterRequest regReq = new RegisterRequest("Timeout User", "timeout@test.invalid", "5555555555", "Password12345!");
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(regReq)))
+                .andExpect(status().isCreated());
+
+        LoginRequest loginReq = new LoginRequest("timeout@test.invalid", "Password12345!");
+        String responseContent = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginReq)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        Map<String, Object> loginResponse = objectMapper.readValue(responseContent, Map.class);
+        String token = (String) loginResponse.get("accessToken");
+
+        // Advance 10 minutes: request within 15 min idle threshold touches session and succeeds
+        clock.advance(Duration.ofMinutes(10));
+        mockMvc.perform(get("/auth/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("timeout@test.invalid"));
+
+        // Advance another 10 minutes: request within 15 min idle threshold touches session and succeeds again
+        clock.advance(Duration.ofMinutes(10));
+        mockMvc.perform(get("/auth/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("timeout@test.invalid"));
+
+        // Now idle for 16 minutes (> 15 minutes inactivity timeout)
+        clock.advance(Duration.ofMinutes(16));
+        mockMvc.perform(get("/auth/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.errorCode").value("AUTH-401"));
+    }
+
+    @Test
+    @DisplayName("TC-Sec-10: Absolute maximum session lifetime (8 hours) terminates active session")
+    void testMaxSessionLifetimeEightHours() throws Exception {
+        clock.setFixed(Instant.parse("2026-10-27T08:00:00Z"));
+
+        RegisterRequest regReq = new RegisterRequest("MaxLifetime User", "maxlife@test.invalid", "5555555555", "Password12345!");
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(regReq)))
+                .andExpect(status().isCreated());
+
+        LoginRequest loginReq = new LoginRequest("maxlife@test.invalid", "Password12345!");
+        String responseContent = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginReq)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        Map<String, Object> loginResponse = objectMapper.readValue(responseContent, Map.class);
+        String token = (String) loginResponse.get("accessToken");
+
+        // Touch every 10 minutes for 7 hours 50 minutes (47 intervals) - all should succeed
+        for (int i = 0; i < 47; i++) {
+            clock.advance(Duration.ofMinutes(10));
+            mockMvc.perform(get("/auth/me")
+                            .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk());
+        }
+
+        // Advance 20 minutes (now at 8 hours and 10 minutes total from login)
+        clock.advance(Duration.ofMinutes(20));
+
+        // Absolute maximum session lifetime (8 hours) reached -> 401 Unauthorized
+        mockMvc.perform(get("/auth/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.errorCode").value("AUTH-401"));
     }
 }

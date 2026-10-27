@@ -62,7 +62,7 @@ class JwtServiceTest {
     @Test
     @DisplayName("Expired token is rejected with AuthenticationException")
     void testExpiredTokenThrows() {
-        Instant past = Instant.now().minusSeconds(1000);
+        Instant past = Instant.now().minusSeconds(30000);
         String token = jwtService.generateToken(1001L, "cust@test.invalid", "CUSTOMER", null, "sess-999", past);
 
         Instant now = Instant.now();
