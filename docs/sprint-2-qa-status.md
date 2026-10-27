@@ -18,20 +18,25 @@ As established in Team 11 Governance and Decision `D-01`:
 
 ---
 
-## 2. Sprint 2 Planning & Calibration Baseline (26 Oct 2026 / TEAM-08)
+## 2. Sprint 2 Scope Decision Baseline (26–27 Oct 2026 / D-10)
 
 - **Sprint 1 Actual Delivery:** 60 Story Points delivered and verified out of 83 committed SP (72.3% completion).
-- **Sprint 1 Carry-Over:** 18 Story Points carried over to Sprint 2 (`P3-05`, `P3-06`, `P2-07`, `P2-08`, `P4-08`).
-- **Sprint 2 Target Velocity:** Calibrated to 60–65 SP based on real Sprint 1 performance.
-- **Scope Deferral (Decision D-10):** Dropped 4 deferrable items from bottom of `tier-b` deferral order:
-  - `INS-NF-007` (Audit Log Multi-Region Archival, 3 SP) -> Marked **"D"** in RTM
-  - `INS-F-025` (Claims Payout Batch Payment Schedule Export, 3 SP) -> Marked **"D"** in RTM
-  - `INS-F-023` (External Assessor Video-Inspection Stream Integration, 3 SP) -> Marked **"D"** in RTM
-  - `INS-F-021` (Bulk Renewal Batch File Processing, 3 SP) -> Marked **"D"** in RTM
-- **Net Sprint 2 Commitment:** **62 Story Points** (perfectly calibrated with demonstrated 60 SP velocity).
+- **Sprint 1 Carry-Over:** 18 Story Points carried over to Sprint 2 (`P2-07` 5 SP, `P2-08` 3 SP, `P2-17` 2 SP, `P3-06` 3 SP, `P4-08` 5 SP; P4-08 has since merged in PR #150).
+- **Sprint 2 Target Velocity:** Calibrated to ~60 SP based on demonstrated Sprint 1 performance (plan 71 SP + 18 SP carry-over = 89 SP against ~60 SP capacity).
+- **Scope Decision & Deferrals (Decision D-10):** Dropped deferrable items from bottom of deferral order, except INS-F-023 which is kept because it is already implemented:
+  - **Deferred (17 SP total, marked "D" in RTM):**
+    - `INS-F-025` System Admin reports (`P3-11`, 5 SP)
+    - `INS-F-021` Role-specific dashboards (`P2-15`, 5 SP)
+    - `INS-F-017` Renewal reminders (`P4-13`, 3 SP)
+    - `INS-NF-007` 5-year retention (`P1-13`, 2 SP)
+    - `INS-F-022` Plan search/filter (`P2-13`, 2 SP)
+  - **Kept in Scope:**
+    - `INS-F-023` Duplicate claim flag (`P1-20`, 3 SP; already implemented at filing, remaining work is verification and Claims Officer banner)
+    - `INS-F-024` View/download policy documents (part of renewal `P3-09`)
 - **Claims Responsibility Split (Decision D-11):**
-  - Raghunandan Kotary (P4): Core claims engine, claims repository, and payout processing backend.
-  - Thijil Thejaswi M N (P1): Claims officer UI screens (`P1-12`), 15-day stale claim auto-closure scheduler (`P1-19`), and independent verification against STP requirements (`TC-Clm-01` through `TC-Clm-04`).
+  - Agreed between Raghunandan (P4) and Thijil (P1), not at a meeting.
+  - Raghunandan Kotary (P4): Claims backend (entities, `ClaimService` with `payout(...)` and `closeStale()`, `ClaimController` mapping `POST /claims`, `GET /claims`, `GET /claims/{id}`, `GET /claims/policy/{policyId}`, `POST /claims/{id}/verify`, `POST /claims/{id}/decision`).
+  - Thijil Thejaswi M N (P1): Claims Officer screens (`P1-12`), claim auto-close scheduled job (`P1-19`), and STP independent verification (`TC-Clm-01` through `TC-Clm-04`, `TC-Clm-06`).
 
 ---
 
@@ -39,20 +44,19 @@ As established in Team 11 Governance and Decision `D-01`:
 
 ### 3.1 Daily Progress Summary
 - **Thijil (P1):**
-  - Convened and documented Sprint 2 Planning & Deferral Meeting (TEAM-08, D-10, D-11).
-  - Updated `docs/decisions.md` with Decisions D-10 and D-11.
-  - Updated `docs/requirements-traceability-matrix.md` with "D" markings for dropped items.
+  - Formulated Sprint 2 Scope Decision (D-10) without a team meeting, based on Sprint 1 actual delivery (60/83 SP, 18 SP carry-over) and shared with the team for objection.
+  - Recorded Decisions D-10 and D-11 in `docs/decisions.md` and updated `docs/requirements-traceability-matrix.md`.
   - Completed **P1-11** (Underwriter Queue Screen): Replaced placeholder with full dashboard, live referral rule triggers, Approve/Reject modal with mandatory reason, and error banners for 422, 409, and 403.
   - Wired backend `UnderwritingEngine` with `INotify` notification dispatch (`APPLICATION_APPROVED` / `APPLICATION_REJECTED`) and `IAuditLog` audit entries.
-  - Wrote 7 new automated frontend tests in `UnderwriterDashboardView.test.jsx`. Full frontend suite passing (38/38 tests across 11 files). Backend underwriting integration suite passing (15/15 tests).
+  - Added unit test coverage for manual decision notification and audit logging in `UnderwritingEngineIntegrationTest.java`.
+  - Wrote automated frontend tests in `UnderwriterDashboardView.test.jsx`. Full frontend suite passing (38/38 tests across 11 files). Backend underwriting integration suite passing.
   - Started **P1-12** (Claims Officer Screens): Built stage queue view and loss appraisal modal in `ClaimsOfficerDashboardView.jsx`.
 - **Sharana (P2):**
   - Carrying forward P2-07 (KYC upload endpoint) and P2-08 (KYC upload screen).
-  - Designated independent reviewer for P1-11 PR to execute `TC-UW-04`.
 - **Samarth (P3):**
   - In progress on P3-05 (Policy Issuance & PDF Generation) and P3-08 (Cancellation & Renewal).
 - **Raghunandan (P4):**
-  - Backend claims PR merged; notification dispatcher (P4-08) ongoing.
+  - Backend claims PR merged; notification dispatcher PR #150 merged into `main`.
 
 ### 3.2 Automated Test Execution Status
 
@@ -87,6 +91,6 @@ As established in Team 11 Governance and Decision `D-01`:
 ## 4. Daily Sign-off & Pull Request Review Pipeline
 
 - **Branch:** `feat/sprint-2-planning-and-p1-11-underwriter-desk`
-- **Scope:** Sprint 2 planning (D-10, D-11, RTM "D" marks), P1-11 Underwriter Queue Screen, P1-12 Claims Officer UI kickoff.
-- **Reviewers:** `sharanabasavagouda113-debug` (Sharana) and `Samarth-S-Maladkar` (Samarth).
+- **Scope:** Sprint 2 scope decision (D-10, D-11, RTM "D" marks), P1-11 Underwriter Queue Screen.
+- **Reviewers:** Open to any team member other than author.
 - **Merge Mandate:** Will only be merged into `main` after independent review approval. No admin override permitted.

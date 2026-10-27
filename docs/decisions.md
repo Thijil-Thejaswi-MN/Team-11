@@ -28,8 +28,8 @@ If a decision changes the approved SRS, SAD, or STP, record the change and ratio
 | D-07 | Source of truth for backlog and story points | Use GitHub Issues and the existing GitHub Project as the source of truth; the Day 2 plan replaces Jira tracking with GitHub. Do not maintain duplicate points in Jira. | Confirmed | Thijil (Person 1); all owners maintain their own issues | Effective immediately |
 | D-08 | `tier-b` label convention | Apply `tier-b` only to medium-priority work explicitly identified as deferrable to Sprint 2. The label does not replace or change the SRS priority. | Confirmed | Thijil (Person 1); each issue owner applies it to their own eligible issues | During backlog review; before Sprint 1 starts |
 | D-09 | API-contract sign-off | Contract documents drafted and merged for P1-03 (PR #53), P2-01 (PR #54), and P3-01 (PR #46); P4-03 interface contracts drafted in PR #128. Formal joint sign-off across all four members completed (D-09.5 business rule confirmed: claims paid only when SETTLED). | Confirmed | Person 1: Thijil; Person 2: Sharana; Person 3: Samarth; Person 4: Raghunandan | Pre-Sprint 1 sign-off meeting |
-| D-10 | Sprint 2 planning, velocity calibration & deferrals (TEAM-08) | Real Sprint 1 delivery: 60 of 83 SP (18 SP carry-over). Calibrated Sprint 2 velocity to 60–65 SP. Dropped deferrable items from bottom of deferral order (INS-NF-007, INS-F-025, INS-F-023, INS-F-021) marked "D" in RTM. Total planned commitment: 62 SP. | Confirmed | All four members; Thijil (Person 1) records | Confirmed 26 Oct 2026 in Sprint 2 Planning |
-| D-11 | Claims module ownership split (Person 1 & Person 4) | Agreed split: Person 4 (Raghunandan) retains claims backend core (verify, decide, payout REST endpoints & entities). Person 1 (Thijil) owns Claims Officer UI screens (P1-12), 15-day stale auto-closure scheduled job (P1-19), and STP independent verification (TC-Clm-01 to TC-Clm-04). | Confirmed | Thijil (Person 1) & Raghunandan (Person 4) | Confirmed 26 Oct 2026 |
+| D-10 | Sprint 2 scope decision (TEAM-08) | Sprint 2 scope decision, 26-27 Oct 2026, made by the QA Lead (Thijil) without a team meeting, based on Sprint 1 actual delivery (60 of 83 SP, 18 SP carry-over) and shared with the team for objection. Deferred (17 SP total): INS-F-025 reports (P3-11, 5 SP), INS-F-021 dashboards (P2-15, 5 SP), INS-F-017 reminders (P4-13, 3 SP), INS-NF-007 retention (P1-13, 2 SP), INS-F-022 filters (P2-13, 2 SP). Kept: INS-F-023 duplicate flag (already implemented at filing) and INS-F-024 document download (part of P3-09). | Confirmed | Thijil (Person 1) | Shared with team 26-27 Oct 2026 |
+| D-11 | Claims module ownership split (Person 1 & Person 4) | Agreed split between Raghunandan (Person 4) and Thijil (Person 1): Raghunandan maintains claims backend (entities, ClaimService, ClaimController with POST /claims, GET /claims, GET /claims/{id}, GET /claims/policy/{policyId}, POST /claims/{id}/verify, POST /claims/{id}/decision). Thijil owns Claims Officer screens, auto-close scheduled job, and STP verification. | Confirmed | Thijil (Person 1) & Raghunandan (Person 4) | Agreed between P1 and P4 (26 Oct 2026) |
 
 ## Decision details
 
@@ -196,46 +196,40 @@ Before beginning Sprint 1 on Monday, 19 October 2026, the team held architecture
     - The backend implementation in `RefundCalculator.java` preserves mathematically exact integer-numerator arithmetic with floor rounding yielding ₹10,873, strictly adhering to the SRS/SAD round-down mandate.
     - This 1-rupee difference is recorded here as an identified oracle discrepancy pending formal team/guide clarification and sign-off during Sprint 2 test execution.
 
-### D-10 — Sprint 2 Planning, Velocity Calibration, and Deferral Decision (TEAM-08)
+### D-10 — Sprint 2 Scope Decision (TEAM-08)
 
-**Status: Confirmed.** (Agreed by all 4 team members on 26 October 2026)
+**Status: Confirmed.** (Sprint 2 scope decision, 26-27 Oct 2026, made by the QA Lead (Thijil) without a team meeting, based on Sprint 1 actual delivery (60 of 83 SP, 18 SP carry-over) and shared with the team for objection.)
 
 - **Context & Review of Sprint 1 Real Results:**
-  - The team conducted the formal Sprint 2 planning and deferral review on 26 October 2026.
-  - Review of Sprint 1: The team planned 83 story points of work and successfully delivered and merged **60 story points** into `main` (~72% delivery rate).
-  - An honest accounting identified **18 story points of carry-over work** remaining from Sprint 1:
-    - `P3-05` / `P3-06` Policy issuance & review screens carry-over (~7 SP)
-    - `P2-07` / `P2-08` KYC document upload API and UI (~6 SP)
-    - `P4-08` Live notification dispatcher integration (~3 SP)
-    - `P2-09` Automated Newman API collection in CI (~2 SP)
-- **Calibrated Sprint 2 Velocity:**
-  - In light of real Sprint 1 velocity (60 SP), the provisional 100 SP heuristic (D-05) is superseded by an empirically calibrated Sprint 2 capacity of **60–65 story points**.
-  - Without scope adjustments, the total demand (18 SP carry-over + 74 SP planned Sprint 2 backlog = 92 SP) would create severe schedule risk and overcommit the team.
-- **Deferral Strategy & Dropped Scope (Bottom of Deferral Order):**
-  - Following course syllabus guidelines and the team's established `tier-b` convention (D-08), the team decided to drop deferrable medium-priority items starting from the bottom of the requirement order.
-  - The following four requirements are formally **Deferred** and marked **"D"** in the Requirements Traceability Matrix (RTM):
-    1. **`INS-NF-007` (Audit Record Retention / Archival Job — P1-13, 3 SP, `tier-b`):**
-       - *Rationale:* The audit log table (`audit_logs`) is append-only and immutable in MySQL/H2 with user attribution. Long-term automated background archival after 5 years is a post-deployment operational concern that does not affect functional workflow demonstration.
-    2. **`INS-F-025` (Generate Admin Reports — P3-09, 3 SP, `tier-b`):**
-       - *Rationale:* Core operational reporting is directly inspectable via live database queries and role-specific screens (`/customer/policies`, `/underwriter`, `/claims`). Automated scheduled batch report generation is non-critical for end-to-end user journeys.
-    3. **`INS-F-023` (Duplicate Claim Detection Engine — P1-20, 3 SP, `tier-b`):**
-       - *Rationale:* Claims Officers manually review incident date, vehicle registration, and claimant identity during assessment. Algorithmic 48-hour collision detection is deferred as an advanced fraud optimization.
-    4. **`INS-F-021` (Role-Specific Analytical Dashboards — 3 SP, `tier-b`):**
-       - *Rationale:* Role portal shells (`PortalLayout.jsx`) and dedicated workspace views (`/customer`, `/underwriter`, `/claims`) provide all operational workflow triggers. Aggregate business intelligence KPI dashboards are non-blocking.
-  - **Net Sprint 2 Plan:** 18 SP carry-over + 44 SP core Sprint 2 scope = **62 story points**, bringing the sprint backlog into exact alignment with demonstrated velocity.
+  - Sprint 1 delivered: 60 of 83 planned SP merged into `main`.
+  - Carry-over from Sprint 1: 18 SP (P2-07 5 SP, P2-08 3 SP, P2-17 2 SP, P3-06 3 SP, P4-08 5 SP; P4-08 has since been merged in PR #150).
+  - Sprint 2 original plan: 71 SP + 18 SP carry-over = 89 SP against demonstrated team capacity of about 60 SP.
+- **Scope Decision & Deferrals:**
+  - To align scope with capacity, deferrable items were dropped in the plan's deferral order, except INS-F-023, which is kept because it is already implemented.
+  - **Deferred Requirements** (marked **"D"** in the RTM with reason "deferred for capacity, Sprint 2 scope decision D-10"):
+    1. **`INS-F-025` System Admin reports (P3-11, 5 SP):** System Admin reports deferred.
+    2. **`INS-F-021` Role-specific dashboards (P2-15, 5 SP):** Role-specific dashboards deferred.
+    3. **`INS-F-017` Renewal reminders (P4-13, 3 SP):** Renewal reminders 30/15/1 days before expiry deferred.
+    4. **`INS-NF-007` 5-year retention (P1-13, 2 SP):** Audit records retained and retrievable for 5 years deferred.
+    5. **`INS-F-022` Plan search/filter (P2-13, 2 SP):** Search and filter plans deferred.
+    - **Total deferred:** 17 SP.
+  - **Kept in Scope:**
+    1. **`INS-F-023` Duplicate claim detection (P1-20, 3 SP):** Kept because the duplicate flag is already implemented at filing (same policy + same incident date + same claimed amount -> "Possible duplicate", held for manual review; no time window). Remaining work is verification and the Claims Officer banner.
+    2. **`INS-F-024` View/download policy documents:** Part of renewal P3-09.
+- **Rationale:** Sprint 2 plan 71 SP + 18 SP carry-over = 89 SP against about 60 SP demonstrated capacity; items were dropped in the plan's deferral order, except F-023, which is kept because it is already implemented.
 
 ### D-11 — Claims Component Ownership Split (Person 1 & Person 4)
 
-**Status: Confirmed.** (Agreed between Person 1 and Person 4 on 26 October 2026)
+**Status: Confirmed.** (Agreed between Person 1 and Person 4, not at a meeting)
 
-- **Context:** Person 4 (Raghunandan) implemented the core claims backend (C10) during Sprint 1 (`ClaimService`, `ClaimController`, verification, assessment decisioning, and payout integration; evidenced in PR #145 and PR #152).
-- **Agreed Responsibilities:**
-  - **Person 4 (Raghunandan Kotary — Developer / Environment Owner):**
-    - Retains backend core ownership: maintains `ClaimService`, `ClaimController`, REST endpoints (`POST /claims`, `POST /claims/{id}/verify`, `POST /claims/{id}/assess`, `POST /claims/{id}/settle`), database entities (`Claim`, `ClaimDocument`, `ClaimHistory`), payment payout adapter, and developer test harness.
-  - **Person 1 (Thijil Thejaswi M.N. — QA Lead & Underwriting Core):**
-    - Owns the frontend Claims Officer desk screens (`/claims/desk`, queue of submitted claims, incident document viewer, decision/settlement dialogs; `P1-12`).
-    - Implements the automated 15-day stale claim closure scheduled cron job (`P1-19`, SRS §4.7.1, TC-Clm-06).
-    - Coordinates and leads formal independent QA verification of claims workflows against the STP (`TC-Clm-01` through `TC-Clm-04`, `TC-Clm-06`).
+- **Ownership Division:**
+  - **Person 4 (Raghunandan Kotary — Claims Backend Owner):**
+    - Entities (`Claim`, `ClaimDocument`, `ClaimHistory`), `ClaimService` (including `payout(...)` and `closeStale()`), and `ClaimController`.
+    - Endpoints: `POST /claims`, `GET /claims`, `GET /claims/{id}`, `GET /claims/policy/{policyId}`, `POST /claims/{id}/verify`, `POST /claims/{id}/decision`.
+  - **Person 1 (Thijil Thejaswi M.N. — QA Lead):**
+    - Claims Officer screens (`ClaimsOfficerDashboardView.jsx`).
+    - The claim auto-close scheduled job (`P1-19`, calling `IClaimService.closeStale()`).
+    - STP independent test verification (`TC-Clm-01` through `TC-Clm-04`, `TC-Clm-06`).
 
 ## Review and change control
 
@@ -252,4 +246,4 @@ Before beginning Sprint 1 on Monday, 19 October 2026, the team held architecture
 | 17 October 2026 | Person 4 prepared draft shared contract specification in `docs/contracts/p4-contract.md` covering IPaymentService, INotify, IClaimService, IFileStore, and injectable test Clock (Issue #127); decision options D-09.1 through D-09.9 submitted for team review. |
 | 18 October 2026 | Person 4 updated P4 contract to v0.2 following PR #128 review: aligned claim states with SAD §4.1.3 (Document Verification, Assessment, Payment Processing), 15-day stale claim closure (SRS §4.7.1), SAD 16-event notification catalogue, HTTP 413/415 file upload errors, P1 claim-decision DTO alignment, settled-only `hasPaidClaim` semantics (D-09.5), clock zone preservation, and SAD Table 3.4b method naming. |
 | 23 October 2026 | Process deviation noted: PR #147 merged on 23 Oct with admin override and no independent review; reviewed retrospectively by Sharana on 23 Oct 2026. Correcting PR submitted to restore independent testing and review policy compliance. Strict enforcement reinstated: no admin overrides and no protection bypass. |
-| 26 October 2026 | Recorded D-10: Sprint 2 Planning, Velocity Calibration, and Deferral Decision (TEAM-08). Sprint 1 delivered 60/83 SP; 18 SP carry-over. Calibrated Sprint 2 capacity to 60–65 SP. Dropped deferrable items from bottom of deferral order (INS-NF-007, INS-F-025, INS-F-023, INS-F-021) marked "D" in RTM. Total planned commitment: 62 SP. Recorded D-11: Claims component ownership split between Person 1 (screens P1-12, auto-closure P1-19, STP verification) and Person 4 (backend core, APIs, entities, payout adapter). |
+| 26–27 October 2026 | Recorded D-10: Sprint 2 scope decision made by QA Lead (Thijil) without a team meeting, based on Sprint 1 actual delivery (60/83 SP, 18 SP carry-over) and shared with the team for objection. Deferred 17 SP (INS-F-025 5 SP, INS-F-021 5 SP, INS-F-017 3 SP, INS-NF-007 2 SP, INS-F-022 2 SP) marked "D" in RTM. Kept INS-F-023 and INS-F-024. Recorded D-11: Claims component ownership agreed between Person 1 and Person 4 (Raghunandan maintains claims backend and existing endpoints; Thijil owns Claims Officer screens, auto-close scheduled job, and STP verification). |

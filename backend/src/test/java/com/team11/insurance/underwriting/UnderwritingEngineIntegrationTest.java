@@ -23,6 +23,10 @@ import com.team11.insurance.applications.ApplicationRepository;
 import com.team11.insurance.applications.ApplicationStatus;
 import com.team11.insurance.common.exception.ResourceNotFoundException;
 import com.team11.insurance.common.exception.StateConflictException;
+import com.team11.insurance.notifications.INotify;
+import com.team11.insurance.notifications.NotificationEvent;
+import com.team11.insurance.notifications.NotificationRequest;
+import com.team11.insurance.notifications.NotificationServiceStub;
 import com.team11.insurance.plans.Plan;
 import com.team11.insurance.plans.PlanRepository;
 import com.team11.insurance.policies.IPolicyQuery;
@@ -54,11 +58,17 @@ class UnderwritingEngineIntegrationTest {
     @Autowired
     private AuditLogRepository auditLogRepository;
 
+    @Autowired(required = false)
+    private INotify notify;
+
     @Autowired
     private IPolicyQuery policyQuery;
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
+        if (notify instanceof NotificationServiceStub stub) {
+            stub.clear();
+        }
         ensurePlan("PLAN-A-M1", "MOTOR_FOUR_WHEELER", 1L,
                 "{\"maxVehicleAgeYears\":20,\"referralVehicleAgeYears\":15,\"rejectIfActivePolicy\":true}");
         ensurePlan("PLAN-A-H1", "HEALTH", 1L,
@@ -253,10 +263,19 @@ class UnderwritingEngineIntegrationTest {
         assertThat(auditLogs).isNotEmpty();
         assertThat(auditLogs.get(0).getAction()).isEqualTo("UNDERWRITING_MANUAL_APPROVE");
         assertThat(auditLogs.get(0).getUserId()).isEqualTo(501L);
+
+        // Verify notification was sent once to applicant
+        if (notify instanceof NotificationServiceStub stub) {
+            List<NotificationRequest> approvedNotifs = stub.getNotificationsForEvent(NotificationEvent.APPLICATION_APPROVED);
+            assertThat(approvedNotifs).hasSize(1);
+            assertThat(approvedNotifs.get(0).recipientUserId()).isEqualTo(1001L);
+            assertThat(approvedNotifs.get(0).params().get("applicationId")).isEqualTo(String.valueOf(app.getId()));
+            assertThat(approvedNotifs.get(0).params().get("decision")).isEqualTo("APPROVE");
+        }
     }
 
     @Test
-    @DisplayName("Record manual underwriter REJECTION sets rejectionReason and records history")
+    @DisplayName("Record manual underwriter REJECTION sets rejectionReason and records history, audit and notification")
     void recordManualRejection() {
         Application app = new Application();
         app.setCustomerId(1001L);
@@ -278,6 +297,21 @@ class UnderwritingEngineIntegrationTest {
         assertThat(history).hasSize(1);
         assertThat(history.get(0).getFromStatus()).isEqualTo(ApplicationStatus.REFERRED);
         assertThat(history.get(0).getToStatus()).isEqualTo(ApplicationStatus.REJECTED);
+
+        List<AuditLog> auditLogs = auditLogRepository.findByEntityAndEntityId("Application", app.getId());
+        assertThat(auditLogs).isNotEmpty();
+        assertThat(auditLogs.get(0).getAction()).isEqualTo("UNDERWRITING_MANUAL_REJECT");
+        assertThat(auditLogs.get(0).getUserId()).isEqualTo(501L);
+
+        // Verify notification was sent once to applicant
+        if (notify instanceof NotificationServiceStub stub) {
+            List<NotificationRequest> rejectedNotifs = stub.getNotificationsForEvent(NotificationEvent.APPLICATION_REJECTED);
+            assertThat(rejectedNotifs).hasSize(1);
+            assertThat(rejectedNotifs.get(0).recipientUserId()).isEqualTo(1001L);
+            assertThat(rejectedNotifs.get(0).params().get("applicationId")).isEqualTo(String.valueOf(app.getId()));
+            assertThat(rejectedNotifs.get(0).params().get("decision")).isEqualTo("REJECT");
+            assertThat(rejectedNotifs.get(0).params().get("reason")).isEqualTo("High claims frequency in past year");
+        }
     }
 
     @Test
