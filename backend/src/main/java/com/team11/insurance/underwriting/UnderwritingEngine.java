@@ -1,6 +1,8 @@
 package com.team11.insurance.underwriting;
 
 import java.time.Clock;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -19,6 +21,8 @@ import com.team11.insurance.applications.ApplicationRepository;
 import com.team11.insurance.applications.ApplicationStateMachine;
 import com.team11.insurance.applications.ApplicationStatus;
 import com.team11.insurance.common.exception.ResourceNotFoundException;
+import com.team11.insurance.notifications.INotify;
+import com.team11.insurance.notifications.NotificationEvent;
 import com.team11.insurance.plans.IPlanQuery;
 import com.team11.insurance.plans.Plan;
 import com.team11.insurance.underwriting.UnderwritingRuleConfig.HealthRules;
@@ -45,6 +49,7 @@ public class UnderwritingEngine implements IUnderwriting {
     private final ApplicationHistoryRepository historyRepository;
     private final ObjectProvider<IAuditLog> auditLogProvider;
     private final ObjectProvider<Clock> clockProvider;
+    private final ObjectProvider<INotify> notifyProvider;
     private final ObjectMapper objectMapper;
 
     public UnderwritingEngine(IPlanQuery planQuery,
@@ -54,6 +59,7 @@ public class UnderwritingEngine implements IUnderwriting {
                               ApplicationHistoryRepository historyRepository,
                               ObjectProvider<IAuditLog> auditLogProvider,
                               ObjectProvider<Clock> clockProvider,
+                              ObjectProvider<INotify> notifyProvider,
                               ObjectMapper objectMapper) {
         this.planQuery = Objects.requireNonNull(planQuery, "planQuery must not be null");
         this.motorEvaluator = Objects.requireNonNull(motorEvaluator, "motorEvaluator must not be null");
@@ -62,6 +68,7 @@ public class UnderwritingEngine implements IUnderwriting {
         this.historyRepository = Objects.requireNonNull(historyRepository, "historyRepository must not be null");
         this.auditLogProvider = auditLogProvider;
         this.clockProvider = clockProvider;
+        this.notifyProvider = notifyProvider;
         this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper must not be null");
     }
 
@@ -167,6 +174,29 @@ public class UnderwritingEngine implements IUnderwriting {
             IAuditLog auditLog = auditLogProvider.getIfAvailable();
             if (auditLog != null) {
                 auditLog.record(underwriterId, "UNDERWRITING_MANUAL_" + decision, "Application", applicationId, reason);
+            }
+        }
+
+        // Emit notification to applicant (SAD §4.1.7, INS-F-016)
+        if (notifyProvider != null) {
+            INotify notify = notifyProvider.getIfAvailable();
+            if (notify != null && application.getCustomerId() != null) {
+                NotificationEvent event = decision == Decision.APPROVE
+                        ? NotificationEvent.APPLICATION_APPROVED
+                        : NotificationEvent.APPLICATION_REJECTED;
+                Map<String, String> params = new LinkedHashMap<>();
+                params.put("applicationId", String.valueOf(applicationId));
+                params.put("decision", decision.name());
+                params.put("reason", reason);
+                if (application.getProductType() != null) {
+                    params.put("productType", application.getProductType());
+                }
+                try {
+                    notify.send(event, application.getCustomerId(), params);
+                    log.info("UnderwritingEngine: Dispatched {} notification to customer {}", event, application.getCustomerId());
+                } catch (Exception e) {
+                    log.warn("UnderwritingEngine: Failed to dispatch notification for application {}: {}", applicationId, e.getMessage());
+                }
             }
         }
 
