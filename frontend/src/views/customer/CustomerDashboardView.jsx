@@ -79,28 +79,34 @@ export default function CustomerDashboardView() {
         </div>
         <div className="dashboard-card-body">
           <div className="row g-2">
-            <div className="col-12 col-sm-6 col-md-3">
+            <div className="col-6 col-md">
+              <Link to={ROUTES.CUSTOMER_KYC} className="btn btn-outline-primary btn-sm w-100 py-2" id="dashboard-kyc-btn">
+                <i className="bi bi-person-check d-block fs-5 mb-1"></i>
+                <span>Verify KYC</span>
+              </Link>
+            </div>
+            <div className="col-6 col-md">
               <Link to={ROUTES.CUSTOMER_QUOTE_MOTOR} className="btn btn-outline-primary btn-sm w-100 py-2">
                 <i className="bi bi-car-front d-block fs-5 mb-1"></i>
-                <span>Get Motor Quote</span>
+                <span>Motor Quote</span>
               </Link>
             </div>
-            <div className="col-12 col-sm-6 col-md-3">
+            <div className="col-6 col-md">
               <Link to={ROUTES.CUSTOMER_QUOTE_HEALTH} className="btn btn-outline-primary btn-sm w-100 py-2">
                 <i className="bi bi-heart-pulse d-block fs-5 mb-1"></i>
-                <span>Get Health Quote</span>
+                <span>Health Quote</span>
               </Link>
             </div>
-            <div className="col-12 col-sm-6 col-md-3">
+            <div className="col-6 col-md">
               <Link to={ROUTES.CUSTOMER_POLICIES} className="btn btn-outline-primary btn-sm w-100 py-2">
                 <i className="bi bi-arrow-repeat d-block fs-5 mb-1"></i>
                 <span>Renew Policy</span>
               </Link>
             </div>
-            <div className="col-12 col-sm-6 col-md-3">
+            <div className="col-6 col-md">
               <Link to={ROUTES.CUSTOMER_CLAIMS} className="btn btn-outline-primary btn-sm w-100 py-2">
                 <i className="bi bi-plus-circle d-block fs-5 mb-1"></i>
-                <span>File a Claim</span>
+                <span>File Claim</span>
               </Link>
             </div>
           </div>
