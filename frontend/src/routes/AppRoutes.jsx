@@ -27,6 +27,7 @@ import { ROLES } from '../context/AuthContext';
 
 // Insurer Admin Views
 import InsurerAdminDashboardView from '../views/insurerAdmin/InsurerAdminDashboardView';
+import InsurerAdminPlansView from '../views/insurerAdmin/InsurerAdminPlansView';
 
 // Underwriter Views
 import UnderwriterDashboardView from '../views/underwriter/UnderwriterDashboardView';
@@ -120,7 +121,7 @@ export default function AppRoutes() {
       />
       <Route
         path={ROUTES.INSURER_ADMIN_PLANS}
-        element={<InsurerAdminDashboardView />}
+        element={<InsurerAdminPlansView />}
       />
       <Route
         path={ROUTES.INSURER_ADMIN_CANCELLATIONS}
