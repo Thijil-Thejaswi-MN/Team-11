@@ -47,7 +47,8 @@ See the full [Newman API Test Guide](../docs/guides/newman-api-test-guide.md) fo
 
 ### Prerequisites
 - Python 3.10+
-- Google Chrome or Microsoft Edge installed
+- Google Chrome, Microsoft Edge, or Mozilla Firefox installed
+- `pip install -r tests/selenium/requirements.txt`
 
 ### Quick Run
 1. Start the React frontend dev server:
@@ -59,13 +60,27 @@ See the full [Newman API Test Guide](../docs/guides/newman-api-test-guide.md) fo
 
 2. In another terminal, run pytest:
    ```bash
-   pip install -r tests/selenium/requirements.txt
    pytest tests/selenium -v
    ```
 
-3. Running in headed mode (display browser window):
-   ```bash
-   pytest tests/selenium -v --headed
-   ```
+### Cross-Browser Testing (INS-NF-006 / TC-Compat-01)
+Run the smoke suite against different browsers using the `--browser` flag:
+- **Google Chrome (Default):**
+  ```bash
+  pytest tests/selenium -v --browser chrome
+  ```
+- **Microsoft Edge:**
+  ```bash
+  pytest tests/selenium -v --browser edge
+  ```
+- **Mozilla Firefox:**
+  ```bash
+  pytest tests/selenium -v --browser firefox
+  ```
+
+### Headed Mode (Display Browser UI)
+```bash
+pytest tests/selenium -v --headed
+```
 
 See the full [Selenium Smoke Test Guide](../docs/guides/selenium-smoke-test-guide.md).

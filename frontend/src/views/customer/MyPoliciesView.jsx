@@ -126,16 +126,18 @@ export default function MyPoliciesView() {
     <PortalLayout
       title="My Policies & Documents"
       subtitle="Issued insurance policies, OpenPDF official schedules, and lifecycle management (INS-F-008, P3-05/P3-06)"
-      badgeText="Person 3 Module"
+      badgeText="My Policies"
       badgeClass="bg-info text-dark"
     >
-      <div className="dev-hook-box mb-4">
-        <span className="dev-hook-badge">Person 3 Ownership (Policy Lifecycle C5)</span>
-        <p className="mb-0">
-          Connected to <code>GET /api/v1/policies</code> and <code>GET /api/v1/policies/&#123;id&#125;/document</code> (OpenPDF).
-          Policy schedules are generated automatically upon successful payment and cryptographically tracked in FileStore.
-        </p>
-      </div>
+      {import.meta.env.DEV && (
+        <div className="dev-hook-box mb-4">
+          <span className="dev-hook-badge">Person 3 Ownership (Policy Lifecycle C5)</span>
+          <p className="mb-0">
+            Connected to <code>GET /api/v1/policies</code> and <code>GET /api/v1/policies/&#123;id&#125;/document</code> (OpenPDF).
+            Policy schedules are generated automatically upon successful payment and cryptographically tracked in FileStore.
+          </p>
+        </div>
+      )}
 
       {downloadError && (
         <div className="alert alert-danger alert-dismissible fade show mb-4" role="alert">
@@ -315,53 +317,57 @@ export default function MyPoliciesView() {
           <div className="card-body">
             <div className="row g-3">
               <div className="col-12 col-md-6">
-                <table className="table table-sm table-borderless mb-0">
-                  <tbody>
-                    <tr>
-                      <th className="text-muted w-40">Plan Name:</th>
-                      <td className="fw-semibold">{selectedPolicy.planName}</td>
-                    </tr>
-                    <tr>
-                      <th className="text-muted">Line of Business:</th>
-                      <td>{selectedPolicy.productType}</td>
-                    </tr>
-                    <tr>
-                      <th className="text-muted">Policy Status:</th>
-                      <td>{getStatusBadge(selectedPolicy.status)}</td>
-                    </tr>
-                    <tr>
-                      <th className="text-muted">Associated Application:</th>
-                      <td>APP-2026-{selectedPolicy.applicationId}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div className="table-responsive">
+                  <table className="table table-sm table-borderless mb-0">
+                    <tbody>
+                      <tr>
+                        <th className="text-muted w-40">Plan Name:</th>
+                        <td className="fw-semibold">{selectedPolicy.planName}</td>
+                      </tr>
+                      <tr>
+                        <th className="text-muted">Line of Business:</th>
+                        <td>{selectedPolicy.productType}</td>
+                      </tr>
+                      <tr>
+                        <th className="text-muted">Policy Status:</th>
+                        <td>{getStatusBadge(selectedPolicy.status)}</td>
+                      </tr>
+                      <tr>
+                        <th className="text-muted">Associated Application:</th>
+                        <td>APP-2026-{selectedPolicy.applicationId}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               <div className="col-12 col-md-6">
-                <table className="table table-sm table-borderless mb-0">
-                  <tbody>
-                    <tr>
-                      <th className="text-muted w-40">Coverage Period:</th>
-                      <td>
-                        {selectedPolicy.startDate} to {selectedPolicy.endDate}
-                      </td>
-                    </tr>
-                    <tr>
-                      <th className="text-muted">Annual Premium:</th>
-                      <td className="fw-bold text-primary">
-                        ₹{Number(selectedPolicy.premium || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                      </td>
-                    </tr>
-                    <tr>
-                      <th className="text-muted">Document Store Ref:</th>
-                      <td><code>DOC-STORE-{selectedPolicy.documentId || 'READY'}</code></td>
-                    </tr>
-                    <tr>
-                      <th className="text-muted">Statutory Clause:</th>
-                      <td className="small text-muted">15-Day Free-Look / Pro-Rata Refund Applicable</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div className="table-responsive">
+                  <table className="table table-sm table-borderless mb-0">
+                    <tbody>
+                      <tr>
+                        <th className="text-muted w-40">Coverage Period:</th>
+                        <td>
+                          {selectedPolicy.startDate} to {selectedPolicy.endDate}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th className="text-muted">Annual Premium:</th>
+                        <td className="fw-bold text-primary">
+                          ₹{Number(selectedPolicy.premium || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th className="text-muted">Document Store Ref:</th>
+                        <td><code>DOC-STORE-{selectedPolicy.documentId || 'READY'}</code></td>
+                      </tr>
+                      <tr>
+                        <th className="text-muted">Statutory Clause:</th>
+                        <td className="small text-muted">15-Day Free-Look / Pro-Rata Refund Applicable</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
 

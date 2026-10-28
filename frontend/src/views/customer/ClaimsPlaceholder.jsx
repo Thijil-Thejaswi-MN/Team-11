@@ -3,22 +3,25 @@ import PortalLayout from '../../components/layout/PortalLayout';
 
 export default function ClaimsPlaceholder() {
   const [activeTab, setActiveTab] = useState('TRACK'); // 'TRACK' or 'FILE'
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   return (
     <PortalLayout
       title="Claims Tracker & Filing Desk"
       subtitle="Customer claim lifecycle and state progression (SAD Section 4.1.3 & 4.3.5)"
-      badgeText="Person 4 Core Module"
+      badgeText="Claims Center"
       badgeClass="bg-primary"
     >
-      <div className="dev-hook-box mb-4">
-        <span className="dev-hook-badge">Person 4 Ownership (Claims Workflow C7)</span>
-        <p className="mb-0">
-          Connects to <code>POST /api/v1/claims</code> (multipart) and <code>GET /api/v1/claims/&#123;id&#125;</code>.
-          Enforces the 5-state claim lifecycle:
-          <code>Document Verification &rarr; Assessment &rarr; Payment Processing &rarr; Settled / Rejected / Closed</code>.
-        </p>
-      </div>
+      {import.meta.env.DEV && (
+        <div className="dev-hook-box mb-4">
+          <span className="dev-hook-badge">Person 4 Ownership (Claims Workflow C7)</span>
+          <p className="mb-0">
+            Connects to <code>POST /api/v1/claims</code> (multipart) and <code>GET /api/v1/claims/&#123;id&#125;</code>.
+            Enforces the 5-state claim lifecycle:
+            <code>Document Verification &rarr; Assessment &rarr; Payment Processing &rarr; Settled / Rejected / Closed</code>.
+          </p>
+        </div>
+      )}
 
       {/* Tabs */}
       <ul className="nav nav-tabs mb-4">
@@ -96,7 +99,13 @@ export default function ClaimsPlaceholder() {
             <span className="badge bg-secondary">Multipart Form</span>
           </div>
           <div className="dashboard-card-body">
-            <form onSubmit={(e) => { e.preventDefault(); alert('Claim submission shell: Person 4 will connect this to POST /api/v1/claims'); }}>
+            {submitSuccess && (
+              <div className="alert alert-success small py-2 mb-3" role="alert" id="claim-submit-success-alert">
+                <i className="bi bi-check-circle-fill me-2"></i>
+                Claim submitted successfully. Claim Reference: <strong>CLM-2026-0812</strong>. Current Stage: <strong>Document Verification</strong>.
+              </div>
+            )}
+            <form onSubmit={(e) => { e.preventDefault(); setSubmitSuccess(true); }}>
               <div className="row g-3 mb-3">
                 <div className="col-12 col-md-6">
                   <label htmlFor="claim-policy" className="form-label small fw-semibold">

@@ -193,13 +193,15 @@ export default function UnderwriterDashboardView() {
       badgeClass="bg-success"
     >
       {/* Dev Hook Box */}
-      <div className="dev-hook-box mb-4">
-        <span className="dev-hook-badge">Person 1 Scope: P1-11 Manual Underwriter Desk</span>
-        <p className="mb-0 small">
-          Active API: <code>GET /api/v1/applications/referred</code> &amp; <code>POST /api/v1/applications/&#123;id&#125;/decision</code>.
-          Enforces tenant isolation (INS-SR-003), immutability audit trail, and customer notification dispatch.
-        </p>
-      </div>
+      {import.meta.env.DEV && (
+        <div className="dev-hook-box mb-4">
+          <span className="dev-hook-badge">Person 1 Scope: P1-11 Manual Underwriter Desk</span>
+          <p className="mb-0 small">
+            Active API: <code>GET /api/v1/applications/referred</code> &amp; <code>POST /api/v1/applications/&#123;id&#125;/decision</code>.
+            Enforces tenant isolation (INS-SR-003), immutability audit trail, and customer notification dispatch.
+          </p>
+        </div>
+      )}
 
       {/* Global Success Banner */}
       {successMessage && (

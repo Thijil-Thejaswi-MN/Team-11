@@ -7,7 +7,7 @@
     "test:api:quotes": "newman run postman/insurance-workflow-api.postman_collection.json -e postman/insurance-workflow-environment.postman_environment.json --folder quotes",
     "test:api:kyc": "newman run postman/insurance-workflow-api.postman_collection.json -e postman/insurance-workflow-environment.postman_environment.json --folder kyc",
     "test:api:all": "newman run postman/insurance-workflow-api.postman_collection.json -e postman/insurance-workflow-environment.postman_environment.json",
-    "test:smoke": "pytest selenium/test_home_smoke.py -v"
+    "test:smoke": "pytest selenium -v"
   },
   "devDependencies": {
     "newman": "^6.2.1"

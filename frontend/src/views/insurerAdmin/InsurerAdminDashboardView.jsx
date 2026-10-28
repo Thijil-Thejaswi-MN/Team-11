@@ -13,13 +13,15 @@ export default function InsurerAdminDashboardView() {
       badgeText="Insurer Admin"
       badgeClass="bg-warning text-dark"
     >
-      <div className="dev-hook-box mb-4">
-        <span className="dev-hook-badge">Person 1 & Person 3 Ownership</span>
-        <p className="mb-0">
-          Person 1 owns Plan Management (<code>POST/PUT /api/v1/plans</code>) and underwriting parameters.
-          Person 3 owns Cancellation Requests (<code>POST /api/v1/cancellations/&#123;id&#125;/decision</code>).
-        </p>
-      </div>
+      {import.meta.env.DEV && (
+        <div className="dev-hook-box mb-4">
+          <span className="dev-hook-badge">Person 1 & Person 3 Ownership</span>
+          <p className="mb-0">
+            Person 1 owns Plan Management (<code>POST/PUT /api/v1/plans</code>) and underwriting parameters.
+            Person 3 owns Cancellation Requests (<code>POST /api/v1/cancellations/&#123;id&#125;/decision</code>).
+          </p>
+        </div>
+      )}
 
       {/* Tabs */}
       <ul className="nav nav-tabs mb-4">
@@ -36,7 +38,7 @@ export default function InsurerAdminDashboardView() {
             className={`nav-link ${activeTab === 'PLANS' ? 'active fw-bold' : ''}`}
             onClick={() => setActiveTab('PLANS')}
           >
-            <i className="bi bi-card-checklist me-1"></i>Plan Management (Person 1)
+            <i className="bi bi-card-checklist me-1"></i>Plan Management
           </button>
         </li>
         <li className="nav-item">
@@ -44,7 +46,7 @@ export default function InsurerAdminDashboardView() {
             className={`nav-link ${activeTab === 'CANCELLATIONS' ? 'active fw-bold' : ''}`}
             onClick={() => setActiveTab('CANCELLATIONS')}
           >
-            <i className="bi bi-x-circle me-1"></i>Cancellations (Person 3)
+            <i className="bi bi-x-circle me-1"></i>Cancellations
           </button>
         </li>
       </ul>
