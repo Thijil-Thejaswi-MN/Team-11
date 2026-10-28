@@ -438,4 +438,73 @@ class ClaimControllerIntegrationTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.errorCode").value("STATE-409"));
     }
+
+    @Test
+    @DisplayName("POST /claims: Duplicate claim detection (INS-F-023, TC-Clm-05) sets duplicateFlag true on duplicate, false otherwise")
+    void fileClaim_duplicateDetection_flagsSecondClaimOnly() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_CUSTOMER); // id: 1001
+
+        LocalDate incidentDate = LocalDate.now().minusDays(4);
+        BigDecimal amount = new BigDecimal("7500.00");
+
+        // 1. First claim filed: same policy, incidentDate, amount -> duplicateFlag false
+        ClaimSubmissionRequest firstRequest = new ClaimSubmissionRequest(
+                activePolicyInsurer1.getId(),
+                incidentDate,
+                amount,
+                "First incident report",
+                List.of(101L)
+        );
+
+        mockMvc.perform(post("/claims")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(firstRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.duplicateFlag").value(false));
+
+        // 2. Second claim filed: exactly same policyId, incidentDate, amount -> duplicateFlag true (INS-F-023)
+        ClaimSubmissionRequest duplicateRequest = new ClaimSubmissionRequest(
+                activePolicyInsurer1.getId(),
+                incidentDate,
+                amount,
+                "Second incident report for same damage",
+                List.of(102L)
+        );
+
+        mockMvc.perform(post("/claims")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(duplicateRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.duplicateFlag").value(true));
+
+        // 3. Third claim filed: same policy and incidentDate, but DIFFERENT amount -> duplicateFlag false
+        ClaimSubmissionRequest differentAmountRequest = new ClaimSubmissionRequest(
+                activePolicyInsurer1.getId(),
+                incidentDate,
+                new BigDecimal("8200.00"),
+                "Claim with different claimed amount",
+                List.of(103L)
+        );
+
+        mockMvc.perform(post("/claims")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(differentAmountRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.duplicateFlag").value(false));
+
+        // 4. Fourth claim filed: same policy and amount, but DIFFERENT incident date -> duplicateFlag false
+        ClaimSubmissionRequest differentDateRequest = new ClaimSubmissionRequest(
+                activePolicyInsurer1.getId(),
+                incidentDate.minusDays(1),
+                amount,
+                "Claim with different incident date",
+                List.of(104L)
+        );
+
+        mockMvc.perform(post("/claims")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(differentDateRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.duplicateFlag").value(false));
+    }
 }

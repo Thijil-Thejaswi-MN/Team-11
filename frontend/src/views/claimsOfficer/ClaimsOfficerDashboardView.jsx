@@ -83,77 +83,7 @@ export default function ClaimsOfficerDashboardView() {
     } catch (err) {
       const msg = err.message || 'Failed to load claims queue from server.';
       setErrorMessage(msg);
-      // Fallback synthetic data for offline/demo inspection
-      setClaims([
-        {
-          id: 101,
-          claimNo: 'CLM-2026-000101',
-          policyId: 10,
-          policyNo: 'POL-2026-4W-0091',
-          customerId: 1001,
-          insurerId: 1,
-          claimedAmount: 32000,
-          assessedAmount: null,
-          incidentDate: '2026-10-18',
-          description: 'Front bumper damage due to parking collision with bollard.',
-          status: 'DOCUMENT_VERIFICATION',
-          duplicateFlag: true, // INS-F-023 demonstration
-          documentIds: [1, 2],
-          createdAt: '2026-10-19T10:30:00Z',
-          updatedAt: '2026-10-19T10:30:00Z',
-        },
-        {
-          id: 102,
-          claimNo: 'CLM-2026-000102',
-          policyId: 11,
-          policyNo: 'POL-2026-4W-0092',
-          customerId: 1002,
-          insurerId: 1,
-          claimedAmount: 18000,
-          assessedAmount: null,
-          incidentDate: '2026-10-20',
-          description: 'Rear windshield crack from road gravel impact on expressway.',
-          status: 'ASSESSMENT',
-          duplicateFlag: false,
-          documentIds: [3],
-          createdAt: '2026-10-21T14:15:00Z',
-          updatedAt: '2026-10-22T09:00:00Z',
-        },
-        {
-          id: 103,
-          claimNo: 'CLM-2026-000103',
-          policyId: 12,
-          policyNo: 'POL-2026-4W-0093',
-          customerId: 1003,
-          insurerId: 1,
-          claimedAmount: 45000,
-          assessedAmount: 42000,
-          incidentDate: '2026-10-15',
-          description: 'Emergency appendectomy hospitalization surgery bill.',
-          status: 'PAYMENT_PROCESSING',
-          duplicateFlag: false,
-          documentIds: [4, 5],
-          createdAt: '2026-10-16T09:00:00Z',
-          updatedAt: '2026-10-23T11:20:00Z',
-        },
-        {
-          id: 104,
-          claimNo: 'CLM-2026-000104',
-          policyId: 13,
-          policyNo: 'POL-2026-4W-0094',
-          customerId: 1004,
-          insurerId: 1,
-          claimedAmount: 12000,
-          assessedAmount: 12000,
-          incidentDate: '2026-10-10',
-          description: 'Minor dental trauma emergency claim.',
-          status: 'SETTLED',
-          duplicateFlag: false,
-          documentIds: [6],
-          createdAt: '2026-10-11T08:00:00Z',
-          updatedAt: '2026-10-24T16:00:00Z',
-        },
-      ]);
+      setClaims([]);
     } finally {
       setLoading(false);
     }
@@ -406,10 +336,20 @@ export default function ClaimsOfficerDashboardView() {
 
       {/* Error Banner */}
       {errorMessage && (
-        <div className="alert alert-warning alert-dismissible fade show mb-4 shadow-sm" role="alert">
-          <div className="d-flex align-items-center">
-            <span className="fs-5 me-2">⚠️</span>
-            <div>{errorMessage}</div>
+        <div className="alert alert-warning alert-dismissible fade show mb-4 shadow-sm" role="alert" data-testid="claims-error-banner">
+          <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div className="d-flex align-items-center">
+              <span className="fs-5 me-2">⚠️</span>
+              <div>{errorMessage}</div>
+            </div>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-dark"
+              onClick={fetchClaims}
+              data-testid="error-retry-btn"
+            >
+              🔄 Retry
+            </button>
           </div>
           <button
             type="button"
@@ -539,6 +479,20 @@ export default function ClaimsOfficerDashboardView() {
                 <span className="visually-hidden">Loading claims...</span>
               </div>
               <p className="mt-2 text-muted small">Loading insurer claims queue...</p>
+            </div>
+          ) : errorMessage ? (
+            <div className="text-center py-5" data-testid="claims-error-state">
+              <span className="fs-1 text-danger">⚠️</span>
+              <h5 className="mt-2 fw-semibold text-danger">Failed to Load Claims Queue</h5>
+              <p className="text-muted small mb-3">{errorMessage}</p>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={fetchClaims}
+                data-testid="retry-btn"
+              >
+                🔄 Retry
+              </button>
             </div>
           ) : filteredClaims.length === 0 ? (
             <div className="text-center py-5">

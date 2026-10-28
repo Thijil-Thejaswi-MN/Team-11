@@ -520,4 +520,40 @@ describe('ClaimsOfficerDashboardView (INS-F-014, TC-Clm-03, P1-12)', () => {
     });
     expect(screen.getByText(/Access Forbidden \(403\)/i)).toBeInTheDocument();
   });
+  it('displays error state and no claim rows when API fails to load claims', async () => {
+    const errorMsg = 'Failed to load claims queue from server.';
+    apiClient.get.mockRejectedValueOnce(new Error(errorMsg));
+
+    render(
+      <MemoryRouter>
+        <AuthProvider>
+          <ClaimsOfficerDashboardView />
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    // Verify error state and message
+    await waitFor(() => {
+      expect(screen.getByTestId('claims-error-state')).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId('claims-error-banner')).toBeInTheDocument();
+    expect(screen.getAllByText(errorMsg).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByTestId('retry-btn')).toBeInTheDocument();
+
+    // Verify NO claim rows are rendered
+    expect(screen.queryByTestId('claims-table')).not.toBeInTheDocument();
+    expect(screen.queryByText('CLM-2026-000101')).not.toBeInTheDocument();
+    expect(screen.queryByText('CLM-2026-000102')).not.toBeInTheDocument();
+    expect(screen.queryByText('CLM-2026-000103')).not.toBeInTheDocument();
+
+    // Verify clicking retry triggers refetch and succeeds
+    apiClient.get.mockResolvedValueOnce({ data: mockClaimsList });
+    fireEvent.click(screen.getByTestId('retry-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByText('CLM-2026-000101')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('claims-error-state')).not.toBeInTheDocument();
+  });
 });
