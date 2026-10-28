@@ -13,6 +13,7 @@ public final class SensitiveDataMasker {
     private static final Pattern CARD_PATTERN = Pattern.compile("\\b(?:\\d[ -]?){12,18}\\d\\b");
     private static final Pattern AADHAAR_PATTERN = Pattern.compile("\\b(\\d{4})[ -]?(\\d{4})[ -]?(\\d{4})\\b(?![ -]?\\d)");
     private static final Pattern PASSWORD_JSON_PATTERN = Pattern.compile("(?i)\"(password|newPassword|confirmPassword|secret|client_secret)\"\\s*:\\s*\"[^\"]*\"");
+    private static final Pattern PASSWORD_TEXT_PATTERN = Pattern.compile("(?i)\\b(password|newPassword|confirmPassword|secret|client_secret)\\s*[:=]\\s*\"?([^\",\\s}]+)\"?");
     private static final Pattern TOKEN_JSON_PATTERN = Pattern.compile("(?i)\"(accessToken|refreshToken|token|jwt|apiKey|authorization)\"\\s*:\\s*\"[^\"]*\"");
     private static final Pattern CVV_PATTERN = Pattern.compile("(?i)\\b(cvv|cvc|cvv2)\\s*[:=]\\s*\"?(\\d{3,4})\"?");
 
@@ -142,6 +143,7 @@ public final class SensitiveDataMasker {
 
         // 1. Mask JSON password fields
         result = PASSWORD_JSON_PATTERN.matcher(result).replaceAll("\"$1\": \"[PROTECTED]\"");
+        result = PASSWORD_TEXT_PATTERN.matcher(result).replaceAll("$1: \"[PROTECTED]\"");
 
         // 2. Mask JSON token fields
         result = TOKEN_JSON_PATTERN.matcher(result).replaceAll("\"$1\": \"[PROTECTED]\"");
