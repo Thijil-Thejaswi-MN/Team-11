@@ -14,3 +14,4 @@ policy issuance + PDF.
 Not yet working at the time of recording: real login screen (the role selector was a dev stub),
 KYC upload, live data on admin/claims screens. Real login (PR #162) and KYC upload (PR #161) were
 merged later on 27 Oct and will be shown in the Sprint 2 video.
+merged later on 27 Oct and will be shown in the Sprint 2 video.
