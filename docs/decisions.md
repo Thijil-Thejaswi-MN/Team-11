@@ -27,7 +27,9 @@ If a decision changes the approved SRS, SAD, or STP, record the change and ratio
 | D-06 | Repository folder layout and existing course documents | `backend/`, `frontend/`, and `docs/` are the intended top-level layout. `backend/` and `frontend/` are on `main` following PRs #49 and #47. Existing Deliverable 1 files remain at the root as original submission artifacts; all new supporting documentation goes under `docs/`. | Confirmed | Thijil (Person 1) | 15 Oct 2026 — maintain for new documents |
 | D-07 | Source of truth for backlog and story points | Use GitHub Issues and the existing GitHub Project as the source of truth; the Day 2 plan replaces Jira tracking with GitHub. Do not maintain duplicate points in Jira. | Confirmed | Thijil (Person 1); all owners maintain their own issues | Effective immediately |
 | D-08 | `tier-b` label convention | Apply `tier-b` only to medium-priority work explicitly identified as deferrable to Sprint 2. The label does not replace or change the SRS priority. | Confirmed | Thijil (Person 1); each issue owner applies it to their own eligible issues | During backlog review; before Sprint 1 starts |
-| D-09 | API-contract sign-off | Contract documents drafted and merged for P1-03 (PR #53), P2-01 (PR #54), and P3-01 (PR #46); P4-03 interface contracts drafted in PR #128. Formal joint sign-off across all four members remains pending until technical contract discrepancies (DTO naming, IFileStore signatures, Clock usage) are resolved. D-09.5 business rule confirmed (claims paid only when SETTLED). | Proposed | Person 1: Thijil; Person 2: Sharana; Person 3: Samarth; Person 4: Raghunandan | Pre-Sprint 1 sign-off meeting |
+| D-09 | API-contract sign-off | Contract documents drafted and merged for P1-03 (PR #53), P2-01 (PR #54), and P3-01 (PR #46); P4-03 interface contracts drafted in PR #128. Formal joint sign-off across all four members completed (D-09.5 business rule confirmed: claims paid only when SETTLED). | Confirmed | Person 1: Thijil; Person 2: Sharana; Person 3: Samarth; Person 4: Raghunandan | Pre-Sprint 1 sign-off meeting |
+| D-10 | Sprint 2 scope decision (TEAM-08) | Sprint 2 scope decision, 26-27 Oct 2026, made by the QA Lead (Thijil) without a team meeting, based on Sprint 1 actual delivery (60 of 83 SP, 18 SP carry-over) and shared with the team for objection. Deferred (17 SP total): INS-F-025 reports (P3-11, 5 SP), INS-F-021 dashboards (P2-15, 5 SP), INS-F-017 reminders (P4-13, 3 SP), INS-NF-007 retention (P1-13, 2 SP), INS-F-022 filters (P2-13, 2 SP). Kept: INS-F-023 duplicate flag (already implemented at filing) and INS-F-024 document download (part of P3-09). | Confirmed | Thijil (Person 1) | Shared with team 26-27 Oct 2026 |
+| D-11 | Claims module ownership split (Person 1 & Person 4) | Agreed split between Raghunandan (Person 4) and Thijil (Person 1): Raghunandan maintains claims backend (entities, ClaimService, ClaimController with POST /claims, GET /claims, GET /claims/{id}, GET /claims/policy/{policyId}, POST /claims/{id}/verify, POST /claims/{id}/decision). Thijil owns Claims Officer screens, auto-close scheduled job, and STP verification. | Confirmed | Thijil (Person 1) & Raghunandan (Person 4) | Agreed between P1 and P4 (26 Oct 2026) |
 
 ## Decision details
 
@@ -191,9 +193,43 @@ Before beginning Sprint 1 on Monday, 19 October 2026, the team held architecture
     $$\text{Net Refund} = 11,473.9726\dots - 600 = 10,873.9726\dots$$
   - Under SRS §4.6.2 and SAD §4.1.6, all monetary refund calculations must round down (floor) to the nearest whole rupee (`RoundingMode.DOWN`). Applying floor rounding yields **₹10,873**.
   - The submitted STP document specifies an expected refund of **₹10,874** due to flawed premature intermediate rounding: $12000 - (12000 \times 16 / 365) = 12000 - 526.02 = 11473.97 \approx 11474$, minus $600 = 10874$.
-- **Agreed Implementation Position:**
-  - The backend implementation in `RefundCalculator.java` preserves mathematically exact integer-numerator arithmetic with floor rounding yielding ₹10,873, strictly adhering to the SRS/SAD round-down mandate.
-  - This 1-rupee difference is recorded here as an identified oracle discrepancy pending formal team/guide clarification and sign-off during Sprint 2 test execution.
+    - The backend implementation in `RefundCalculator.java` preserves mathematically exact integer-numerator arithmetic with floor rounding yielding ₹10,873, strictly adhering to the SRS/SAD round-down mandate.
+    - This 1-rupee difference is recorded here as an identified oracle discrepancy pending formal team/guide clarification and sign-off during Sprint 2 test execution.
+
+### D-10 — Sprint 2 Scope Decision (TEAM-08)
+
+**Status: Confirmed.** (Sprint 2 scope decision, 26-27 Oct 2026, made by the QA Lead (Thijil) without a team meeting, based on Sprint 1 actual delivery (60 of 83 SP, 18 SP carry-over) and shared with the team for objection.)
+
+- **Context & Review of Sprint 1 Real Results:**
+  - Sprint 1 delivered: 60 of 83 planned SP merged into `main`.
+  - Carry-over from Sprint 1: 18 SP (P2-07 5 SP, P2-08 3 SP, P2-17 2 SP, P3-06 3 SP, P4-08 5 SP; P4-08 has since been merged in PR #150).
+  - Sprint 2 original plan: 71 SP + 18 SP carry-over = 89 SP against demonstrated team capacity of about 60 SP.
+- **Scope Decision & Deferrals:**
+  - To align scope with capacity, deferrable items were dropped in the plan's deferral order, except INS-F-023, which is kept because it is already implemented.
+  - **Deferred Requirements** (marked **"D"** in the RTM with reason "deferred for capacity, Sprint 2 scope decision D-10"):
+    1. **`INS-F-025` System Admin reports (P3-11, 5 SP):** System Admin reports deferred.
+    2. **`INS-F-021` Role-specific dashboards (P2-15, 5 SP):** Role-specific dashboards deferred.
+    3. **`INS-F-017` Renewal reminders (P4-13, 3 SP):** Renewal reminders 30/15/1 days before expiry deferred.
+    4. **`INS-NF-007` 5-year retention (P1-13, 2 SP):** Audit records retained and retrievable for 5 years deferred.
+    5. **`INS-F-022` Plan search/filter (P2-13, 2 SP):** Search and filter plans deferred.
+    - **Total deferred:** 17 SP.
+  - **Kept in Scope:**
+    1. **`INS-F-023` Duplicate claim detection (P1-20, 3 SP):** Kept because the duplicate flag is already implemented at filing (same policy + same incident date + same claimed amount -> "Possible duplicate", held for manual review; no time window). Remaining work is verification and the Claims Officer banner.
+    2. **`INS-F-024` View/download policy documents:** Part of renewal P3-09.
+- **Rationale:** Sprint 2 plan 71 SP + 18 SP carry-over = 89 SP against about 60 SP demonstrated capacity; items were dropped in the plan's deferral order, except F-023, which is kept because it is already implemented.
+
+### D-11 — Claims Component Ownership Split (Person 1 & Person 4)
+
+**Status: Confirmed.** (Agreed between Person 1 and Person 4, not at a meeting)
+
+- **Ownership Division:**
+  - **Person 4 (Raghunandan Kotary — Claims Backend Owner):**
+    - Entities (`Claim`, `ClaimDocument`, `ClaimHistory`), `ClaimService` (including `payout(...)` and `closeStale()`), and `ClaimController`.
+    - Endpoints: `POST /claims`, `GET /claims`, `GET /claims/{id}`, `GET /claims/policy/{policyId}`, `POST /claims/{id}/verify`, `POST /claims/{id}/decision`.
+  - **Person 1 (Thijil Thejaswi M.N. — QA Lead):**
+    - Claims Officer screens (`ClaimsOfficerDashboardView.jsx`).
+    - The claim auto-close scheduled job (`P1-19`, calling `IClaimService.closeStale()`).
+    - STP independent test verification (`TC-Clm-01` through `TC-Clm-04`, `TC-Clm-06`).
 
 ## Review and change control
 
@@ -210,3 +246,4 @@ Before beginning Sprint 1 on Monday, 19 October 2026, the team held architecture
 | 17 October 2026 | Person 4 prepared draft shared contract specification in `docs/contracts/p4-contract.md` covering IPaymentService, INotify, IClaimService, IFileStore, and injectable test Clock (Issue #127); decision options D-09.1 through D-09.9 submitted for team review. |
 | 18 October 2026 | Person 4 updated P4 contract to v0.2 following PR #128 review: aligned claim states with SAD §4.1.3 (Document Verification, Assessment, Payment Processing), 15-day stale claim closure (SRS §4.7.1), SAD 16-event notification catalogue, HTTP 413/415 file upload errors, P1 claim-decision DTO alignment, settled-only `hasPaidClaim` semantics (D-09.5), clock zone preservation, and SAD Table 3.4b method naming. |
 | 23 October 2026 | Process deviation noted: PR #147 merged on 23 Oct with admin override and no independent review; reviewed retrospectively by Sharana on 23 Oct 2026. Correcting PR submitted to restore independent testing and review policy compliance. Strict enforcement reinstated: no admin overrides and no protection bypass. |
+| 26–27 October 2026 | Recorded D-10: Sprint 2 scope decision made by QA Lead (Thijil) without a team meeting, based on Sprint 1 actual delivery (60/83 SP, 18 SP carry-over) and shared with the team for objection. Deferred 17 SP (INS-F-025 5 SP, INS-F-021 5 SP, INS-F-017 3 SP, INS-NF-007 2 SP, INS-F-022 2 SP) marked "D" in RTM. Kept INS-F-023 and INS-F-024. Recorded D-11: Claims component ownership agreed between Person 1 and Person 4 (Raghunandan maintains claims backend and existing endpoints; Thijil owns Claims Officer screens, auto-close scheduled job, and STP verification). |

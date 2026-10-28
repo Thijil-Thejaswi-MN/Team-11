@@ -116,8 +116,16 @@ Following the review from Thijil (`CHANGES_REQUESTED` on 17 October 2026), Perso
 
 | Action Item | Assignee | Target Date | Status |
 |---|---|---|---|
-| Re-review and sign off on P4-03 Draft Contract v0.2 ([PR #128](https://github.com/Thijil-Thejaswi-MN/Team-11/pull/128)) | Thijil (P1), Sharana (P2), Samarth (P3) | Before Sprint 1 start (19 Oct 2026) | Pending Team Sign-off |
-| Add Issue #127 to GitHub Project #1 Board View | Thijil-Thejaswi-MN (Project Admin) | 18 Oct 2026 | Pending Admin Action |
-| Implement P4-05 (Test Infrastructure & Docker Compose) | Raghunandan Kotary (P4) | Post Contract Approval | Blocked on P4-03 Sign-off |
-| Implement P4-06 (Interface Stubs) | Raghunandan Kotary (P4) | Post Contract Approval | Blocked on P4-03 Sign-off |
-| Sprint 1 Planning Poker & Final Story Point Summation | All 4 Members | 19 Oct 2026 | Scheduled |
+| Re-review and sign off on P4-03 Draft Contract v0.2 ([PR #128](https://github.com/Thijil-Thejaswi-MN/Team-11/pull/128)) | Thijil (P1), Sharana (P2), Samarth (P3) | Before Sprint 1 start (19 Oct 2026) | Complete (Merged) |
+| Add Issue #127 to GitHub Project #1 Board View | Thijil-Thejaswi-MN (Project Admin) | 18 Oct 2026 | Complete |
+| Implement P4-05 (Test Infrastructure & Docker Compose) | Raghunandan Kotary (P4) | Post Contract Approval | Complete |
+| Implement P4-06 (Interface Stubs) | Raghunandan Kotary (P4) | Post Contract Approval | Complete |
+| Sprint 1 Planning Poker & Final Story Point Summation | All 4 Members | 19 Oct 2026 | Complete |
+
+---
+
+## 8. Sprint 2 Planning (TEAM-08)
+
+No Sprint 2 planning meeting was held; see D-10.
+
+
