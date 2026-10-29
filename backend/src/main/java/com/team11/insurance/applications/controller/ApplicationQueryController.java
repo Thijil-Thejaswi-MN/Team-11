@@ -78,20 +78,20 @@ public class ApplicationQueryController {
     @GetMapping
     @Transactional(readOnly = true)
     public ResponseEntity<List<ApplicationSummaryDto>> listApplications(CurrentUser currentUser) {
-        if (currentUser == null || currentUser.role() == null) {
+        if (currentUser == null || currentUser.getUserRole() == null) {
             throw new AccessDeniedException("Authentication is required.");
         }
 
         List<ApplicationSummaryDto> items = applicationRepository.findAll()
                 .stream()
                 .filter(app -> {
-                    if (currentUser.role() == UserRole.CUSTOMER) {
-                        return Objects.equals(app.getCustomerId(), currentUser.userId());
+                    if (currentUser.getUserRole() == UserRole.CUSTOMER) {
+                        return Objects.equals(app.getCustomerId(), currentUser.getUserId());
                     }
-                    if (currentUser.role() == UserRole.INSURER_ADMIN || currentUser.role() == UserRole.UNDERWRITER) {
-                        return Objects.equals(app.getInsurerId(), currentUser.userId());
+                    if (currentUser.getUserRole() == UserRole.INSURER_ADMIN || currentUser.getUserRole() == UserRole.UNDERWRITER) {
+                        return Objects.equals(app.getInsurerId(), currentUser.getUserId());
                     }
-                    return currentUser.role() == UserRole.SYSTEM_ADMIN;
+                    return currentUser.getUserRole() == UserRole.SYSTEM_ADMIN;
                 })
                 .sorted(Comparator.comparing(Application::getId, Comparator.nullsLast(Comparator.reverseOrder())))
                 .map(this::toDto)
@@ -105,18 +105,18 @@ public class ApplicationQueryController {
     public ResponseEntity<ApplicationSummaryDto> getApplication(
             @PathVariable Long id,
             CurrentUser currentUser) {
-        if (currentUser == null || currentUser.role() == null) {
+        if (currentUser == null || currentUser.getUserRole() == null) {
             throw new AccessDeniedException("Authentication is required.");
         }
 
         Application app = applicationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Application not found: " + id));
 
-        if (currentUser.role() == UserRole.CUSTOMER && !Objects.equals(app.getCustomerId(), currentUser.userId())) {
+        if (currentUser.getUserRole() == UserRole.CUSTOMER && !Objects.equals(app.getCustomerId(), currentUser.getUserId())) {
             throw new AccessDeniedException("You are not authorized to view this application.");
         }
-        if ((currentUser.role() == UserRole.INSURER_ADMIN || currentUser.role() == UserRole.UNDERWRITER)
-                && !Objects.equals(app.getInsurerId(), currentUser.userId())) {
+        if ((currentUser.getUserRole() == UserRole.INSURER_ADMIN || currentUser.getUserRole() == UserRole.UNDERWRITER)
+                && !Objects.equals(app.getInsurerId(), currentUser.getUserId())) {
             throw new AccessDeniedException("You are not authorized to view this application.");
         }
 
