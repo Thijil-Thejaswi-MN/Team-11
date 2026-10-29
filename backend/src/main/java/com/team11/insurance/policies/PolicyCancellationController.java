@@ -166,20 +166,20 @@ public class PolicyCancellationController {
     public ResponseEntity<List<CancellationSummaryDto>> listCancellations(
             @RequestParam(required = false) CancellationStatus status,
             CurrentUser currentUser) {
-        if (currentUser == null || currentUser.role() == null) {
+        if (currentUser == null || currentUser.getUserRole() == null) {
             throw new AccessDeniedException("Authentication is required.");
         }
 
         List<CancellationSummaryDto> items = cancellationRequestRepository.findAll()
                 .stream()
                 .filter(req -> {
-                    if (currentUser.role() == UserRole.CUSTOMER) {
+                    if (currentUser.getUserRole() == UserRole.CUSTOMER) {
                         return Objects.equals(req.getRequestedBy(), currentUser.getUserId());
                     }
-                    if (currentUser.role() == UserRole.INSURER_ADMIN) {
+                    if (currentUser.getUserRole() == UserRole.INSURER_ADMIN) {
                         return Objects.equals(req.getInsurerId(), currentUser.getUserId());
                     }
-                    return currentUser.role() == UserRole.SYSTEM_ADMIN;
+                    return currentUser.getUserRole() == UserRole.SYSTEM_ADMIN;
                 })
                 .filter(req -> status == null || req.getStatus() == status)
                 .sorted(Comparator.comparing(CancellationRequest::getId, Comparator.nullsLast(Comparator.reverseOrder())))
