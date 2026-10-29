@@ -145,7 +145,7 @@ export default function ApplicationsPlaceholder() {
   return (
     <PortalLayout role="customer">
       <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
-        <h2>Customer Application Lifecycle</h2>
+        <h2>Customer Applications</h2>
         <p style={{ color: '#666' }}>
           Submit insurance applications from your generated quotes, upload supporting documents, and track underwriting and payment status in real time.
         </p>
