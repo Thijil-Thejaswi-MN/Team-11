@@ -108,7 +108,7 @@ public class PolicyCancellationController {
 
         Policy policy = policyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Policy not found: " + id));
-        if (!Objects.equals(policy.getCustomerId(), currentUser.userId())) {
+        if (!Objects.equals(policy.getCustomerId(), currentUser.getUserId())) {
             throw new AccessDeniedException("You are not authorized to cancel this policy.");
         }
         if (policy.getStatus() != PolicyStatus.ACTIVE) {
@@ -128,7 +128,7 @@ public class PolicyCancellationController {
         CancellationRequest cancelReq = new CancellationRequest();
         cancelReq.setPolicyId(policy.getId());
         cancelReq.setInsurerId(policy.getInsurerId());
-        cancelReq.setRequestedBy(currentUser.userId());
+        cancelReq.setRequestedBy(currentUser.getUserId());
         cancelReq.setReason(reason);
         cancelReq.setStatus(CancellationStatus.REQUESTED);
 
@@ -149,7 +149,7 @@ public class PolicyCancellationController {
         IAuditLog auditLog = auditLogProvider != null ? auditLogProvider.getIfAvailable() : null;
         if (auditLog != null && saved.getId() != null) {
             auditLog.record(
-                    currentUser.userId(),
+                    currentUser.getUserId(),
                     "CANCELLATION_REQUESTED",
                     "CancellationRequest",
                     saved.getId(),
@@ -174,10 +174,10 @@ public class PolicyCancellationController {
                 .stream()
                 .filter(req -> {
                     if (currentUser.role() == UserRole.CUSTOMER) {
-                        return Objects.equals(req.getRequestedBy(), currentUser.userId());
+                        return Objects.equals(req.getRequestedBy(), currentUser.getUserId());
                     }
                     if (currentUser.role() == UserRole.INSURER_ADMIN) {
-                        return Objects.equals(req.getInsurerId(), currentUser.userId());
+                        return Objects.equals(req.getInsurerId(), currentUser.getUserId());
                     }
                     return currentUser.role() == UserRole.SYSTEM_ADMIN;
                 })
@@ -214,7 +214,7 @@ public class PolicyCancellationController {
         CancellationRequest cancelReq = cancellationRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cancellation request not found: " + id));
 
-        if (!Objects.equals(cancelReq.getInsurerId(), currentUser.userId())) {
+        if (!Objects.equals(cancelReq.getInsurerId(), currentUser.getUserId())) {
             throw new AccessDeniedException("You are not authorized to decide cancellation requests for another insurer.");
         }
         if (cancelReq.getStatus() != CancellationStatus.REQUESTED) {
@@ -260,7 +260,7 @@ public class PolicyCancellationController {
             }
 
             cancelReq.setStatus(CancellationStatus.APPROVED);
-            cancelReq.setDecidedBy(currentUser.userId());
+            cancelReq.setDecidedBy(currentUser.getUserId());
             cancelReq.setDecidedAt(Instant.now(clock));
             cancelReq.setRefundAmount(refundAmount);
             cancellationRequestRepository.save(cancelReq);
@@ -283,7 +283,7 @@ public class PolicyCancellationController {
             IAuditLog auditLog = auditLogProvider != null ? auditLogProvider.getIfAvailable() : null;
             if (auditLog != null) {
                 auditLog.record(
-                        currentUser.userId(),
+                        currentUser.getUserId(),
                         "CANCELLATION_APPROVED",
                         "CancellationRequest",
                         cancelReq.getId(),
@@ -299,7 +299,7 @@ public class PolicyCancellationController {
             ));
         } else {
             cancelReq.setStatus(CancellationStatus.REJECTED);
-            cancelReq.setDecidedBy(currentUser.userId());
+            cancelReq.setDecidedBy(currentUser.getUserId());
             cancelReq.setDecidedAt(Instant.now(clock));
             cancelReq.setRefundAmount(BigDecimal.ZERO);
             cancellationRequestRepository.save(cancelReq);
@@ -322,7 +322,7 @@ public class PolicyCancellationController {
             IAuditLog auditLog = auditLogProvider != null ? auditLogProvider.getIfAvailable() : null;
             if (auditLog != null) {
                 auditLog.record(
-                        currentUser.userId(),
+                        currentUser.getUserId(),
                         "CANCELLATION_REJECTED",
                         "CancellationRequest",
                         cancelReq.getId(),
