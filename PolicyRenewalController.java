@@ -214,7 +214,7 @@ public class PolicyRenewalController {
             throw new StateConflictException("Policy is outside the renewal window (30 days before to 15 days after expiry).");
         }
 
-        boolean alreadyRenewed = policyRepository.findByCustomerIdOrderByCreatedAtDesc(currentUser.userId())
+        boolean alreadyRenewed = policyRepository.findByCustomerIdOrderByCreatedAtDesc(currentUser.getUserId())
                 .stream()
                 .anyMatch(p -> Objects.equals(p.getPreviousPolicyId(), policy.getId()));
         if (alreadyRenewed) {
@@ -233,7 +233,7 @@ public class PolicyRenewalController {
         if (quoteIdForKey != null && quoteRepo != null) {
             Quote quote = quoteRepo.findById(quoteIdForKey)
                     .orElseThrow(() -> new ResourceNotFoundException("Renewal quote not found: " + quoteIdForKey));
-            if (!Objects.equals(quote.getCustomerId(), currentUser.userId())) {
+            if (!Objects.equals(quote.getCustomerId(), currentUser.getUserId())) {
                 throw new AccessDeniedException("You are not authorized to use this renewal quote.");
             }
             if (!Objects.equals(quote.getPlanId(), policy.getPlanId())) {
@@ -309,7 +309,7 @@ public class PolicyRenewalController {
         IAuditLog auditLog = auditLogProvider != null ? auditLogProvider.getIfAvailable() : null;
         if (auditLog != null && saved.getId() != null) {
             auditLog.record(
-                    currentUser.userId(),
+                    currentUser.getUserId(),
                     "POLICY_RENEWED",
                     "Policy",
                     saved.getId(),
@@ -332,7 +332,7 @@ public class PolicyRenewalController {
     private Policy loadOwnedPolicy(Long id, CurrentUser currentUser) {
         Policy policy = policyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Policy not found: " + id));
-        if (!Objects.equals(policy.getCustomerId(), currentUser.userId())) {
+        if (!Objects.equals(policy.getCustomerId(), currentUser.getUserId())) {
             throw new AccessDeniedException("You are not authorized to access this policy.");
         }
         return policy;
