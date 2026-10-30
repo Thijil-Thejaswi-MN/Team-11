@@ -37,6 +37,7 @@ import ClaimsOfficerDashboardView from '../views/claimsOfficer/ClaimsOfficerDash
 
 // System Admin Views
 import SystemAdminDashboardView from '../views/systemAdmin/SystemAdminDashboardView';
+import AuditLogView from '../views/systemAdmin/AuditLogView';
 
 // Fallback View
 import NotFoundView from '../views/NotFoundView';
@@ -157,7 +158,11 @@ export default function AppRoutes() {
       />
       <Route
         path={ROUTES.SYSTEM_ADMIN_AUDIT}
-        element={<SystemAdminDashboardView />}
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.SYSTEM_ADMIN]}>
+            <AuditLogView />
+          </ProtectedRoute>
+        }
       />
 
       {/* ============================================================ */}

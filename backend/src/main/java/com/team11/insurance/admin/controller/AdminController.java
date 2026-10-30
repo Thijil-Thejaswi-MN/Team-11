@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
  * Base path: {@code /admin} (serviced under servlet context-path {@code /api/v1}).
  * Restricted exclusively to {@link UserRole#SYSTEM_ADMIN}.
  */
+import com.team11.insurance.admin.IAuditLog;
+
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
@@ -31,13 +33,23 @@ public class AdminController {
     private final UserRepository userRepository;
     private final InsurerRepository insurerRepository;
     private final PasswordService passwordService;
+    private final IAuditLog auditLog;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public AdminController(UserRepository userRepository,
+                           InsurerRepository insurerRepository,
+                           PasswordService passwordService,
+                           IAuditLog auditLog) {
+        this.userRepository = userRepository;
+        this.insurerRepository = insurerRepository;
+        this.passwordService = passwordService;
+        this.auditLog = auditLog;
+    }
 
     public AdminController(UserRepository userRepository,
                            InsurerRepository insurerRepository,
                            PasswordService passwordService) {
-        this.userRepository = userRepository;
-        this.insurerRepository = insurerRepository;
-        this.passwordService = passwordService;
+        this(userRepository, insurerRepository, passwordService, null);
     }
 
     /**
@@ -77,6 +89,10 @@ public class AdminController {
         );
 
         User savedUser = userRepository.save(user);
+        if (auditLog != null && currentUser != null) {
+            auditLog.record(currentUser.getUserId(), "USER_CREATED", "User", savedUser.getId(),
+                    "Created user: " + savedUser.getEmail() + " with role: " + savedUser.getRole());
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(new AdminCreateResponse(savedUser.getId()));
     }
 
@@ -96,6 +112,10 @@ public class AdminController {
 
         Insurer insurer = new Insurer(name);
         Insurer savedInsurer = insurerRepository.save(insurer);
+        if (auditLog != null && currentUser != null) {
+            auditLog.record(currentUser.getUserId(), "INSURER_CREATED", "Insurer", savedInsurer.getId(),
+                    "Created insurer: " + savedInsurer.getName());
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(new AdminCreateResponse(savedInsurer.getId()));
     }
 }
