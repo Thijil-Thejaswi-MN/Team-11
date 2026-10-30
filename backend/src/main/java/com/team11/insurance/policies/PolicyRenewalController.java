@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.team11.insurance.admin.IAuditLog;
 import com.team11.insurance.auth.CurrentUser;
-import com.team11.insurance.auth.UserRepository;
 import com.team11.insurance.auth.UserRole;
 import com.team11.insurance.claims.IClaimService;
 import com.team11.insurance.common.exception.AccessDeniedException;
@@ -52,7 +51,6 @@ public class PolicyRenewalController {
     private final IFileStore fileStore;
     private final QuoteRepository quoteRepository;
     private final PlanRepository planRepository;
-    private final UserRepository userRepository;
     private final IClaimService claimService;
     private final IPaymentService paymentService;
     private final INotify notifyService;
@@ -65,7 +63,6 @@ public class PolicyRenewalController {
             IFileStore fileStore,
             ObjectProvider<QuoteRepository> quoteRepositoryProvider,
             ObjectProvider<PlanRepository> planRepositoryProvider,
-            ObjectProvider<UserRepository> userRepositoryProvider,
             ObjectProvider<IClaimService> claimServiceProvider,
             ObjectProvider<IPaymentService> paymentServiceProvider,
             ObjectProvider<INotify> notifyServiceProvider,
@@ -76,7 +73,6 @@ public class PolicyRenewalController {
         this.fileStore = fileStore;
         this.quoteRepository = quoteRepositoryProvider.getIfAvailable();
         this.planRepository = planRepositoryProvider.getIfAvailable();
-        this.userRepository = userRepositoryProvider.getIfAvailable();
         this.claimService = claimServiceProvider.getIfAvailable();
         this.paymentService = paymentServiceProvider.getIfAvailable();
         this.notifyService = notifyServiceProvider.getIfAvailable();
@@ -119,17 +115,30 @@ public class PolicyRenewalController {
                 ? plan.getCoverage()
                 : policy.getPremiumPaid().multiply(BigDecimal.valueOf(50));
 
-        String rawFormula = (plan != null && plan.getPremiumRulesJson() != null && plan.getPremiumRulesJson().contains("ownDamageRate"))
-                ? plan.getPremiumRulesJson()
-                : null;
-        MotorRatingParameters params = (rawFormula != null)
-                ? MotorRatingParametersParser.parse(rawFormula)
-                : new MotorRatingParameters(
+        MotorRatingParameters params;
+        try {
+            if (plan != null && plan.getPremiumRulesJson() != null && plan.getPremiumRulesJson().contains("ownDamageRate")) {
+                params = MotorRatingParametersParser.fromJson(plan.getPremiumRulesJson());
+            } else {
+                params = new MotorRatingParameters(
                         new BigDecimal("0.02"),
+                        5,
+                        10,
                         new BigDecimal("0.05"),
-                        new BigDecimal("0.10"),
-                        Map.of()
+                        Map.of(),
+                        new BigDecimal("0.10")
                 );
+            }
+        } catch (Exception ex) {
+            params = new MotorRatingParameters(
+                    new BigDecimal("0.02"),
+                    5,
+                    10,
+                    new BigDecimal("0.05"),
+                    Map.of(),
+                    new BigDecimal("0.10")
+            );
+        }
 
         int registrationYear = policy.getStartDate().getYear() - 5;
         MotorRenewalQuote calc = RenewalQuoteCalculator.quote(
