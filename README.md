@@ -110,11 +110,31 @@ The planned implementation uses:
 - MySQL 8
 - Git
 
-### Current Repository Status
+### Quick Start & Verified Commands
 
-The repository currently contains the submitted project documentation and contribution guidelines. Application source code, dependency manifests, database configuration, and exact run commands will be documented as the implementation is added.
+#### Backend (Spring Boot 3)
+```bash
+cd backend
+./mvnw test            # Run 610 automated tests (610 passed)
+./mvnw spring-boot:run # Start on http://localhost:8080/api/v1/ (in-memory H2 MySQL profile)
+```
 
-Do not use the following instructions until the corresponding source code and configuration files are available.
+#### Frontend (React 18 + Vite)
+```bash
+cd frontend
+npm install
+npm test -- --run      # Run 79 component tests across 16 files via Vitest (79 passed)
+npm run dev            # Start development server on http://localhost:5173/
+```
+
+#### Containerized Test Environment (Docker Compose + TLS 1.2+ Nginx)
+See `docs/test-environment-guide.md` for detailed topology and TLS setup:
+```powershell
+.\scripts\generate-test-certs.ps1   # Generate dev TLS certs
+docker compose up -d --build         # Launch MySQL, dual backends, frontend, Nginx
+.\scripts\verify-tls-environment.ps1 -TargetHost 'localhost' # Run TLS verification
+docker compose down                  # Graceful teardown
+```
 
 ## 10. Project Management
 
