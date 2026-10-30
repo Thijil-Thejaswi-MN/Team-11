@@ -11,13 +11,15 @@ export default function ComparePlansView() {
         </p>
       </div>
 
-      <div className="dev-hook-box">
-        <span className="dev-hook-badge">Person 1 Ownership (Plan Comparison C4)</span>
-        <p className="mb-0">
-          This view connects to <code>GET /api/v1/plans/compare?ids=1,2,3</code>.
-          Enforces maximum 3 plans boundary (returns <code>VALID-422 / 400</code> if more than 3 selected).
-        </p>
-      </div>
+      {import.meta.env.DEV && (
+        <div className="dev-hook-box">
+          <span className="dev-hook-badge">Person 1 Ownership (Plan Comparison C4)</span>
+          <p className="mb-0">
+            This view connects to <code>GET /api/v1/plans/compare?ids=1,2,3</code>.
+            Enforces maximum 3 plans boundary (returns <code>VALID-422 / 400</code> if more than 3 selected).
+          </p>
+        </div>
+      )}
 
       <div className="dashboard-card">
         <div className="dashboard-card-header">

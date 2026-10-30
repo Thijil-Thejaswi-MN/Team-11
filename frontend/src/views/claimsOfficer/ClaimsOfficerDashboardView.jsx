@@ -176,17 +176,19 @@ export default function ClaimsOfficerDashboardView() {
     <PortalLayout
       title="Claims Officer Desk & Appraisal Screen"
       subtitle="Verification, loss assessment, settlement calculation & adjudication (SAD §4.3.5, INS-F-014)"
-      badgeText="P1-12 Claims Desk"
+      badgeText="Claims Officer Desk"
       badgeClass="bg-info text-dark"
     >
       {/* Dev Hook Box */}
-      <div className="dev-hook-box mb-4">
-        <span className="dev-hook-badge">Person 1 Scope: P1-12 Claims Officer Desk (D-11 Agreement)</span>
-        <p className="mb-0 small">
-          Agreed in Decision D-11: Person 4 maintains backend core APIs; Person 1 (Thijil) owns the appraisal screens,
-          stale claim auto-closure cron job (P1-19), and STP independent test verification (TC-Clm-01 to TC-Clm-04).
-        </p>
-      </div>
+      {import.meta.env.DEV && (
+        <div className="dev-hook-box mb-4">
+          <span className="dev-hook-badge">Person 1 Scope: P1-12 Claims Officer Desk (D-11 Agreement)</span>
+          <p className="mb-0 small">
+            Agreed in Decision D-11: Person 4 maintains backend core APIs; Person 1 (Thijil) owns the appraisal screens,
+            stale claim auto-closure cron job (P1-19), and STP independent test verification (TC-Clm-01 to TC-Clm-04).
+          </p>
+        </div>
+      )}
 
       {/* Filter & Metric Bar */}
       <div className="card border-0 shadow-sm mb-4">
