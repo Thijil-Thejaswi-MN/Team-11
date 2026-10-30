@@ -53,13 +53,15 @@ export default function BrowsePlansView() {
       </div>
 
       {/* Developer Integration Hook */}
-      <div className="dev-hook-box">
-        <span className="dev-hook-badge">Person 1 Ownership (Plan Management C4)</span>
-        <p className="mb-0">
-          This view connects to <code>GET /api/v1/plans?type=&insurer=&premiumMax=&coverageMin=</code>.
-          Person 1 can inject dynamic plan queries and filter state here.
-        </p>
-      </div>
+      {import.meta.env.DEV && (
+        <div className="dev-hook-box">
+          <span className="dev-hook-badge">Person 1 Ownership (Plan Management C4)</span>
+          <p className="mb-0">
+            This view connects to <code>GET /api/v1/plans?type=&insurer=&premiumMax=&coverageMin=</code>.
+            Person 1 can inject dynamic plan queries and filter state here.
+          </p>
+        </div>
+      )}
 
       {/* Filter Toolbar */}
       <div className="d-flex flex-wrap gap-2 mb-4 align-items-center">

@@ -33,40 +33,9 @@ export default function UnderwriterDashboardView() {
       const response = await apiClient.get('/applications/referred');
       setApplications(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
-      // In offline / preview / test environments with mock fallback
       console.warn('Could not fetch referred applications from backend:', err.message);
       setFetchError(err.message || 'Unable to connect to underwriting queue service.');
-      // Provide initial mock items if empty
-      setApplications([
-        {
-          id: 8812,
-          customerId: 1001,
-          insurerId: 1,
-          planId: 2,
-          quoteId: 501,
-          productType: 'HEALTH',
-          vehicleRegNo: null,
-          premium: 12500,
-          reason: 'Applicant age is 62 years (exceeds auto-approval limit of 60 years)',
-          detailsJson: '{"age":62,"applicantAge":62,"hasPreExisting":true,"sumInsured":1000000}',
-          status: 'REFERRED',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 8815,
-          customerId: 1002,
-          insurerId: 1,
-          planId: 1,
-          quoteId: 502,
-          productType: 'MOTOR_FOUR_WHEELER',
-          vehicleRegNo: 'KA03HA9988',
-          premium: 18450,
-          reason: 'Vehicle age is 12 years (exceeds auto-approve threshold of 10 years)',
-          detailsJson: '{"vehicleAge":12,"idv":750000,"make":"Honda","model":"City","city":"Bangalore"}',
-          status: 'REFERRED',
-          createdAt: new Date(Date.now() - 3600000).toISOString(),
-        },
-      ]);
+      setApplications([]);
     } finally {
       setLoading(false);
     }
@@ -193,13 +162,15 @@ export default function UnderwriterDashboardView() {
       badgeClass="bg-success"
     >
       {/* Dev Hook Box */}
-      <div className="dev-hook-box mb-4">
-        <span className="dev-hook-badge">Person 1 Scope: P1-11 Manual Underwriter Desk</span>
-        <p className="mb-0 small">
-          Active API: <code>GET /api/v1/applications/referred</code> &amp; <code>POST /api/v1/applications/&#123;id&#125;/decision</code>.
-          Enforces tenant isolation (INS-SR-003), immutability audit trail, and customer notification dispatch.
-        </p>
-      </div>
+      {import.meta.env.DEV && (
+        <div className="dev-hook-box mb-4">
+          <span className="dev-hook-badge">Person 1 Scope: P1-11 Manual Underwriter Desk</span>
+          <p className="mb-0 small">
+            Active API: <code>GET /api/v1/applications/referred</code> &amp; <code>POST /api/v1/applications/&#123;id&#125;/decision</code>.
+            Enforces tenant isolation (INS-SR-003), immutability audit trail, and customer notification dispatch.
+          </p>
+        </div>
+      )}
 
       {/* Global Success Banner */}
       {successMessage && (

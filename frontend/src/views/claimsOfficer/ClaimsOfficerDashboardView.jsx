@@ -309,14 +309,17 @@ export default function ClaimsOfficerDashboardView() {
       badgeClass="bg-info text-dark"
     >
       {/* Dev Hook Box */}
-      <div className="dev-hook-box mb-4">
-        <span className="dev-hook-badge">Person 1 Ownership: Claims Officer Screens (P1-12, Decision D-11)</span>
-        <p className="mb-0 small">
-          Agreed in Decision D-11: Raghunandan (P4) owns the backend claims entities and service APIs.
-          Person 1 (Thijil) owns the appraisal screens (P1-12), duplicate claim detection review banner (INS-F-023),
-          stale claim auto-close scheduler (P1-19, TC-Clm-06), and STP independent test verification (TC-Clm-01 to TC-Clm-04).
-        </p>
-      </div>
+      {/* Dev Hook Box — guarded so badge is hidden outside DEV (INS-F-019 responsive) */}
+      {import.meta.env.DEV && (
+        <div className="dev-hook-box mb-4">
+          <span className="dev-hook-badge">Person 1 Ownership: Claims Officer Screens (P1-12, Decision D-11)</span>
+          <p className="mb-0 small">
+            Agreed in Decision D-11: Raghunandan (P4) owns the backend claims entities and service APIs.
+            Person 1 (Thijil) owns the appraisal screens (P1-12), duplicate claim detection review banner (INS-F-023),
+            stale claim auto-close scheduler (P1-19, TC-Clm-06), and STP independent test verification (TC-Clm-01 to TC-Clm-04).
+          </p>
+        </div>
+      )}
 
       {/* Success Notification Banner */}
       {successBanner && (

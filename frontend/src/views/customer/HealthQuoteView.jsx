@@ -121,7 +121,7 @@ export default function HealthQuoteView() {
     <PortalLayout
       title="Health Insurance Instant Quote"
       subtitle="Medical rating engine with multi-member support and underwriting loading (INS-F-006, TC-Quote-02)"
-      badgeText="Person 1 Ownership"
+      badgeText="Instant Quote"
       badgeClass="bg-success"
     >
       <div className="row g-4">
