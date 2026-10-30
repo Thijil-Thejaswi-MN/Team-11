@@ -45,13 +45,23 @@ public class PlanManagementService {
     private final PlanRepository planRepository;
     private final InsurerRepository insurerRepository;
     private final ObjectMapper objectMapper;
+    private final com.team11.insurance.admin.IAuditLog auditLog;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public PlanManagementService(PlanRepository planRepository,
+                                 InsurerRepository insurerRepository,
+                                 ObjectMapper objectMapper,
+                                 com.team11.insurance.admin.IAuditLog auditLog) {
+        this.planRepository = planRepository;
+        this.insurerRepository = insurerRepository;
+        this.objectMapper = objectMapper;
+        this.auditLog = auditLog;
+    }
 
     public PlanManagementService(PlanRepository planRepository,
                                  InsurerRepository insurerRepository,
                                  ObjectMapper objectMapper) {
-        this.planRepository = planRepository;
-        this.insurerRepository = insurerRepository;
-        this.objectMapper = objectMapper;
+        this(planRepository, insurerRepository, objectMapper, null);
     }
 
     /**
@@ -99,6 +109,11 @@ public class PlanManagementService {
         log.info("Plan created: id={}, code={}, insurerId={}, type={}",
                 savedPlan.getId(), savedPlan.getCode(), savedPlan.getInsurerId(), savedPlan.getType());
 
+        if (auditLog != null && currentUser != null) {
+            auditLog.record(currentUser.getUserId(), "PLAN_CREATED", "Plan", savedPlan.getId(),
+                    "Plan created: " + savedPlan.getCode() + ", name: " + savedPlan.getName());
+        }
+
         return new PlanCreateResponse(savedPlan.getId());
     }
 
@@ -135,6 +150,11 @@ public class PlanManagementService {
 
         Plan savedPlan = planRepository.save(plan);
         log.info("Plan updated: id={}, code={}", savedPlan.getId(), savedPlan.getCode());
+
+        if (auditLog != null && currentUser != null) {
+            auditLog.record(currentUser.getUserId(), "PLAN_EDITED", "Plan", savedPlan.getId(),
+                    "Plan updated: " + savedPlan.getCode() + ", name: " + savedPlan.getName());
+        }
 
         return toPlanResponse(savedPlan);
     }
@@ -195,6 +215,19 @@ public class PlanManagementService {
 
         Plan savedPlan = planRepository.save(plan);
         log.info("Plan patched: id={}, code={}, active={}", savedPlan.getId(), savedPlan.getCode(), savedPlan.isActive());
+
+        if (auditLog != null && currentUser != null) {
+            if (request.getActive() != null && !request.getActive()) {
+                auditLog.record(currentUser.getUserId(), "PLAN_DEACTIVATED", "Plan", savedPlan.getId(),
+                        "Plan deactivated: " + savedPlan.getCode());
+            } else if (request.getActive() != null && request.getActive()) {
+                auditLog.record(currentUser.getUserId(), "PLAN_ACTIVATED", "Plan", savedPlan.getId(),
+                        "Plan activated: " + savedPlan.getCode());
+            } else {
+                auditLog.record(currentUser.getUserId(), "PLAN_EDITED", "Plan", savedPlan.getId(),
+                        "Plan partially updated: " + savedPlan.getCode());
+            }
+        }
 
         return toPlanResponse(savedPlan);
     }

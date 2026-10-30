@@ -43,15 +43,32 @@ public class AuthenticationService {
     private final PasswordService passwordService;
     private final JwtService jwtService;
     private final Clock clock;
+    private final com.team11.insurance.admin.IAuditLog auditLog;
 
     @org.springframework.beans.factory.annotation.Autowired
     public AuthenticationService(UserRepository userRepository,
                                  UserSessionRepository sessionRepository,
                                  PasswordService passwordService,
                                  JwtService jwtService,
-                                 ObjectProvider<Clock> clockProvider) {
+                                 ObjectProvider<Clock> clockProvider,
+                                 ObjectProvider<com.team11.insurance.admin.IAuditLog> auditLogProvider) {
         this(userRepository, sessionRepository, passwordService, jwtService,
-                clockProvider != null ? clockProvider.getIfAvailable(Clock::systemDefaultZone) : Clock.systemDefaultZone());
+                clockProvider != null ? clockProvider.getIfAvailable(Clock::systemDefaultZone) : Clock.systemDefaultZone(),
+                auditLogProvider != null ? auditLogProvider.getIfAvailable(() -> null) : null);
+    }
+
+    public AuthenticationService(UserRepository userRepository,
+                                 UserSessionRepository sessionRepository,
+                                 PasswordService passwordService,
+                                 JwtService jwtService,
+                                 Clock clock,
+                                 com.team11.insurance.admin.IAuditLog auditLog) {
+        this.userRepository = userRepository;
+        this.sessionRepository = sessionRepository;
+        this.passwordService = passwordService;
+        this.jwtService = jwtService;
+        this.clock = clock != null ? clock : Clock.systemDefaultZone();
+        this.auditLog = auditLog;
     }
 
     public AuthenticationService(UserRepository userRepository,
@@ -59,18 +76,14 @@ public class AuthenticationService {
                                  PasswordService passwordService,
                                  JwtService jwtService,
                                  Clock clock) {
-        this.userRepository = userRepository;
-        this.sessionRepository = sessionRepository;
-        this.passwordService = passwordService;
-        this.jwtService = jwtService;
-        this.clock = clock != null ? clock : Clock.systemDefaultZone();
+        this(userRepository, sessionRepository, passwordService, jwtService, clock, null);
     }
 
     public AuthenticationService(UserRepository userRepository,
                                  UserSessionRepository sessionRepository,
                                  PasswordService passwordService,
                                  JwtService jwtService) {
-        this(userRepository, sessionRepository, passwordService, jwtService, (Clock) null);
+        this(userRepository, sessionRepository, passwordService, jwtService, (Clock) null, null);
     }
 
     /**
@@ -124,6 +137,10 @@ public class AuthenticationService {
         if (userOpt.isEmpty()) {
             // Mitigate timing attacks by performing dummy BCrypt verification
             passwordService.matches(request.getPassword(), passwordService.getDummyHash());
+            if (auditLog != null) {
+                auditLog.recordSystem("LOGIN_FAILURE", "User", 0L,
+                        "Login failure: unknown email " + com.team11.insurance.common.logging.SensitiveDataMasker.maskEmail(normalizedEmail));
+            }
             throw new AuthenticationException("Invalid email or password.");
         }
 
@@ -132,6 +149,10 @@ public class AuthenticationService {
         // 1. Check account lockout status
         if (user.isAccountLocked(now)) {
             log.warn("Login attempt for locked account id={}", user.getId());
+            if (auditLog != null) {
+                auditLog.record(user.getId(), "LOGIN_FAILURE_LOCKED", "User", user.getId(),
+                        "Login attempt rejected: account is locked");
+            }
             throw new AccountLockedException("Account locked after 5 failed logins for 15 minutes.");
         }
 
@@ -149,15 +170,30 @@ public class AuthenticationService {
 
             if (user.isAccountLocked(now)) {
                 log.warn("Account id={} reached 5 failed logins and is now locked for 15 minutes", user.getId());
+                if (auditLog != null) {
+                    auditLog.record(user.getId(), "ACCOUNT_LOCKOUT", "User", user.getId(),
+                            "Account locked for 15 minutes after 5 consecutive failed logins");
+                    auditLog.record(user.getId(), "LOGIN_FAILURE", "User", user.getId(),
+                            "Invalid password; account locked");
+                }
                 throw new AccountLockedException("Account locked after 5 failed logins for 15 minutes.");
             }
 
+            if (auditLog != null) {
+                auditLog.record(user.getId(), "LOGIN_FAILURE", "User", user.getId(),
+                        "Invalid password attempt " + user.getFailedLoginAttempts() + " of " + MAX_FAILED_ATTEMPTS);
+            }
             throw new AuthenticationException("Invalid email or password.");
         }
 
         // 4. Successful login: reset failed attempt counters
         user.resetLoginLockout();
         userRepository.save(user);
+
+        if (auditLog != null) {
+            auditLog.record(user.getId(), "LOGIN_SUCCESS", "User", user.getId(),
+                    "Successful login from IP: " + ipAddress);
+        }
 
         // 5. Create server-side session
         String sessionId = UUID.randomUUID().toString();

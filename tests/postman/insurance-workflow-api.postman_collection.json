@@ -34,8 +34,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/actuator/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["actuator", "health"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
             },
             "description": "Real live actuator health check endpoint implemented in Spring Boot backend skeleton."
           },
@@ -94,8 +99,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/{{apiPrefix}}/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
             },
             "description": "Contract example: POST /api/v1/auth/register for creating customer accounts."
           },
@@ -136,8 +148,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/{{apiPrefix}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
             },
             "description": "Contract example: POST /api/v1/auth/login returning JWT token and role."
           },
@@ -204,8 +223,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/{{apiPrefix}}/kyc",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["api", "v1", "kyc"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "kyc"
+                  ]
                 },
                 "description": "Contract example: POST /api/v1/kyc multipart form data submission with valid PAN ABCDE1234F."
               },
@@ -246,8 +271,15 @@
                 ],
                 "url": {
                   "raw": "{{baseUrl}}/{{apiPrefix}}/kyc/status",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["api", "v1", "kyc", "status"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "kyc",
+                    "status"
+                  ]
                 },
                 "description": "Contract example: GET /api/v1/kyc/status for authenticated customer."
               },
@@ -310,8 +342,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/{{apiPrefix}}/kyc",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["api", "v1", "kyc"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "kyc"
+                  ]
                 },
                 "description": "TC-KYC-01 Step 3: PAN ZZZZZ0000Z simulation returns status Rejected."
               },
@@ -373,8 +411,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/{{apiPrefix}}/kyc",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["api", "v1", "kyc"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "kyc"
+                  ]
                 },
                 "description": "TC-KYC-01: Malformed PAN fails validation with 422 VALID-422."
               },
@@ -412,8 +456,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/{{apiPrefix}}/plans?type=HEALTH&premiumMax=10000",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "plans"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "plans"
+              ],
               "query": [
                 {
                   "key": "type",
@@ -459,8 +509,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/{{apiPrefix}}/plans/compare?ids=1,2",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "plans", "compare"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "plans",
+                "compare"
+              ],
               "query": [
                 {
                   "key": "ids",
@@ -502,8 +559,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/{{apiPrefix}}/plans/compare?ids=1,2,3,4",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "plans", "compare"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "plans",
+                "compare"
+              ],
               "query": [
                 {
                   "key": "ids",
@@ -544,8 +608,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/{{apiPrefix}}/plans/compare?ids=1,99999",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "plans", "compare"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "plans",
+                "compare"
+              ],
               "query": [
                 {
                   "key": "ids",
@@ -599,8 +670,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/{{apiPrefix}}/plans",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "plans"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "plans"
+              ]
             },
             "description": "Contract example: POST /api/v1/plans for Insurer Admin."
           },
@@ -647,8 +724,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/{{apiPrefix}}/plans/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "plans", "1"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "plans",
+                "1"
+              ]
             },
             "description": "Deactivate plan via PATCH /api/v1/plans/{id}."
           },
@@ -666,835 +750,955 @@
           "item": [
             {
               "name": "TC-Quote-01 Step 1: Motor Quote - Age 7 with ZERO_DEP (PLAN-A-M1)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200 OK\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"TC-Quote-01 Step 1: Calculated total premium is Rs 9480.00\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.premium).to.eql(9480.00);",
-                  "    pm.expect(json.breakdown.basePremium).to.eql(8000.00);",
-                  "    pm.expect(json.breakdown.ageLoading).to.eql(400.00);",
-                  "    pm.expect(json.breakdown.addOns.ZERO_DEP).to.eql(1080.00);",
-                  "    pm.expect(json.breakdown.totalPremium).to.eql(9480.00);",
-                  "    pm.expect(json.quoteId).to.be.a('number');",
-                  "});",
-                  "pm.test(\"TC-Perf-01 / INS-NF-001: Response time is within 5 seconds\", function () {",
-                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
-                  "});"
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test(\"TC-Quote-01 Step 1: Calculated total premium is Rs 9480.00\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.premium).to.eql(9480.00);",
+                      "    pm.expect(json.breakdown.basePremium).to.eql(8000.00);",
+                      "    pm.expect(json.breakdown.ageLoading).to.eql(400.00);",
+                      "    pm.expect(json.breakdown.addOns.ZERO_DEP).to.eql(1080.00);",
+                      "    pm.expect(json.breakdown.totalPremium).to.eql(9480.00);",
+                      "    pm.expect(json.quoteId).to.be.a('number');",
+                      "});",
+                      "pm.test(\"TC-Perf-01 / INS-NF-001: Response time is within 5 seconds\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
                 ],
-                "type": "text/javascript"
-              }
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Maruti\",\n  \"model\": \"Swift\",\n  \"regYear\": 2019,\n  \"city\": \"Belagavi\",\n  \"idv\": 400000,\n  \"addOns\": [\"ZERO_DEP\"]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "motor"
+                  ]
+                },
+                "description": "TC-Quote-01 Step 1: IDV 4,00,000, regYear 2019 (age 7), ZERO_DEP -> Total Rs 9,480 (8,000 + 400 + 1,080)."
+              },
+              "response": []
+            },
+            {
+              "name": "TC-Quote-01 Step 2: Motor Quote - Age 2 No Add-ons (PLAN-A-M1)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test(\"TC-Quote-01 Step 2: Normal age premium is Rs 8000.00 with 0 loading\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.premium).to.eql(8000.00);",
+                      "    pm.expect(json.breakdown.basePremium).to.eql(8000.00);",
+                      "    pm.expect(json.breakdown.ageLoading).to.eql(0.00);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Maruti\",\n  \"model\": \"Swift\",\n  \"regYear\": 2024,\n  \"city\": \"Belagavi\",\n  \"idv\": 400000,\n  \"addOns\": []\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "motor"
+                  ]
+                },
+                "description": "TC-Quote-01 Step 2: IDV 4,00,000, regYear 2024 (age 2), no add-ons -> Total Rs 8,000."
+              },
+              "response": []
+            },
+            {
+              "name": "TC-Quote-01 Step 3: Motor Quote - Higher IDV 6L Age 2 (PLAN-A-M1)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test(\"TC-Quote-01 Step 3: Higher IDV 6L premium is Rs 12000.00\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.premium).to.eql(12000.00);",
+                      "    pm.expect(json.breakdown.basePremium).to.eql(12000.00);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"regYear\": 2024,\n  \"city\": \"Bengaluru\",\n  \"idv\": 600000,\n  \"addOns\": []\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "motor"
+                  ]
+                },
+                "description": "TC-Quote-01 Step 3: IDV 6,00,000, regYear 2024 (age 2), no add-ons -> Total Rs 12,000."
+              },
+              "response": []
+            },
+            {
+              "name": "TC-Quote-01 Boundary: Motor Quote - Age 6 Boundary (5% Loading)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test(\"Vehicle age 6 boundary receives 5% age loading (total Rs 8400.00)\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.premium).to.eql(8400.00);",
+                      "    pm.expect(json.breakdown.ageLoading).to.eql(400.00);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Tata\",\n  \"model\": \"Nexon\",\n  \"regYear\": 2020,\n  \"city\": \"Hubballi\",\n  \"idv\": 400000,\n  \"addOns\": []\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "motor"
+                  ]
+                },
+                "description": "Boundary age 6 years (regYear 2020 in 2026): base 8,000 + 5% loading 400 = Rs 8,400."
+              },
+              "response": []
+            },
+            {
+              "name": "TC-Quote-01 Boundary: Motor Quote - Age 10 Boundary (5% Loading)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test(\"Vehicle age 10 boundary receives 5% age loading (total Rs 8400.00)\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.premium).to.eql(8400.00);",
+                      "    pm.expect(json.breakdown.ageLoading).to.eql(400.00);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Honda\",\n  \"model\": \"City\",\n  \"regYear\": 2016,\n  \"city\": \"Dharwad\",\n  \"idv\": 400000,\n  \"addOns\": []\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "motor"
+                  ]
+                },
+                "description": "Boundary age 10 years (regYear 2016 in 2026): base 8,000 + 5% loading 400 = Rs 8,400."
+              },
+              "response": []
+            },
+            {
+              "name": "TC-Quote-01 Boundary: Motor Quote - Age 11 Boundary (0% Loading)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test(\"Vehicle age 11 boundary receives NO age loading (total Rs 8000.00)\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.premium).to.eql(8000.00);",
+                      "    pm.expect(json.breakdown.ageLoading).to.eql(0.00);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Maruti\",\n  \"model\": \"WagonR\",\n  \"regYear\": 2015,\n  \"city\": \"Mysuru\",\n  \"idv\": 400000,\n  \"addOns\": []\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "motor"
+                  ]
+                },
+                "description": "Boundary age 11 years (regYear 2015 in 2026): base 8,000 + 0 loading = Rs 8,000."
+              },
+              "response": []
+            },
+            {
+              "name": "TC-Quote-01 Step 4a: Motor Quote - Future Registration Year (Expect 422)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                      "    pm.response.to.have.status(422);",
+                      "});",
+                      "pm.test(\"Error response conforms to VALID-422 schema\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.status).to.eql(422);",
+                      "    pm.expect(json.errorCode).to.eql(\"VALID-422\");",
+                      "    pm.expect(json.message).to.include(\"future\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Maruti\",\n  \"model\": \"Swift\",\n  \"regYear\": 2030,\n  \"city\": \"Belagavi\",\n  \"idv\": 400000,\n  \"addOns\": []\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "motor"
+                  ]
+                },
+                "description": "TC-Quote-01 Step 4: Future registration year 2030 must be rejected with HTTP 422."
+              },
+              "response": []
+            },
+            {
+              "name": "TC-Quote-01 Step 4b: Motor Quote - Negative IDV (Expect 422)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                      "    pm.response.to.have.status(422);",
+                      "});",
+                      "pm.test(\"Error response conforms to VALID-422 schema\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.status).to.eql(422);",
+                      "    pm.expect(json.errorCode).to.eql(\"VALID-422\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Maruti\",\n  \"model\": \"Swift\",\n  \"regYear\": 2020,\n  \"city\": \"Belagavi\",\n  \"idv\": -50000,\n  \"addOns\": []\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "motor"
+                  ]
+                },
+                "description": "TC-Quote-01 Step 4: Negative or zero IDV must be rejected with HTTP 422."
+              },
+              "response": []
+            },
+            {
+              "name": "TC-Quote-01 Step 4c: Motor Quote - Incompatible Vehicle Type 2W on 4W Plan (Expect 422)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                      "    pm.response.to.have.status(422);",
+                      "});",
+                      "pm.test(\"Error response conforms to VALID-422 schema\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.status).to.eql(422);",
+                      "    pm.expect(json.errorCode).to.eql(\"VALID-422\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"2W\",\n  \"make\": \"Honda\",\n  \"model\": \"Activa\",\n  \"regYear\": 2020,\n  \"city\": \"Belagavi\",\n  \"idv\": 80000,\n  \"addOns\": []\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "motor"
+                  ]
+                },
+                "description": "Mismatched vehicle type against plan rules must be rejected with HTTP 422."
+              },
+              "response": []
+            },
+            {
+              "name": "TC-Quote-02 Step 1: Health Quote - 1 Member Age 45 (PLAN-A-H1)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test(\"TC-Quote-02 Step 1: 1 member age 45, 5L, No PED is Rs 4500.00\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.premium).to.eql(4500.00);",
+                      "    pm.expect(json.breakdown.basePremium).to.eql(4500.00);",
+                      "    pm.expect(json.breakdown.totalPremium).to.eql(4500.00);",
+                      "    pm.expect(json.breakdown.ageLoading).to.eql(0.00);",
+                      "    pm.expect(json.quoteId).to.be.a('number');",
+                      "});",
+                      "pm.test(\"TC-Perf-01 / INS-NF-001: Response time is within 5 seconds\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 45}],\n  \"sumInsured\": 500000,\n  \"preExisting\": false\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "health"
+                  ]
+                },
+                "description": "TC-Quote-02 Step 1: 1 member age 45, sum insured 5 lakh, pre-existing No -> Rs 4,500."
+              },
+              "response": []
+            },
+            {
+              "name": "TC-Quote-02 Step 2: Health Quote - 2 Members Ages 30 & 32 (PLAN-A-H1)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test(\"TC-Quote-02 Step 2: 2 members ages 30 and 32, 5L, No PED is Rs 6000.00\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.premium).to.eql(6000.00);",
+                      "    pm.expect(json.breakdown.basePremium).to.eql(6000.00);",
+                      "    pm.expect(json.breakdown.totalPremium).to.eql(6000.00);",
+                      "    pm.expect(json.quoteId).to.be.a('number');",
+                      "});",
+                      "pm.test(\"TC-Perf-01 / INS-NF-001: Response time is within 5 seconds\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 30}, {\"age\": 32}],\n  \"sumInsured\": 500000,\n  \"preExisting\": false\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "health"
+                  ]
+                },
+                "description": "TC-Quote-02 Step 2: 2 members ages 30 and 32, sum insured 5 lakh, pre-existing No -> Rs 6,000."
+              },
+              "response": []
+            },
+            {
+              "name": "TC-Quote-02 Step 3: Health Quote - 2 Members Higher Coverage 10L (PLAN-A-H1)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test(\"TC-Quote-02 Step 3: 2 members ages 30 and 32, 10L, No PED is Rs 9600.00\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.premium).to.eql(9600.00);",
+                      "    pm.expect(json.breakdown.basePremium).to.eql(6000.00);",
+                      "    pm.expect(json.breakdown.ageLoading).to.eql(3600.00);",
+                      "    pm.expect(json.breakdown.totalPremium).to.eql(9600.00);",
+                      "});",
+                      "pm.test(\"TC-Perf-01 / INS-NF-001: Response time is within 5 seconds\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 30}, {\"age\": 32}],\n  \"sumInsured\": 1000000,\n  \"preExisting\": false\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "health"
+                  ]
+                },
+                "description": "TC-Quote-02 Step 3: 2 members ages 30 and 32, sum insured 10 lakh, pre-existing No -> Rs 9,600."
+              },
+              "response": []
+            },
+            {
+              "name": "TC-Quote-02 Step 4: Health Quote - 2 Members with Pre-Existing Condition (PLAN-A-H1)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test(\"TC-Quote-02 Step 4: 2 members ages 30 and 32, 5L, Pre-existing Yes is Rs 7200.00\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.premium).to.eql(7200.00);",
+                      "    pm.expect(json.breakdown.basePremium).to.eql(6000.00);",
+                      "    pm.expect(json.breakdown.ageLoading).to.eql(1200.00);",
+                      "    pm.expect(json.breakdown.totalPremium).to.eql(7200.00);",
+                      "});",
+                      "pm.test(\"TC-Perf-01 / INS-NF-001: Response time is within 5 seconds\", function () {",
+                      "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 30}, {\"age\": 32}],\n  \"sumInsured\": 500000,\n  \"preExisting\": true\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "health"
+                  ]
+                },
+                "description": "TC-Quote-02 Step 4: 2 members ages 30 and 32, sum insured 5 lakh, pre-existing Yes -> Rs 7,200."
+              },
+              "response": []
+            },
+            {
+              "name": "TC-Quote-02 Step 5a: Health Quote - No Members (Expect 422)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                      "    pm.response.to.have.status(422);",
+                      "});",
+                      "pm.test(\"Error schema complies with SAD Section 4.4\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.status).to.eql(422);",
+                      "    pm.expect(json.errorCode).to.eql(\"VALID-422\");",
+                      "    pm.expect(json.message).to.be.a(\"string\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 3,\n  \"members\": [],\n  \"sumInsured\": 500000,\n  \"preExisting\": false\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "health"
+                  ]
+                },
+                "description": "TC-Quote-02 Step 5: Quote with no members must be rejected with HTTP 422."
+              },
+              "response": []
+            },
+            {
+              "name": "TC-Quote-02 Step 5b: Health Quote - Unsupported Sum Insured 7.5L (Expect 422)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                      "    pm.response.to.have.status(422);",
+                      "});",
+                      "pm.test(\"Error schema complies with SAD Section 4.4\", function () {",
+                      "    var json = pm.response.json();",
+                      "    pm.expect(json.status).to.eql(422);",
+                      "    pm.expect(json.errorCode).to.eql(\"VALID-422\");",
+                      "    pm.expect(json.message).to.be.a(\"string\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 30}],\n  \"sumInsured\": 750000,\n  \"preExisting\": false\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "quotes",
+                    "health"
+                  ]
+                },
+                "description": "TC-Quote-02 Step 5: Sum insured not offered by plan (7,50,000) must be rejected with HTTP 422."
+              },
+              "response": []
             }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Maruti\",\n  \"model\": \"Swift\",\n  \"regYear\": 2019,\n  \"city\": \"Belagavi\",\n  \"idv\": 400000,\n  \"addOns\": [\"ZERO_DEP\"]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "motor"]
-            },
-            "description": "TC-Quote-01 Step 1: IDV 4,00,000, regYear 2019 (age 7), ZERO_DEP -> Total Rs 9,480 (8,000 + 400 + 1,080)."
-          },
-          "response": []
+          ]
         },
         {
-          "name": "TC-Quote-01 Step 2: Motor Quote - Age 2 No Add-ons (PLAN-A-M1)",
-          "event": [
+          "name": "underwriting",
+          "description": "Underwriting decision and referral endpoints (INS-F-010, INS-F-011).",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200 OK\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"TC-Quote-01 Step 2: Normal age premium is Rs 8000.00 with 0 loading\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.premium).to.eql(8000.00);",
-                  "    pm.expect(json.breakdown.basePremium).to.eql(8000.00);",
-                  "    pm.expect(json.breakdown.ageLoading).to.eql(0.00);",
-                  "});"
+              "name": "Get Referred Applications (Underwriter, Contract INS-F-011)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{underwriterToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
                 ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/applications/referred",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "applications",
+                    "referred"
+                  ]
+                },
+                "description": "Contract example: GET /api/v1/applications/referred."
               },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Maruti\",\n  \"model\": \"Swift\",\n  \"regYear\": 2024,\n  \"city\": \"Belagavi\",\n  \"idv\": 400000,\n  \"addOns\": []\n}"
+              "response": []
             },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "motor"]
-            },
-            "description": "TC-Quote-01 Step 2: IDV 4,00,000, regYear 2024 (age 2), no add-ons -> Total Rs 8,000."
-          },
-          "response": []
-        },
-        {
-          "name": "TC-Quote-01 Step 3: Motor Quote - Higher IDV 6L Age 2 (PLAN-A-M1)",
-          "event": [
             {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200 OK\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"TC-Quote-01 Step 3: Higher IDV 6L premium is Rs 12000.00\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.premium).to.eql(12000.00);",
-                  "    pm.expect(json.breakdown.basePremium).to.eql(12000.00);",
-                  "});"
+              "name": "Underwriter Decision (Contract INS-F-011)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{underwriterToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
                 ],
-                "type": "text/javascript"
-              }
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"decision\": \"APPROVE\",\n  \"reason\": \"Medical declaration verified against underwriting guidelines.\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/applications/7001/decision",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "applications",
+                    "7001",
+                    "decision"
+                  ]
+                },
+                "description": "Contract example: POST /api/v1/applications/{id}/decision."
+              },
+              "response": []
             }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Hyundai\",\n  \"model\": \"Creta\",\n  \"regYear\": 2024,\n  \"city\": \"Bengaluru\",\n  \"idv\": 600000,\n  \"addOns\": []\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "motor"]
-            },
-            "description": "TC-Quote-01 Step 3: IDV 6,00,000, regYear 2024 (age 2), no add-ons -> Total Rs 12,000."
-          },
-          "response": []
-        },
-        {
-          "name": "TC-Quote-01 Boundary: Motor Quote - Age 6 Boundary (5% Loading)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200 OK\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"Vehicle age 6 boundary receives 5% age loading (total Rs 8400.00)\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.premium).to.eql(8400.00);",
-                  "    pm.expect(json.breakdown.ageLoading).to.eql(400.00);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Tata\",\n  \"model\": \"Nexon\",\n  \"regYear\": 2020,\n  \"city\": \"Hubballi\",\n  \"idv\": 400000,\n  \"addOns\": []\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "motor"]
-            },
-            "description": "Boundary age 6 years (regYear 2020 in 2026): base 8,000 + 5% loading 400 = Rs 8,400."
-          },
-          "response": []
-        },
-        {
-          "name": "TC-Quote-01 Boundary: Motor Quote - Age 10 Boundary (5% Loading)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200 OK\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"Vehicle age 10 boundary receives 5% age loading (total Rs 8400.00)\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.premium).to.eql(8400.00);",
-                  "    pm.expect(json.breakdown.ageLoading).to.eql(400.00);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Honda\",\n  \"model\": \"City\",\n  \"regYear\": 2016,\n  \"city\": \"Dharwad\",\n  \"idv\": 400000,\n  \"addOns\": []\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "motor"]
-            },
-            "description": "Boundary age 10 years (regYear 2016 in 2026): base 8,000 + 5% loading 400 = Rs 8,400."
-          },
-          "response": []
-        },
-        {
-          "name": "TC-Quote-01 Boundary: Motor Quote - Age 11 Boundary (0% Loading)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200 OK\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"Vehicle age 11 boundary receives NO age loading (total Rs 8000.00)\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.premium).to.eql(8000.00);",
-                  "    pm.expect(json.breakdown.ageLoading).to.eql(0.00);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Maruti\",\n  \"model\": \"WagonR\",\n  \"regYear\": 2015,\n  \"city\": \"Mysuru\",\n  \"idv\": 400000,\n  \"addOns\": []\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "motor"]
-            },
-            "description": "Boundary age 11 years (regYear 2015 in 2026): base 8,000 + 0 loading = Rs 8,000."
-          },
-          "response": []
-        },
-        {
-          "name": "TC-Quote-01 Step 4a: Motor Quote - Future Registration Year (Expect 422)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "pm.test(\"Error response conforms to VALID-422 schema\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.status).to.eql(422);",
-                  "    pm.expect(json.errorCode).to.eql(\"VALID-422\");",
-                  "    pm.expect(json.message).to.include(\"future\");",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Maruti\",\n  \"model\": \"Swift\",\n  \"regYear\": 2030,\n  \"city\": \"Belagavi\",\n  \"idv\": 400000,\n  \"addOns\": []\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "motor"]
-            },
-            "description": "TC-Quote-01 Step 4: Future registration year 2030 must be rejected with HTTP 422."
-          },
-          "response": []
-        },
-        {
-          "name": "TC-Quote-01 Step 4b: Motor Quote - Negative IDV (Expect 422)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "pm.test(\"Error response conforms to VALID-422 schema\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.status).to.eql(422);",
-                  "    pm.expect(json.errorCode).to.eql(\"VALID-422\");",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"4W\",\n  \"make\": \"Maruti\",\n  \"model\": \"Swift\",\n  \"regYear\": 2020,\n  \"city\": \"Belagavi\",\n  \"idv\": -50000,\n  \"addOns\": []\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "motor"]
-            },
-            "description": "TC-Quote-01 Step 4: Negative or zero IDV must be rejected with HTTP 422."
-          },
-          "response": []
-        },
-        {
-          "name": "TC-Quote-01 Step 4c: Motor Quote - Incompatible Vehicle Type 2W on 4W Plan (Expect 422)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "pm.test(\"Error response conforms to VALID-422 schema\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.status).to.eql(422);",
-                  "    pm.expect(json.errorCode).to.eql(\"VALID-422\");",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 1,\n  \"vehicleType\": \"2W\",\n  \"make\": \"Honda\",\n  \"model\": \"Activa\",\n  \"regYear\": 2020,\n  \"city\": \"Belagavi\",\n  \"idv\": 80000,\n  \"addOns\": []\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/motor",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "motor"]
-            },
-            "description": "Mismatched vehicle type against plan rules must be rejected with HTTP 422."
-          },
-          "response": []
-        },
-        {
-          "name": "TC-Quote-02 Step 1: Health Quote - 1 Member Age 45 (PLAN-A-H1)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200 OK\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"TC-Quote-02 Step 1: 1 member age 45, 5L, No PED is Rs 4500.00\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.premium).to.eql(4500.00);",
-                  "    pm.expect(json.breakdown.basePremium).to.eql(4500.00);",
-                  "    pm.expect(json.breakdown.totalPremium).to.eql(4500.00);",
-                  "    pm.expect(json.breakdown.ageLoading).to.eql(0.00);",
-                  "    pm.expect(json.quoteId).to.be.a('number');",
-                  "});",
-                  "pm.test(\"TC-Perf-01 / INS-NF-001: Response time is within 5 seconds\", function () {",
-                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 45}],\n  \"sumInsured\": 500000,\n  \"preExisting\": false\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "health"]
-            },
-            "description": "TC-Quote-02 Step 1: 1 member age 45, sum insured 5 lakh, pre-existing No -> Rs 4,500."
-          },
-          "response": []
-        },
-        {
-          "name": "TC-Quote-02 Step 2: Health Quote - 2 Members Ages 30 & 32 (PLAN-A-H1)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200 OK\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"TC-Quote-02 Step 2: 2 members ages 30 and 32, 5L, No PED is Rs 6000.00\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.premium).to.eql(6000.00);",
-                  "    pm.expect(json.breakdown.basePremium).to.eql(6000.00);",
-                  "    pm.expect(json.breakdown.totalPremium).to.eql(6000.00);",
-                  "    pm.expect(json.quoteId).to.be.a('number');",
-                  "});",
-                  "pm.test(\"TC-Perf-01 / INS-NF-001: Response time is within 5 seconds\", function () {",
-                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 30}, {\"age\": 32}],\n  \"sumInsured\": 500000,\n  \"preExisting\": false\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "health"]
-            },
-            "description": "TC-Quote-02 Step 2: 2 members ages 30 and 32, sum insured 5 lakh, pre-existing No -> Rs 6,000."
-          },
-          "response": []
-        },
-        {
-          "name": "TC-Quote-02 Step 3: Health Quote - 2 Members Higher Coverage 10L (PLAN-A-H1)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200 OK\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"TC-Quote-02 Step 3: 2 members ages 30 and 32, 10L, No PED is Rs 9600.00\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.premium).to.eql(9600.00);",
-                  "    pm.expect(json.breakdown.basePremium).to.eql(6000.00);",
-                  "    pm.expect(json.breakdown.ageLoading).to.eql(3600.00);",
-                  "    pm.expect(json.breakdown.totalPremium).to.eql(9600.00);",
-                  "});",
-                  "pm.test(\"TC-Perf-01 / INS-NF-001: Response time is within 5 seconds\", function () {",
-                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 30}, {\"age\": 32}],\n  \"sumInsured\": 1000000,\n  \"preExisting\": false\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "health"]
-            },
-            "description": "TC-Quote-02 Step 3: 2 members ages 30 and 32, sum insured 10 lakh, pre-existing No -> Rs 9,600."
-          },
-          "response": []
-        },
-        {
-          "name": "TC-Quote-02 Step 4: Health Quote - 2 Members with Pre-Existing Condition (PLAN-A-H1)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200 OK\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"TC-Quote-02 Step 4: 2 members ages 30 and 32, 5L, Pre-existing Yes is Rs 7200.00\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.premium).to.eql(7200.00);",
-                  "    pm.expect(json.breakdown.basePremium).to.eql(6000.00);",
-                  "    pm.expect(json.breakdown.ageLoading).to.eql(1200.00);",
-                  "    pm.expect(json.breakdown.totalPremium).to.eql(7200.00);",
-                  "});",
-                  "pm.test(\"TC-Perf-01 / INS-NF-001: Response time is within 5 seconds\", function () {",
-                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 30}, {\"age\": 32}],\n  \"sumInsured\": 500000,\n  \"preExisting\": true\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "health"]
-            },
-            "description": "TC-Quote-02 Step 4: 2 members ages 30 and 32, sum insured 5 lakh, pre-existing Yes -> Rs 7,200."
-          },
-          "response": []
-        },
-        {
-          "name": "TC-Quote-02 Step 5a: Health Quote - No Members (Expect 422)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "pm.test(\"Error schema complies with SAD Section 4.4\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.status).to.eql(422);",
-                  "    pm.expect(json.errorCode).to.eql(\"VALID-422\");",
-                  "    pm.expect(json.message).to.be.a(\"string\");",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 3,\n  \"members\": [],\n  \"sumInsured\": 500000,\n  \"preExisting\": false\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "health"]
-            },
-            "description": "TC-Quote-02 Step 5: Quote with no members must be rejected with HTTP 422."
-          },
-          "response": []
-        },
-        {
-          "name": "TC-Quote-02 Step 5b: Health Quote - Unsupported Sum Insured 7.5L (Expect 422)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
-                  "    pm.response.to.have.status(422);",
-                  "});",
-                  "pm.test(\"Error schema complies with SAD Section 4.4\", function () {",
-                  "    var json = pm.response.json();",
-                  "    pm.expect(json.status).to.eql(422);",
-                  "    pm.expect(json.errorCode).to.eql(\"VALID-422\");",
-                  "    pm.expect(json.message).to.be.a(\"string\");",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"planId\": 3,\n  \"members\": [{\"age\": 30}],\n  \"sumInsured\": 750000,\n  \"preExisting\": false\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/quotes/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes", "health"]
-            },
-            "description": "TC-Quote-02 Step 5: Sum insured not offered by plan (7,50,000) must be rejected with HTTP 422."
-          },
-          "response": []
+          ]
         }
       ]
     },
-    {
-      "name": "underwriting",
-      "description": "Underwriting decision and referral endpoints (INS-F-010, INS-F-011).",
-      "item": [
-        {
-          "name": "Get Referred Applications (Underwriter, Contract INS-F-011)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{underwriterToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/applications/referred",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "applications", "referred"]
-            },
-            "description": "Contract example: GET /api/v1/applications/referred."
-          },
-          "response": []
-        },
-        {
-          "name": "Underwriter Decision (Contract INS-F-011)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{underwriterToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"decision\": \"APPROVE\",\n  \"reason\": \"Medical declaration verified against underwriting guidelines.\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/applications/7001/decision",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "applications", "7001", "decision"]
-            },
-            "description": "Contract example: POST /api/v1/applications/{id}/decision."
-          },
-          "response": []
-        }
-      ]
-    }
-  ]
-},
     {
       "name": "03 - Claims and Audit (Contract 01 / SAD)",
       "description": "Endpoints owned by Person 3 & shared modules (Claims, Audit logging).",
@@ -1523,8 +1727,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/{{apiPrefix}}/claims",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "claims"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "claims"
+              ]
             },
             "description": "Contract example: POST /api/v1/claims."
           },
@@ -1546,8 +1756,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/{{apiPrefix}}/claims/9001",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "claims", "9001"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "claims",
+                "9001"
+              ]
             },
             "description": "Contract example: GET /api/v1/claims/{id}."
           },
@@ -1577,45 +1794,288 @@
             },
             "url": {
               "raw": "{{baseUrl}}/{{apiPrefix}}/claims/9001/assess",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "claims", "9001", "assess"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "claims",
+                "9001",
+                "assess"
+              ]
             },
             "description": "Contract example: POST /api/v1/claims/{id}/assess."
           },
           "response": []
         },
         {
-          "name": "Query Audit Logs (Admin, Contract INS-F-018)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{systemAdminToken}}"
-              },
-              {
-                "key": "X-Correlation-Id",
-                "value": "{{correlationId}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/audit/logs?page=0&size=20",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "audit", "logs"],
-              "query": [
+          "name": "audit",
+          "item": [
+            {
+              "name": "Query Audit Logs - System Admin (200 OK)",
+              "event": [
                 {
-                  "key": "page",
-                  "value": "0"
-                },
-                {
-                  "key": "size",
-                  "value": "20"
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test(\"Response contains paginated audit items array\", function () {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.items).to.be.an(\"array\");",
+                      "    pm.expect(jsonData).to.have.property(\"page\");",
+                      "    pm.expect(jsonData).to.have.property(\"size\");",
+                      "    pm.expect(jsonData).to.have.property(\"totalElements\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
                 }
-              ]
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{systemAdminToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/audit?page=0&size=20",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "audit"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    }
+                  ]
+                },
+                "description": "System Admin audit log query endpoint (INS-F-018, SAD §5.2)."
+              },
+              "response": []
             },
-            "description": "Contract example: GET /api/v1/audit/logs for System Admin audit queries."
-          },
-          "response": []
+            {
+              "name": "Query Audit Logs - Customer Access Denied (403 Forbidden)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 403 Forbidden\", function () {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "pm.test(\"Error code is ACCESS-403\", function () {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.errorCode).to.eql(\"ACCESS-403\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{customerToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/audit",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "audit"
+                  ]
+                },
+                "description": "Customer role access denied to audit logs (INS-SR-003, ACCESS-403)."
+              },
+              "response": []
+            },
+            {
+              "name": "Query Audit Logs - Unauthenticated Access Denied (401 Unauthorized)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401 Unauthorized\", function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "pm.test(\"Error code is AUTH-401\", function () {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.errorCode).to.eql(\"AUTH-401\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/audit",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "audit"
+                  ]
+                },
+                "description": "Unauthenticated request to audit logs rejected with 401 (AUTH-401)."
+              },
+              "response": []
+            },
+            {
+              "name": "Query Audit Logs - Filter by Action (200 OK)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200 OK\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "pm.test(\"Items array is returned with matching filter criteria\", function () {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.items).to.be.an(\"array\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{systemAdminToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/audit?action=LOGIN_SUCCESS&page=0&size=10",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "audit"
+                  ],
+                  "query": [
+                    {
+                      "key": "action",
+                      "value": "LOGIN_SUCCESS"
+                    },
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Filter audit trail by action (TC-Aud-01)."
+              },
+              "response": []
+            },
+            {
+              "name": "Query Audit Logs - Invalid Filter Range (422 Unprocessable Entity)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                      "    pm.response.to.have.status(422);",
+                      "});",
+                      "pm.test(\"Error code is VALID-422\", function () {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.errorCode).to.eql(\"VALID-422\");",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{systemAdminToken}}"
+                  },
+                  {
+                    "key": "X-Correlation-Id",
+                    "value": "{{correlationId}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/{{apiPrefix}}/audit?from=2026-10-28T12:00:00Z&to=2026-10-27T12:00:00Z",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "audit"
+                  ],
+                  "query": [
+                    {
+                      "key": "from",
+                      "value": "2026-10-28T12:00:00Z"
+                    },
+                    {
+                      "key": "to",
+                      "value": "2026-10-27T12:00:00Z"
+                    }
+                  ]
+                },
+                "description": "Invalid filter range rejected with VALID-422 error schema."
+              },
+              "response": []
+            }
+          ]
         }
       ]
     }
