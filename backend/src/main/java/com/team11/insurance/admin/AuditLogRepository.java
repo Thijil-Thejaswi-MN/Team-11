@@ -4,7 +4,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
 
 /**
  * Append-only Spring Data repository contract for {@link AuditLog} entries (INS-SR-008, SAD §4.3.7).
@@ -54,4 +58,24 @@ public interface AuditLogRepository extends Repository<AuditLog, Long> {
     List<AuditLog> findByAction(String action);
 
     List<AuditLog> findByTimestampBetween(Instant from, Instant to);
+
+    /**
+     * Retrieves paginated audit logs filtered by optional criteria, sorted newest first.
+     */
+    @Query("SELECT a FROM AuditLog a WHERE " +
+            "(:userId IS NULL OR a.userId = :userId) AND " +
+            "(:action IS NULL OR UPPER(a.action) = UPPER(:action)) AND " +
+            "(:entity IS NULL OR UPPER(a.entity) = UPPER(:entity)) AND " +
+            "(:entityId IS NULL OR a.entityId = :entityId) AND " +
+            "(:from IS NULL OR a.timestamp >= :from) AND " +
+            "(:to IS NULL OR a.timestamp <= :to) " +
+            "ORDER BY a.timestamp DESC, a.id DESC")
+    Page<AuditLog> findWithFilters(
+            @Param("userId") Long userId,
+            @Param("action") String action,
+            @Param("entity") String entity,
+            @Param("entityId") Long entityId,
+            @Param("from") Instant from,
+            @Param("to") Instant to,
+            Pageable pageable);
 }

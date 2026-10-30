@@ -38,6 +38,7 @@ import ClaimsOfficerDashboardView from '../views/claimsOfficer/ClaimsOfficerDash
 
 // System Admin Views
 import SystemAdminDashboardView from '../views/systemAdmin/SystemAdminDashboardView';
+import AuditLogView from '../views/systemAdmin/AuditLogView';
 
 // Fallback View
 import NotFoundView from '../views/NotFoundView';

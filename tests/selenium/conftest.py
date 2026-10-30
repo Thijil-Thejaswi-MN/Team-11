@@ -3,13 +3,14 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.edge.options import Options as EdgeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 def pytest_addoption(parser):
     parser.addoption(
         "--browser",
         action="store",
         default=os.getenv("SELENIUM_BROWSER", "chrome"),
-        help="Browser to run tests with: 'chrome' or 'edge'"
+        help="Browser to run tests with: 'chrome', 'firefox', or 'edge'"
     )
     parser.addoption(
         "--headed",
@@ -33,7 +34,7 @@ def frontend_url(request):
 def driver(request):
     """
     Initializes and yields a clean WebDriver instance per test.
-    Supports Chrome and Edge with headless mode by default.
+    Supports Chrome, Firefox, and Edge with headless mode by default.
     Ensures safe teardown via driver.quit().
     """
     browser_name = request.config.getoption("--browser").lower()
@@ -53,6 +54,15 @@ def driver(request):
             driver_instance = webdriver.Edge(options=options)
         except Exception as e:
             pytest.skip(f"Microsoft Edge driver initialization failed: {e}")
+    elif browser_name == "firefox":
+        options = FirefoxOptions()
+        if not is_headed:
+            options.add_argument("-headless")
+        options.add_argument("--window-size=1920,1080")
+        try:
+            driver_instance = webdriver.Firefox(options=options)
+        except Exception as e:
+            pytest.skip(f"Mozilla Firefox driver initialization failed: {e}")
     else:
         # Default to Google Chrome
         options = ChromeOptions()

@@ -43,10 +43,17 @@ public class KycController {
 
     private final KycService kycService;
     private final IFileStore fileStore;
+    private final com.team11.insurance.admin.IAuditLog auditLog;
 
-    public KycController(KycService kycService, IFileStore fileStore) {
+    @org.springframework.beans.factory.annotation.Autowired
+    public KycController(KycService kycService, IFileStore fileStore, com.team11.insurance.admin.IAuditLog auditLog) {
         this.kycService = kycService;
         this.fileStore = fileStore;
+        this.auditLog = auditLog;
+    }
+
+    public KycController(KycService kycService, IFileStore fileStore) {
+        this(kycService, fileStore, null);
     }
 
     /**
@@ -122,6 +129,13 @@ public class KycController {
                 status);
 
         KycRecord record = kycService.submitKyc(currentUser.getUserId(), cleanPan, cleanAadhaar, documentPath, status);
+
+        if (auditLog != null && currentUser != null) {
+            auditLog.record(currentUser.getUserId(), "KYC_SUBMITTED", "KycRecord", record.getId(),
+                    "KYC submitted: PAN " + SensitiveDataMasker.maskPan(cleanPan) + ", Aadhaar " + SensitiveDataMasker.maskAadhaar(cleanAadhaar));
+            auditLog.record(currentUser.getUserId(), "KYC_VERIFICATION_RESULT", "KycRecord", record.getId(),
+                    "KYC verification result: " + record.getStatus());
+        }
 
         return ResponseEntity.ok(new KycStatusResponse(record.getStatus().getDisplayValue()));
     }

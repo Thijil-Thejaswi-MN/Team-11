@@ -17,16 +17,18 @@ export default function QuotingPlaceholder({ mode = 'MOTOR' }) {
     <PortalLayout
       title={mode === 'MOTOR' ? 'Motor Insurance Quote' : 'Health Insurance Quote'}
       subtitle="Quoting & Underwriting Engine (SAD Section 4.3.3)"
-      badgeText="Person 1 Ownership"
+      badgeText="Instant Quote"
       badgeClass="bg-success"
     >
-      <div className="dev-hook-box mb-4">
-        <span className="dev-hook-badge">Person 1 Ownership (Quote & Underwriting C5/C6)</span>
-        <p className="mb-0">
-          This screen connects to <code>POST /api/v1/quotes/motor</code> or <code>POST /api/v1/quotes/health</code>.
-          Person 1 owns the rating rule calculations (SRS 4.4.1) and add-on pricing logic.
-        </p>
-      </div>
+      {import.meta.env.DEV && (
+        <div className="dev-hook-box mb-4">
+          <span className="dev-hook-badge">Person 1 Ownership (Quote & Underwriting C5/C6)</span>
+          <p className="mb-0">
+            This screen connects to <code>POST /api/v1/quotes/motor</code> or <code>POST /api/v1/quotes/health</code>.
+            Person 1 owns the rating rule calculations (SRS 4.4.1) and add-on pricing logic.
+          </p>
+        </div>
+      )}
 
       <div className="row g-4">
         <div className="col-12 col-lg-7">

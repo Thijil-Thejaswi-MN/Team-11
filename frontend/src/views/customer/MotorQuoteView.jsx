@@ -147,7 +147,7 @@ export default function MotorQuoteView() {
     <PortalLayout
       title="Motor Insurance Instant Quote"
       subtitle="Server-side rating engine with detailed premium breakdown (INS-F-005, SRS §4.4.1)"
-      badgeText="Person 1 Ownership"
+      badgeText="Instant Quote"
       badgeClass="bg-success"
     >
       <div className="row g-4">
