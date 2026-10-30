@@ -127,7 +127,7 @@ class PolicyLifecycleExtensionTest {
         Plan plan = new Plan(
                 "MOTOR-4W-01", 201L, "MOTOR_FOUR_WHEELER", "SafeShield 4W",
                 new BigDecimal("400000"), new BigDecimal("1000"), 0,
-                new BigDecimal("5000"), "OD=2%; AGE=5-10:5%; DEP=10%", "{}", "{}", true
+                new BigDecimal("5000"), "{}", "{}", "{}", true
         );
 
         when(policyRepository.findById(10L)).thenReturn(Optional.of(existing));
@@ -147,7 +147,6 @@ class PolicyLifecycleExtensionTest {
                 fileStore,
                 providerOf(quoteRepository),
                 providerOf(planRepository),
-                providerOf(null),
                 providerOf(claimService),
                 providerOf(paymentService),
                 providerOf(notifyService),
@@ -187,7 +186,7 @@ class PolicyLifecycleExtensionTest {
 
         PolicyRenewalController controller = new PolicyRenewalController(
                 policyRepository, policyPdfGenerator, fileStore,
-                providerOf(quoteRepository), providerOf(planRepository), providerOf(null),
+                providerOf(quoteRepository), providerOf(planRepository),
                 providerOf(claimService), providerOf(paymentService),
                 providerOf(notifyService), providerOf(auditLog), providerOf(fixedClock)
         );
