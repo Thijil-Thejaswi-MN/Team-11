@@ -177,7 +177,7 @@ public class PolicyCancellationController {
                         return Objects.equals(req.getRequestedBy(), currentUser.getUserId());
                     }
                     if (currentUser.getUserRole() == UserRole.INSURER_ADMIN) {
-                        return Objects.equals(req.getInsurerId(), currentUser.getUserId());
+                        return Objects.equals(req.getInsurerId(), currentUser.getInsurerId());
                     }
                     return currentUser.getUserRole() == UserRole.SYSTEM_ADMIN;
                 })
@@ -214,7 +214,7 @@ public class PolicyCancellationController {
         CancellationRequest cancelReq = cancellationRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cancellation request not found: " + id));
 
-        if (!Objects.equals(cancelReq.getInsurerId(), currentUser.getUserId())) {
+        if (!Objects.equals(cancelReq.getInsurerId(), currentUser.getInsurerId())) {
             throw new AccessDeniedException("You are not authorized to decide cancellation requests for another insurer.");
         }
         if (cancelReq.getStatus() != CancellationStatus.REQUESTED) {
