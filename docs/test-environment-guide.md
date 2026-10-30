@@ -1,6 +1,6 @@
 # Test Environment & Infrastructure Guide (P4-11)
 
-**Owner:** Raghunandan Kotary (Person 4 â€” Environment Owner / Developer)
+**Owner:** Raghunandan Kotary (Person 4 — Environment Owner / Developer)
 **Applicability:** Team-11 Insurance Workflow System
 **Traceability:** INS-SR-001 (Transport Security), INS-NF-002 (Availability 99%), INS-NF-003 (Sizing for 500 Concurrent Users), TC-Sec-01, TC-Load-01, TC-Perf-01, TC-Avail-01.
 
@@ -72,7 +72,7 @@ The P4-11 test environment provisions a containerized, production-like deploymen
    - Independent Docker health checks continuously poll `http://localhost:8080/api/v1/actuator/health`.
    - Configured with `restart: unless-stopped` to satisfy INS-NF-002 availability requirements.
 
-3. **Database Connection Pool Sizing (SAD Â§5.1, INS-NF-003):**
+3. **Database Connection Pool Sizing (SAD §5.1, INS-NF-003):**
    - **MySQL 8 Server:** `max_connections=200`.
    - **HikariCP Pool:** `maximum-pool-size: 25` per backend instance (`application-dev.yml`).
    - **Total Pool Demand:** $2 \times 25 = 50$ connections, consuming only 25% of the database capacity and preventing connection exhaustion under 500 concurrent users during JMeter stress testing (TC-Load-01).
@@ -127,7 +127,7 @@ The script outputs `server.key` (2048-bit RSA private key) and `server.crt` (X.5
 ### Certificate Trust & Security Notice
 
 > [!WARNING]
-> **Test Certificates Only â€” Do Not Commit Secrets**
+> **Test Certificates Only — Do Not Commit Secrets**
 > - The files `nginx/certs/*.key` and `nginx/certs/*.crt` are explicitly excluded from version control via `.gitignore`.
 > - These certificates are self-signed for automated test environments. Browsers and HTTP clients will report an untrusted certificate authority unless imported into the OS trust store or bypassed using `-k` / `--insecure`.
 > - In staging and production environments, replace `server.key` and `server.crt` with certificates issued by a publicly trusted Certificate Authority (e.g., Let's Encrypt or corporate CA).
@@ -258,6 +258,25 @@ This procedure:
 2. Generates bulk SQL inserts via `scripts/seed-volume-data.py`.
 3. Loads the volume dataset directly into the active MySQL container.
 4. Restarts backend instances to reset connection pools and application state.
+
+### Database Backup & Disaster Recovery Procedures (P4-14 / TC-Rel-01)
+
+For operational backup and recovery verification under requirement `INS-NF-004` and test case `TC-Rel-01`, dedicated cross-platform scripts are provided:
+
+- **Full Database Backup**: `scripts/backup-database.ps1` and `scripts/backup-database.sh`
+  - Captures a transactional point-in-time snapshot via `mysqldump --single-transaction --quick`.
+  - Streams directly into Gzip (`.sql.gz`), computes SHA-256 (`.sha256`), and records metadata (`.meta.json`).
+  - Example: `.\scripts\backup-database.ps1 -Database "insurance_db"` or `./scripts/backup-database.sh`
+- **Verified Database Restore**: `scripts/restore-database.ps1` and `scripts/restore-database.sh`
+  - Verifies file existence, SHA-256 checksum match, and Gzip decompression integrity before modifying data.
+  - Supports non-destructive drills into disposable databases (e.g. `insurance_db_drill`).
+  - Provides `-VerifyOnly` / `--verify-only` for offline archive integrity validation without a live database.
+  - Example: `.\scripts\restore-database.ps1 -BackupFile "backups/backup_insurance_db_*.sql.gz" -TargetDatabase "insurance_db_drill" -Force`
+- **Automated Disaster Recovery Drill**: `scripts/recovery-drill.ps1` and `scripts/recovery-drill.sh`
+  - Runs an end-to-end 5-phase recovery drill validating backup, tamper rejection, disposable restore, table/row verification, and RTO/RPO compliance.
+  - Example: `.\scripts\recovery-drill.ps1` or `./scripts/recovery-drill.sh`
+
+For full operational runbook, SLO targets (RPO $\le$ 24h, RTO $\le$ 4h), and troubleshooting guidelines, see [Database Backup & Disaster Recovery Runbook](database-backup-and-recovery.md).
 
 ---
 
