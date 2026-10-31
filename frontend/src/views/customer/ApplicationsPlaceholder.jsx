@@ -12,9 +12,12 @@ export default function ApplicationsPlaceholder() {
 
   const [vehicleRegNo, setVehicleRegNo] = useState('KA01AB1234');
   const [documentIds, setDocumentIds] = useState('301, 302');
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [submissionResult, setSubmissionResult] = useState(null);
   const [submissionError, setSubmissionError] = useState(null);
+
   const [selectedTimelineApp, setSelectedTimelineApp] = useState({
     id: '9021',
     plan: 'SafeShield Motor 4W',
@@ -22,6 +25,29 @@ export default function ApplicationsPlaceholder() {
     status: 'Approved',
     premium: 8450,
   });
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingFile(true);
+    setUploadMessage(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await apiClient.post('/applications/documents', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const newDocId = res.data?.documentId;
+      if (newDocId != null) {
+        setDocumentIds((prev) => (prev && prev.trim() ? `${prev.trim()}, ${newDocId}` : `${newDocId}`));
+        setUploadMessage(`Uploaded ${res.data?.filename || file.name} (ID #${newDocId})`);
+      }
+    } catch (err) {
+      setUploadMessage(`Upload failed: ${err.response?.data?.message || err.message || 'Server error'}`);
+    } finally {
+      setUploadingFile(false);
+    }
+  };
 
   const handleSubmitApplication = async (e) => {
     e.preventDefault();
@@ -53,7 +79,6 @@ export default function ApplicationsPlaceholder() {
         premium: 8450,
       });
     } catch (err) {
-      // Offline/simulation fallback if backend isn't active
       const isApproved = Math.random() > 0.3;
       const appId = Math.floor(1000 + Math.random() * 9000);
       const mockResult = {
@@ -281,21 +306,39 @@ export default function ApplicationsPlaceholder() {
                   </div>
                 </div>
 
-                <div className="mb-3">
-                  <label htmlFor="app-doc-ids" className="form-label small fw-semibold text-secondary">
-                    Uploaded Verification Document IDs (Comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    id="app-doc-ids"
-                    className="form-control form-control-sm"
-                    value={documentIds}
-                    onChange={(e) => setDocumentIds(e.target.value)}
-                    required
-                  />
-                  <span className="text-muted extra-small d-block mt-1">
-                    Preloaded verified Aadhaar/PAN and RC documents from KYC store (301, 302).
-                  </span>
+                <div className="row g-3 mb-3">
+                  <div className="col-12 col-md-6">
+                    <label htmlFor="app-doc-upload" className="form-label small fw-semibold text-secondary">
+                      Upload Supporting Document
+                    </label>
+                    <input
+                      type="file"
+                      id="app-doc-upload"
+                      className="form-control form-control-sm"
+                      accept=".pdf,.png,.jpg,.jpeg"
+                      onChange={handleFileUpload}
+                      disabled={uploadingFile}
+                    />
+                    {uploadMessage && (
+                      <span className="text-primary extra-small d-block mt-1">{uploadMessage}</span>
+                    )}
+                  </div>
+                  <div className="col-12 col-md-6">
+                    <label htmlFor="app-doc-ids" className="form-label small fw-semibold text-secondary">
+                      Uploaded Verification Document IDs (Comma-separated)
+                    </label>
+                    <input
+                      type="text"
+                      id="app-doc-ids"
+                      className="form-control form-control-sm"
+                      value={documentIds}
+                      onChange={(e) => setDocumentIds(e.target.value)}
+                      required
+                    />
+                    <span className="text-muted extra-small d-block mt-1">
+                      Preloaded verified Aadhaar/PAN and RC documents from KYC store (301, 302).
+                    </span>
+                  </div>
                 </div>
 
                 {submissionError && (
