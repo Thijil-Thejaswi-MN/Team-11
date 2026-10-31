@@ -138,7 +138,7 @@ class PolicyLifecycleExtensionTest {
         when(fileStore.storeStream(any(ByteArrayInputStream.class), anyString(), anyString(), anyLong(), eq(DocumentCategory.POLICY), anyLong()))
                 .thenReturn(new StoredDocument(99L, "key", "policy.pdf", "application/pdf", 3L, DocumentCategory.POLICY, "sha", 101L, Instant.now()));
         when(paymentService.charge(anyLong(), any(), anyString()))
-                .thenReturn(PaymentResult.success(1L, "key", "TXN-1", new BigDecimal("6804"), PaymentType.INITIAL_PURCHASE, fixedClock));
+                .thenReturn(PaymentResult.success(1L, "key", "TXN-1", new BigDecimal("6804"), null, fixedClock));
         when(policyRepository.save(any(Policy.class))).thenAnswer(inv -> inv.getArgument(0));
 
         PolicyRenewalController controller = new PolicyRenewalController(
