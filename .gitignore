@@ -67,3 +67,9 @@ nginx/certs/*.pem
 nginx/certs/*.p12
 nginx/certs/*.csr
 !nginx/certs/.gitkeep
+# Database Backups & Recovery Archives (P4-14 / TC-Rel-01)
+backups/*
+!backups/.gitkeep
+*.sql.gz
+*.sha256
+scripts/volume-data.sql
