@@ -293,4 +293,218 @@ class ClaimControllerIntegrationTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.errorCode").value("NOTFOUND-404"));
     }
+
+    // =========================================================================
+    // POST /api/v1/claims/{id}/verify (INS-F-014, TC-Clm-03)
+    // =========================================================================
+
+    @Test
+    @DisplayName("POST /claims/{id}/verify: Documents complete -> 200 OK, transitions to ASSESSMENT")
+    void verify_documentsComplete_transitionsToAssessment() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_CLAIMS_OFFICER); // insurerId: 1
+
+        ClaimVerificationRequest request = new ClaimVerificationRequest(true, List.of(), "All documents verified complete");
+
+        mockMvc.perform(post("/claims/" + existingClaimInsurer1.getId() + "/verify")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.claimId").value(existingClaimInsurer1.getId()))
+                .andExpect(jsonPath("$.status").value("ASSESSMENT"))
+                .andExpect(jsonPath("$.message").value(containsString("moved to Assessment")));
+
+        Claim updated = claimRepository.findById(existingClaimInsurer1.getId()).orElseThrow();
+        assertEquals(ClaimStatus.ASSESSMENT, updated.getStatus());
+    }
+
+    @Test
+    @DisplayName("POST /claims/{id}/verify: Documents missing -> 200 OK, remains in DOCUMENT_VERIFICATION")
+    void verify_documentsMissing_remainsInDocumentVerification() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_CLAIMS_OFFICER); // insurerId: 1
+
+        ClaimVerificationRequest request = new ClaimVerificationRequest(false, List.of("repair_bill", "FIR_copy"), "Additional documents requested");
+
+        mockMvc.perform(post("/claims/" + existingClaimInsurer1.getId() + "/verify")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.claimId").value(existingClaimInsurer1.getId()))
+                .andExpect(jsonPath("$.status").value("DOCUMENT_VERIFICATION"))
+                .andExpect(jsonPath("$.message").value(containsString("remains in Document Verification")));
+
+        Claim updated = claimRepository.findById(existingClaimInsurer1.getId()).orElseThrow();
+        assertEquals(ClaimStatus.DOCUMENT_VERIFICATION, updated.getStatus());
+    }
+
+    @Test
+    @DisplayName("POST /claims/{id}/verify: Claims Officer of different insurer -> 403 Forbidden")
+    void verify_differentInsurer_returns403() throws Exception {
+        CurrentUser otherOfficer = new CurrentUser(4002L, UserRole.CLAIMS_OFFICER, 2L);
+        TestCurrentUserProvider.setSyntheticUser(otherOfficer);
+
+        ClaimVerificationRequest request = new ClaimVerificationRequest(true, List.of(), "Valid");
+
+        mockMvc.perform(post("/claims/" + existingClaimInsurer1.getId() + "/verify")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.errorCode").value("ACCESS-403"));
+    }
+
+    // =========================================================================
+    // POST /api/v1/claims/{id}/decision (INS-F-014, TC-Clm-03)
+    // =========================================================================
+
+    @Test
+    @DisplayName("POST /claims/{id}/decision: Approve with assessedAmount & reason -> 200 OK, PAYMENT_PROCESSING")
+    void decision_approve_transitionsToPaymentProcessing() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_CLAIMS_OFFICER); // insurerId: 1
+
+        // Move to ASSESSMENT first
+        existingClaimInsurer1.setStatus(ClaimStatus.ASSESSMENT);
+        claimRepository.saveAndFlush(existingClaimInsurer1);
+
+        ClaimDecisionRequest request = new ClaimDecisionRequest("Approve", new BigDecimal("7500.00"), "Survey report confirmed damage within policy terms");
+
+        mockMvc.perform(post("/claims/" + existingClaimInsurer1.getId() + "/decision")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.claimId").value(existingClaimInsurer1.getId()))
+                .andExpect(jsonPath("$.status").value("PAYMENT_PROCESSING"))
+                .andExpect(jsonPath("$.assessedAmount").value(7500.00))
+                .andExpect(jsonPath("$.message").value(containsString("moved to Payment Processing")));
+
+        Claim updated = claimRepository.findById(existingClaimInsurer1.getId()).orElseThrow();
+        assertEquals(ClaimStatus.PAYMENT_PROCESSING, updated.getStatus());
+        assertEquals(new BigDecimal("7500.00"), updated.getAssessedAmount());
+    }
+
+    @Test
+    @DisplayName("POST /claims/{id}/decision: Reject with reason -> 200 OK, transitions to REJECTED")
+    void decision_reject_transitionsToRejected() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_CLAIMS_OFFICER); // insurerId: 1
+
+        // Move to ASSESSMENT first
+        existingClaimInsurer1.setStatus(ClaimStatus.ASSESSMENT);
+        claimRepository.saveAndFlush(existingClaimInsurer1);
+
+        ClaimDecisionRequest request = new ClaimDecisionRequest("Reject", null, "Damage occurred outside active coverage period");
+
+        mockMvc.perform(post("/claims/" + existingClaimInsurer1.getId() + "/decision")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.claimId").value(existingClaimInsurer1.getId()))
+                .andExpect(jsonPath("$.status").value("REJECTED"))
+                .andExpect(jsonPath("$.message").value(containsString("Claim rejected")));
+
+        Claim updated = claimRepository.findById(existingClaimInsurer1.getId()).orElseThrow();
+        assertEquals(ClaimStatus.REJECTED, updated.getStatus());
+        assertEquals("Damage occurred outside active coverage period", updated.getReason());
+    }
+
+    @Test
+    @DisplayName("POST /claims/{id}/decision: Missing reason fails with 422 VALID-422")
+    void decision_missingReason_returns422() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_CLAIMS_OFFICER); // insurerId: 1
+
+        existingClaimInsurer1.setStatus(ClaimStatus.ASSESSMENT);
+        claimRepository.saveAndFlush(existingClaimInsurer1);
+
+        ClaimDecisionRequest request = new ClaimDecisionRequest("Reject", null, "");
+
+        mockMvc.perform(post("/claims/" + existingClaimInsurer1.getId() + "/decision")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode").value("VALID-422"))
+                .andExpect(jsonPath("$.message").value(containsString("reason is required")));
+    }
+
+    @Test
+    @DisplayName("POST /claims/{id}/decision: Invalid state transition (from DOCUMENT_VERIFICATION) -> 409 STATE-409")
+    void decision_invalidState_returns409() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_CLAIMS_OFFICER); // insurerId: 1
+
+        // Claim is currently in DOCUMENT_VERIFICATION, not ASSESSMENT
+        assertEquals(ClaimStatus.DOCUMENT_VERIFICATION, existingClaimInsurer1.getStatus());
+
+        ClaimDecisionRequest request = new ClaimDecisionRequest("Approve", new BigDecimal("5000.00"), "Premature approval");
+
+        mockMvc.perform(post("/claims/" + existingClaimInsurer1.getId() + "/decision")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.errorCode").value("STATE-409"));
+    }
+
+    @Test
+    @DisplayName("POST /claims: Duplicate claim detection (INS-F-023, TC-Clm-05) sets duplicateFlag true on duplicate, false otherwise")
+    void fileClaim_duplicateDetection_flagsSecondClaimOnly() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(TestCurrentUserProvider.SEEDED_CUSTOMER); // id: 1001
+
+        LocalDate incidentDate = LocalDate.now().minusDays(4);
+        BigDecimal amount = new BigDecimal("7500.00");
+
+        // 1. First claim filed: same policy, incidentDate, amount -> duplicateFlag false
+        ClaimSubmissionRequest firstRequest = new ClaimSubmissionRequest(
+                activePolicyInsurer1.getId(),
+                incidentDate,
+                amount,
+                "First incident report",
+                List.of(101L)
+        );
+
+        mockMvc.perform(post("/claims")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(firstRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.duplicateFlag").value(false));
+
+        // 2. Second claim filed: exactly same policyId, incidentDate, amount -> duplicateFlag true (INS-F-023)
+        ClaimSubmissionRequest duplicateRequest = new ClaimSubmissionRequest(
+                activePolicyInsurer1.getId(),
+                incidentDate,
+                amount,
+                "Second incident report for same damage",
+                List.of(102L)
+        );
+
+        mockMvc.perform(post("/claims")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(duplicateRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.duplicateFlag").value(true));
+
+        // 3. Third claim filed: same policy and incidentDate, but DIFFERENT amount -> duplicateFlag false
+        ClaimSubmissionRequest differentAmountRequest = new ClaimSubmissionRequest(
+                activePolicyInsurer1.getId(),
+                incidentDate,
+                new BigDecimal("8200.00"),
+                "Claim with different claimed amount",
+                List.of(103L)
+        );
+
+        mockMvc.perform(post("/claims")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(differentAmountRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.duplicateFlag").value(false));
+
+        // 4. Fourth claim filed: same policy and amount, but DIFFERENT incident date -> duplicateFlag false
+        ClaimSubmissionRequest differentDateRequest = new ClaimSubmissionRequest(
+                activePolicyInsurer1.getId(),
+                incidentDate.minusDays(1),
+                amount,
+                "Claim with different incident date",
+                List.of(104L)
+        );
+
+        mockMvc.perform(post("/claims")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(differentDateRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.duplicateFlag").value(false));
+    }
 }
