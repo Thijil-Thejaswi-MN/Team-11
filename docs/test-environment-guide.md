@@ -183,7 +183,7 @@ docker compose down -v
 Run the end-to-end verification script:
 
 ```powershell
-# Windows PowerShell
+# Windows PowerShell (supports -TargetHost or -HostName, -HttpPort, -HttpsPort)
 .\scripts\verify-tls-environment.ps1 -TargetHost "localhost"
 ```
 
