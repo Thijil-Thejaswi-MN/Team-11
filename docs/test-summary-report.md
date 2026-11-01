@@ -1,9 +1,9 @@
 # Sprint 2 Test Summary Report
 
-> Build SHA: `00add8445c4f0105a20d24c2fc28d3ebd6a32d45` (short: `00add84`)  
+> Build SHA: `693a22969da71928e30891bd49ac8eb7bb82d7bc` (short: `693a229`)  
 > Branch: main  
 > Prepared by: Thijil Thejaswi M N (QA Lead)  
-> Date: 30 Oct 2026 (code freeze)  
+> Date: 30 Oct 2026 (code freeze) / Updated: 1 Nov 2026  
 > Status: **DRAFT – result columns to be filled after UAT execution**
 
 ---
@@ -12,18 +12,21 @@
 
 ### Features Under Test (Sprint 2)
 
-| Feature ID | Description | PR | Branch |
-|------------|-------------|-----|--------|
-| INS-F-008 | Customer policy application (live screen) | #167 | feature/P3-08-renewal-cancellation-recovery |
-| INS-F-009 | Policy renewal within window | #167 | feature/P3-08-renewal-cancellation-recovery |
-| INS-F-010 | Policy cancellation & refund | #167 | feature/P3-08-renewal-cancellation-recovery |
-| INS-F-012 | Issuance recovery scheduler | #167 | feature/P3-08-renewal-cancellation-recovery |
-| INS-F-014 | Claims Officer appraisal desk | #157 | 11-p1-12-claims-officer-desk |
-| INS-F-018 | Audit log hardening (RBAC, read-only) | #173 (merged) | 19-p2-18-audit-hardening |
-| INS-F-019 | Responsive / cross-browser (360 px, dev badge) | #174 (merged) | 29-p2-14-responsive-crossbrowser |
+| Feature ID | Description | PR | Branch | Status in Main |
+|------------|-------------|-----|--------|:---:|
+| INS-F-008 | Customer policy application (live screen) | #167 | feature/P3-08-renewal-cancellation-recovery | Pending CI fix & approval |
+| INS-F-009 | Policy renewal within window | #167 | feature/P3-08-renewal-cancellation-recovery | Pending CI fix & approval |
+| INS-F-010 | Policy cancellation & refund | #167 | feature/P3-08-renewal-cancellation-recovery | Pending CI fix & approval |
+| INS-F-012 | Issuance recovery scheduler | #167 | feature/P3-08-renewal-cancellation-recovery | Pending CI fix & approval |
+| INS-F-014 | Claims Officer appraisal desk | #157 | 11-p1-12-claims-officer-desk | **MERGED** |
+| INS-F-018 | Audit log hardening (RBAC, read-only) | #173 | 19-p2-18-audit-hardening | **MERGED** |
+| INS-F-019 | Responsive / cross-browser (360 px, dev badge) | #174 | 29-p2-14-responsive-crossbrowser | **MERGED** |
+| INS-NF-004 | Database backup & restore procedure (TC-Rel-01) | #185 | feat/p4-14-database-backup-recovery | **MERGED** |
+| INS-SR-001 | TLS verification script suite | #184 | fix/p4-11-tls-environment-scripts | **MERGED** |
+| INS-F-020/024 | Customer-role policy & refund test harness | #186 | test/p4-customer-role-verification | **MERGED** |
 
 ### Modules In Scope
-- Backend: `PolicyRenewal`, `PolicyCancellation`, `ClaimsOfficerDesk`, `AuditLog`
+- Backend: `PolicyRenewal`, `PolicyCancellation`, `ClaimsOfficerDesk`, `AuditLog`, `CustomerPolicyAndCancellationTestExecution`, database backup/restore scripts
 - Frontend: `CustomerDashboard`, `ClaimsOfficerView`, `AuditLogView`, responsive layouts
 
 ### Out of Scope / Deferred (D-10 — docs/decisions.md)
@@ -39,26 +42,26 @@
 
 | Property | Value |
 |----------|-------|
-| Build SHA | `00add8445c4f0105a20d24c2fc28d3ebd6a32d45` (short: `00add84`) |
-| Backend | Spring Boot 3.3.4; OpenJDK 25; H2 (dev/test profile) / PostgreSQL 16 (production config) |
+| Build SHA | `693a22969da71928e30891bd49ac8eb7bb82d7bc` (short: `693a229`) |
+| Backend | Spring Boot 3.3.4; OpenJDK 25; H2 (dev/test profile) / MySQL 8 (production profile) |
 | Frontend | Vite 5 + React 18; Node 20; Vitest 2.1.9 |
 | API Test tool | Newman 6.2.1 |
 | E2E / Browser | Selenium (Chrome Headless, pytest) |
 | Viewports Tested | 360 px, 768 px, 1366 px |
 | CI Workflows | GitHub Actions (4/4 green: Frontend CI, Backend CI, API Tests Newman, Validate repository structure) |
-| Test Date | 30 Oct 2026 |
+| Test Date | 30 Oct 2026 / 1 Nov 2026 |
 
 ---
 
-## 3. Test Counts by Status (Real Counts from Freeze SHA Run)
+## 3. Test Counts by Status (Real Counts from Freeze SHA `693a229`)
 
 | Category | Source | Total | Passed | Failed | Errors | Skipped / Blocked |
 |----------|--------|:---:|:---:|:---:|:---:|:---:|
-| Backend unit & integration | Maven Surefire (`mvn test`) | 610 | 610 | 0 | 0 | 0 |
-| Frontend component tests | Vitest (`npm test -- --run`) | 79 (16 files) | 79 (16 files) | 0 | 0 | 0 |
+| Backend unit & integration | Maven Surefire (`mvnw -B test`) | 618 | 618 | 0 | 0 | 0 |
+| Frontend component tests | Vitest (`npm test -- --run`) | 92 (17 files) | 92 (17 files) | 0 | 0 | 0 |
 | Newman API Assertions | Sharana Newman run (`2026-10-29-newman-00add84.xml`) | 54 (38 requests) | 35 | 19 | 0 | 0 |
 | Selenium E2E Smoke | Sharana Selenium run (`2026-10-29-selenium-00add84.xml`) | 3 | 3 | 0 | 0 | 0 |
-| STP Independent Test Cases | `docs/test-execution-matrix.md` | 52 | 0 | 0 | 0 | 1 Blocked (`TC-KYC-01`), 51 Not Run / Deferred |
+| STP Independent Test Cases | `docs/test-execution-matrix.md` | 52 | 0 | 0 | 0 | 4 Blocked (`TC-KYC-01`, `TC-Can-01`, `TC-Can-02`, `TC-Rel-01`), 48 Not Run / Deferred |
 | UAT Scenarios | `docs/uat-29-oct.md` (UAT-01..UAT-08) | 8 | _(to fill)_ | _(to fill)_ | 0 | _(to fill)_ |
 
 ### STP Coverage (Thijil's Assigned STP Rows)
@@ -67,8 +70,8 @@
 
 | STP Row ID | Scenario Description (per STP) | Automated / Manual Evidence Source | Status |
 |:---|---|---|---|
-| **TC-Acc-02** | Role controls access; staff need an insurer | Newman collection (`2026-10-30-thijil-newman-00add84.xml`) + `AuthenticationServiceTest.java` | _(to fill)_ |
-| **TC-Aud-01** | Key actions logged; filters work; no UPDATE/DELETE | Newman collection (`2026-10-30-thijil-newman-00add84.xml`) + `AuditLogControllerTest.java` | _(to fill)_ |
+| **TC-Acc-02** | Role controls access; staff need an insurer | Newman collection (`docs/test-evidence/2026-10-30-thijil-newman-00add84.xml`) + `AuthenticationServiceTest.java` | _(to fill)_ |
+| **TC-Aud-01** | Key actions logged; filters work; no UPDATE/DELETE | Newman collection (`docs/test-evidence/2026-10-30-thijil-newman-00add84.xml`) + `AuditLogControllerTest.java` | _(to fill)_ |
 | **TC-Ntf-01** | All 16 SAD 4.1.7 events produce one record + one message | 16-event checklist (`docs/test-evidence/2026-10-30-thijil-automated-results.md`) | _(to fill)_ |
 | **TC-UX-01** | Main screens at 360/768/1366 px | Viewport checklist (`docs/test-evidence/2026-10-30-thijil-automated-results.md`) + `ResponsiveViewport.test.jsx` | _(to fill)_ |
 | **TC-Ren-01** | Renewal quote generation within window | Scheduled for Sprint 2 (INS-F-009 / Decision D-10) | Deferred |
@@ -100,7 +103,7 @@
 
 ## 5. Open Defects at Code Freeze (`type:bug`)
 
-*Source: `gh issue list --label type:bug --state open` at freeze SHA `00add84`:*
+*Source: `gh issue list --label type:bug --state open` at freeze SHA `693a229`:*
 
 | Issue # | Severity | Summary | Module | Status |
 |:---:|:---:|---|---|:---:|

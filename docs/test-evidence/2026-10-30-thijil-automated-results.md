@@ -78,3 +78,4 @@ npx newman run postman/insurance-workflow-api.postman_collection.json \
 | 14 | `CLAIM_SUBMITTED` | Claim filed with initial documents | [ ] | [ ] | _(Thijil to inspect)_ |
 | 15 | `CLAIM_DOCUMENTS_REQUESTED` | Claims Officer requests further evidence | [ ] | [ ] | _(Thijil to inspect)_ |
 | 16 | `CLAIM_SETTLED` | Claim payout disbursed and marked settled | [ ] | [ ] | _(Thijil to inspect)_ |
+

@@ -1,7 +1,7 @@
 # Sprint 2 Deviation Log
 
 > Prepared by: Thijil Thejaswi M N (QA Lead)  
-> Date: 30 Oct 2026 (code freeze)  
+> Date: 30 Oct 2026 (code freeze) / Updated: 1 Nov 2026  
 > All entries based on verifiable facts (GitHub PRs, commits, `docs/decisions.md`).  
 > No invented dates, meeting references, or outcomes.
 
@@ -59,10 +59,10 @@
 | Category | Technical / Scope |
 | Description | Claims Officer desk (INS-F-014) owned by P1 (Thijil) while core backend entities and APIs owned by P4 (Raghunandan); renewal/cancellation/recovery owned by P3 (Samarth). |
 | Root cause | Initial SRS ownership mapping did not anticipate cross-feature controller overlap. |
-| Impact | PR #157 and PR #167 touched adjacent controller classes and required conflict resolution and isolation fixes. |
-| Mitigation | Documented in `docs/decisions.md`; P1-12 conflict resolved in PR #157; PR #167 isolation bug remediated in latest push. |
-| Evidence | [`docs/decisions.md`](decisions.md); PR #157, PR #167 |
-| Status | Open (PR #167 and PR #157 pending team approval) |
+| Impact | P1 appraisal desk required conflict resolution with latest responsive layout on main. |
+| Mitigation | Documented in `docs/decisions.md`; PR #157 merged into `main` (commit `693a229`). |
+| Evidence | [`docs/decisions.md`](decisions.md); PR #157 |
+| Status | Closed (PR #157 merged) |
 
 ---
 
@@ -99,12 +99,12 @@
 | Field | Detail |
 |-------|--------|
 | Category | Timeline / Quality |
-| Description | PR #167 (INS-F-008/009/010/012 — Samarth) not merged into main at freeze due to initial code-quality blockers (misplaced files, `.jav` test extensions, insurer isolation check). |
-| Root cause | Late submission and file placement errors; fixes committed on 30 Oct (commits `0505c78`, `1763092`, `12d199b`, `d954583`). |
-| Impact | Renewal and cancellation features not present in main at freeze SHA `00add84`. |
-| Mitigation | Samarth pushed remediation commits to branch; PR #167 is passing all 4 CI workflows and awaiting team review approval. |
-| Evidence | PR #167; local `review-notes-29-oct.md` |
-| Status | Open — awaiting approval & merge |
+| Description | PR #167 (INS-F-008/009/010/012 — Samarth) not merged into main at freeze due to initial code-quality blockers (misplaced files, `.jav` test extensions, insurer isolation check). Latest push encountered Spring Boot `NoUniqueBeanDefinitionException` on `IClaimService`. |
+| Root cause | Ambiguous `IClaimService` dependency injection in `PolicyRenewalController.java` (`ClaimService` and `ClaimServiceStub` both present). |
+| Impact | Renewal and cancellation features not present in main at freeze SHA `693a229`. |
+| Mitigation | Review changes requested; Samarth adding `@Qualifier("claimService")` or marking `@Primary` to resolve CI. |
+| Evidence | PR #167; `review-notes-29-oct.md` |
+| Status | Open — awaiting fix & merge |
 
 ---
 
@@ -117,22 +117,22 @@
 | Root cause | Person 4 deliverable not completed / not merged before freeze deadline. |
 | Impact | Customers cannot file claims directly via self-service UI; claims must be seeded or submitted via API. |
 | Mitigation | Documented as open bug [#176](https://github.com/Thijil-Thejaswi-MN/Team-11/issues/176); fallback placeholder UI informs user. |
-| Evidence | `main` tree check at SHA `00add84`; Issue #176; `ClaimsPlaceholder.jsx` |
+| Evidence | `main` tree check at SHA `693a229`; Issue #176; `ClaimsPlaceholder.jsx` |
 | Status | Open (deferred / defect #176) |
 
 ---
 
-### D-P4-14 — Database backup and restore procedure (P4-14) not in main at freeze
+### D-P4-14 — Database backup and restore procedure (P4-14) merged after freeze date
 
 | Field | Detail |
 |-------|--------|
-| Category | Scope / Deliverable |
-| Description | Database backup script and restore procedure (P4-14 / TC-Rel-01) is not present in `main` at freeze SHA `00add84`. |
-| Root cause | PR #185 opened late (30 Oct 14:10 UTC) and has not received peer approval for merge. |
-| Impact | Automated backup procedure not part of current freeze baseline. |
-| Mitigation | Implementation exists in branch `feat/p4-14-database-backup-recovery` (PR #185); awaiting review and merge. |
-| Evidence | `main` tree check at SHA `00add84`; PR #185 |
-| Status | Open — pending PR #185 review & merge |
+| Category | Timeline |
+| Description | Database backup script and restore procedure (P4-14 / TC-Rel-01 / PR #185) delivered on 30 Oct and reviewed/merged on 1 Nov. |
+| Root cause | PR #185 opened on 30 Oct and awaited peer review cycle. |
+| Impact | Fully integrated into `main` with 12 passing test suite checks. |
+| Mitigation | PR #185 reviewed, approved, and merged into `main` (commit `a6fd755`). |
+| Evidence | PR #185; `docs/database-backup-and-recovery.md` |
+| Status | Closed (merged into `main`) |
 
 ---
 
@@ -144,7 +144,7 @@
 | Description | Document re-upload endpoint for customers in response to `CLAIM_DOCUMENTS_REQUESTED` is not available for end-to-end TC-Clm-06 flow. |
 | Root cause | Customer-facing claim document upload endpoint assigned to Person 4 (under Decision D-11) remains unmapped in controller. |
 | Impact | Sub-step of TC-Clm-06 requiring customer document upload cannot be executed via API/UI; marked Blocked for that sub-step. |
-| Mitigation | Documented in `docs/test-execution-matrix.md` and `docs/test-evidence/2026-10-29-sharana-automated-results.md`. |
+| Mitigation | Documented in `docs/test-execution-matrix.md` and `docs/p4-customer-role-test-execution-report.md`. |
 | Evidence | Decision D-11; `ClaimAutoCloseSchedulerIntegrationTest.java` |
 | Status | Open |
 
@@ -158,7 +158,7 @@
 | Description | Commit `48dc5304f77e71291a56dc1e70a41a510cc76644` on branch `181-p2-16-sharana-test-evidence` (PR #183) was authored by non-member GitHub account `vineethpmural123-rgb` (`vineethpmural123@gmail.com`) instead of Sharana (`sharanabasavagouda113-debug`). |
 | Root cause | Local git configuration on the executing machine was set to an external personal account during commit creation. |
 | Impact | Violates repository authorship integrity policy; PR #183 blocked from merge until re-authored. |
-| Mitigation | Commit must be re-authored with Sharana's credentials (`git commit --amend --author="sharanabasavagouda113-debug <...>"`), force-pushed, and re-reviewed. |
+| Mitigation | Commit must be re-authored with Sharana's credentials (`git commit --amend --author="sharanabasavagouda113-debug <...>"`) and force-pushed. |
 | Evidence | PR #183 commit log (`48dc5304f77e71291a56dc1e70a41a510cc76644`) |
 | Status | Open — [to confirm] awaiting re-authoring |
 

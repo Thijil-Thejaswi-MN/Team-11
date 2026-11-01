@@ -1,6 +1,6 @@
 # User Acceptance Testing (UAT) Execution Sheet — 29 Oct 2026
 
-**Build SHA:** `00add8445c4f0105a20d24c2fc28d3ebd6a32d45`  
+**Build SHA:** `693a22969da71928e30891bd49ac8eb7bb82d7bc` (short: `693a229`)  
 **Date:** 29 Oct 2026  
 **Roles & Assigned Team Members:**
 - **Sharana (Person 2):** Test Execution Lead
@@ -22,4 +22,3 @@
 | **UAT-06** | A duplicate claim is flagged and reviewed manually; a claim with missing documents is closed after 15 days. | Sharana executes; Thijil records + System Admin; Samarth Underwriter/Claims Officer; Raghunandan Customer + environment. | Flag and Closed - No Response behave as specified. | | | | | | |
 | **UAT-07** | Insurer Admin creates and deactivates a plan; staff of another insurer cannot see this insurer's data. | Sharana executes; Thijil records + System Admin; Samarth Underwriter/Claims Officer; Raghunandan Customer + environment. | Plan visible to customers; isolation holds. | | | | | | |
 | **UAT-08** | System Admin onboards an insurer and a staff user, generates reports and searches the audit log. | Sharana executes; Thijil records + System Admin; Samarth Underwriter/Claims Officer; Raghunandan Customer + environment. | Reports match data; audit log shows the actions. (reports: INS-F-025 deferred, D-10) | | | | | | |
-
