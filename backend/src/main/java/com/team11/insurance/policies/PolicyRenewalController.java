@@ -11,6 +11,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -63,7 +65,7 @@ public class PolicyRenewalController {
             IFileStore fileStore,
             ObjectProvider<QuoteRepository> quoteRepositoryProvider,
             ObjectProvider<PlanRepository> planRepositoryProvider,
-            ObjectProvider<IClaimService> claimServiceProvider,
+           @Qualifier("claimService")  ObjectProvider<IClaimService> claimServiceProvider,
             ObjectProvider<IPaymentService> paymentServiceProvider,
             ObjectProvider<INotify> notifyServiceProvider,
             ObjectProvider<IAuditLog> auditLogProvider,
@@ -73,14 +75,27 @@ public class PolicyRenewalController {
         this.fileStore = fileStore;
         this.quoteRepository = quoteRepositoryProvider.getIfAvailable();
         this.planRepository = planRepositoryProvider.getIfAvailable();
-        this.claimService = claimServiceProvider.getIfAvailable();
+           this.claimService = resolveClaimService(claimServiceProvider);
         this.paymentService = paymentServiceProvider.getIfAvailable();
         this.notifyService = notifyServiceProvider.getIfAvailable();
         this.auditLog = auditLogProvider.getIfAvailable();
         Clock providedClock = clockProvider.getIfAvailable();
         this.clock = providedClock != null ? providedClock : Clock.systemDefaultZone();
     }
-
+    private static IClaimService resolveClaimService(ObjectProvider<IClaimService> provider) {
+        if (provider == null) {
+            return null;
+        }
+        try {
+            return provider.getIfAvailable();
+        } catch (NoUniqueBeanDefinitionException ex) {
+            return provider.orderedStream()
+                    .filter(b -> !b.getClass().getSimpleName().toLowerCase().contains("stub"))
+                    .findFirst()
+                    .orElseGet(() -> provider.orderedStream().findFirst().orElse(null));
+        }
+    }
+    
     @PostMapping("/{id}/renewal-quote")
     @Transactional
     public ResponseEntity<RenewalQuoteResponse> createRenewalQuote(
