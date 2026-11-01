@@ -5,6 +5,9 @@
 # ==============================================================================
 set -euo pipefail
 
+# Prevent MSYS/Git Bash from corrupting OpenSSL -subj on Windows
+export MSYS2_ARG_CONV_EXCL="${MSYS2_ARG_CONV_EXCL:-}${MSYS2_ARG_CONV_EXCL:+;}/C="
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUTPUT_DIR="${1:-"${SCRIPT_DIR}/../nginx/certs"}"
 DAYS_VALID="${2:-365}"
