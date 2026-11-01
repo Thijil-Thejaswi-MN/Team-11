@@ -4,13 +4,13 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,12 +18,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.team11.insurance.admin.IAuditLog;
 import com.team11.insurance.auth.CurrentUser;
-import com.team11.insurance.auth.RoleSecurity;
 import com.team11.insurance.auth.UserRole;
 import com.team11.insurance.claims.IClaimService;
 import com.team11.insurance.common.exception.AccessDeniedException;
@@ -35,68 +35,51 @@ import com.team11.insurance.notifications.NotificationEvent;
 import com.team11.insurance.payments.IPaymentService;
 
 /**
- * REST endpoints and workflow for Policy Cancellation & Refunds (P3-10 / INS-F-020).
+ * Policy Cancellation & Refund REST Controller (P3-10 / INS-F-020).
  */
 @RestController
+@RequestMapping("/api/v1")
 public class PolicyCancellationController {
 
     private final PolicyRepository policyRepository;
     private final CancellationRequestRepository cancellationRequestRepository;
-    private final ObjectProvider<IClaimService> claimServiceProvider;
-    private final ObjectProvider<IPaymentService> paymentServiceProvider;
-    private final ObjectProvider<INotify> notifyProvider;
-    private final ObjectProvider<IAuditLog> auditLogProvider;
+    private final IClaimService claimService;
+    private final IPaymentService paymentService;
+    private final INotify notifyService;
+    private final IAuditLog auditLog;
     private final Clock clock;
 
-    @Autowired
     public PolicyCancellationController(
             PolicyRepository policyRepository,
             CancellationRequestRepository cancellationRequestRepository,
-            ObjectProvider<IClaimService> claimServiceProvider,
+            @Qualifier("claimService") ObjectProvider<IClaimService> claimServiceProvider,
             ObjectProvider<IPaymentService> paymentServiceProvider,
-            ObjectProvider<INotify> notifyProvider,
+            ObjectProvider<INotify> notifyServiceProvider,
             ObjectProvider<IAuditLog> auditLogProvider,
             ObjectProvider<Clock> clockProvider) {
-        this.policyRepository = Objects.requireNonNull(policyRepository, "policyRepository must not be null");
-        this.cancellationRequestRepository = Objects.requireNonNull(cancellationRequestRepository, "cancellationRequestRepository must not be null");
-        this.claimServiceProvider = claimServiceProvider;
-        this.paymentServiceProvider = paymentServiceProvider;
-        this.notifyProvider = notifyProvider;
-        this.auditLogProvider = auditLogProvider;
-        this.clock = clockProvider != null && clockProvider.getIfAvailable() != null
-                ? clockProvider.getIfAvailable()
-                : Clock.systemUTC();
+        this.policyRepository = policyRepository;
+        this.cancellationRequestRepository = cancellationRequestRepository;
+        this.claimService = resolveClaimService(claimServiceProvider);
+        this.paymentService = paymentServiceProvider.getIfAvailable();
+        this.notifyService = notifyServiceProvider.getIfAvailable();
+        this.auditLog = auditLogProvider.getIfAvailable();
+        Clock providedClock = clockProvider.getIfAvailable();
+        this.clock = providedClock != null ? providedClock : Clock.systemDefaultZone();
     }
 
-    public record CancellationSubmitRequest(String reason) {}
-
-    public record CancellationSubmitResponse(
-            Long requestId,
-            Long policyId,
-            String status,
-            String reason
-    ) {}
-
-    public record CancellationDecisionRequest(String decision, String reason) {}
-
-    public record CancellationDecisionResponse(
-            Long requestId,
-            Long policyId,
-            String status,
-            BigDecimal refundAmount
-    ) {}
-
-    public record CancellationSummaryDto(
-            Long id,
-            Long policyId,
-            Long insurerId,
-            Long requestedBy,
-            String reason,
-            CancellationStatus status,
-            BigDecimal refundAmount,
-            Instant createdAt,
-            Instant decidedAt
-    ) {}
+    private static IClaimService resolveClaimService(ObjectProvider<IClaimService> provider) {
+        if (provider == null) {
+            return null;
+        }
+        try {
+            return provider.getIfAvailable();
+        } catch (NoUniqueBeanDefinitionException ex) {
+            return provider.orderedStream()
+                    .filter(b -> !b.getClass().getSimpleName().toLowerCase().contains("stub"))
+                    .findFirst()
+                    .orElseGet(() -> provider.orderedStream().findFirst().orElse(null));
+        }
+    }
 
     @PostMapping("/policies/{id}/cancellation")
     @Transactional
@@ -104,99 +87,79 @@ public class PolicyCancellationController {
             @PathVariable Long id,
             @RequestBody(required = false) CancellationSubmitRequest request,
             CurrentUser currentUser) {
-        RoleSecurity.assertRole(currentUser, UserRole.CUSTOMER);
+        if (currentUser == null || currentUser.getUserRole() != UserRole.CUSTOMER) {
+            throw new AccessDeniedException("Only customers can request policy cancellation.");
+        }
 
         Policy policy = policyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Policy not found: " + id));
         if (!Objects.equals(policy.getCustomerId(), currentUser.getUserId())) {
-            throw new AccessDeniedException("You are not authorized to cancel this policy.");
+            throw new AccessDeniedException("You do not have permission to cancel this policy.");
         }
+
         if (policy.getStatus() != PolicyStatus.ACTIVE) {
-            throw new StateConflictException("Only ACTIVE policies can be cancelled.");
+            throw new StateConflictException("Only Active policies can be cancelled (current status: " + policy.getStatus() + ").");
         }
 
         String reason = (request != null && request.reason() != null && !request.reason().isBlank())
                 ? request.reason().trim()
-                : "Customer requested cancellation";
-        if (reason.length() > 500) {
-            throw new ValidationException("Cancellation reason must not exceed 500 characters.");
-        }
-
-        policy.setStatus(PolicyStatus.CANCELLATION_REQUESTED);
-        policyRepository.save(policy);
+                : "Customer requested policy cancellation";
 
         CancellationRequest cancelReq = new CancellationRequest();
-        cancelReq.setPolicyId(policy.getId());
+        cancelReq.setPolicyId(id);
         cancelReq.setInsurerId(policy.getInsurerId());
         cancelReq.setRequestedBy(currentUser.getUserId());
         cancelReq.setReason(reason);
         cancelReq.setStatus(CancellationStatus.REQUESTED);
-
         CancellationRequest saved = cancellationRequestRepository.save(cancelReq);
 
-        INotify notify = notifyProvider != null ? notifyProvider.getIfAvailable() : null;
-        if (notify != null) {
-            notify.send(
-                    NotificationEvent.CANCELLATION_REQUESTED,
-                    policy.getCustomerId(),
-                    Map.of(
-                            "policyNo", policy.getPolicyNo(),
-                            "requestId", saved.getId() != null ? saved.getId().toString() : ""
-                    )
-            );
-        }
+        policy.setStatus(PolicyStatus.CANCELLATION_REQUESTED);
+        policyRepository.save(policy);
 
-        IAuditLog auditLog = auditLogProvider != null ? auditLogProvider.getIfAvailable() : null;
-        if (auditLog != null && saved.getId() != null) {
-            auditLog.record(
-                    currentUser.getUserId(),
-                    "CANCELLATION_REQUESTED",
-                    "CancellationRequest",
-                    saved.getId(),
-                    reason
-            );
+        Long reqId = saved != null ? saved.getId() : null;
+        if (auditLog != null) {
+            auditLog.record(currentUser.getUserId(), "CANCELLATION_REQUESTED", "Policy", id,
+                    "Cancellation requested: reason=" + reason);
+        }
+        if (notifyService != null) {
+            notifyService.send(NotificationEvent.CANCELLATION_REQUESTED, policy.getCustomerId(), Map.of(
+                    "policyNo", policy.getPolicyNo(),
+                    "reason", reason
+            ));
         }
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new CancellationSubmitResponse(saved.getId(), policy.getId(), "Requested", reason));
+                .body(new CancellationSubmitResponse(reqId, "Requested"));
     }
 
     @GetMapping("/cancellations")
     @Transactional(readOnly = true)
-    public ResponseEntity<List<CancellationSummaryDto>> listCancellations(
+    public ResponseEntity<List<CancellationRequest>> listCancellations(
             @RequestParam(required = false) CancellationStatus status,
             CurrentUser currentUser) {
         if (currentUser == null || currentUser.getUserRole() == null) {
             throw new AccessDeniedException("Authentication is required.");
         }
 
-        List<CancellationSummaryDto> items = cancellationRequestRepository.findAll()
-                .stream()
-                .filter(req -> {
-                    if (currentUser.getUserRole() == UserRole.CUSTOMER) {
-                        return Objects.equals(req.getRequestedBy(), currentUser.getUserId());
-                    }
-                    if (currentUser.getUserRole() == UserRole.INSURER_ADMIN) {
-                        return Objects.equals(req.getInsurerId(), currentUser.getInsurerId());
-                    }
-                    return currentUser.getUserRole() == UserRole.SYSTEM_ADMIN;
-                })
-                .filter(req -> status == null || req.getStatus() == status)
-                .sorted(Comparator.comparing(CancellationRequest::getId, Comparator.nullsLast(Comparator.reverseOrder())))
-                .map(req -> new CancellationSummaryDto(
-                        req.getId(),
-                        req.getPolicyId(),
-                        req.getInsurerId(),
-                        req.getRequestedBy(),
-                        req.getReason(),
-                        req.getStatus(),
-                        req.getRefundAmount(),
-                        req.getCreatedAt(),
-                        req.getDecidedAt()
-                ))
-                .toList();
-
-        return ResponseEntity.ok(items);
+        List<CancellationRequest> list;
+        if (currentUser.getUserRole() == UserRole.CUSTOMER) {
+            list = cancellationRequestRepository.findByRequestedByOrderByCreatedAtDesc(currentUser.getUserId());
+        } else if (currentUser.getUserRole() == UserRole.INSURER_ADMIN) {
+            Long insurerId = currentUser.getInsurerId();
+            if (insurerId == null) {
+                throw new AccessDeniedException("Insurer Admin context is missing insurerId.");
+            }
+            if (status != null) {
+                list = cancellationRequestRepository.findByInsurerIdAndStatusOrderByCreatedAtDesc(insurerId, status);
+            } else {
+                list = cancellationRequestRepository.findByInsurerIdOrderByCreatedAtDesc(insurerId);
+            }
+        } else if (currentUser.getUserRole() == UserRole.SYSTEM_ADMIN) {
+            list = cancellationRequestRepository.findAll();
+        } else {
+            throw new AccessDeniedException("Access denied for role: " + currentUser.getUserRole());
+        }
+        return ResponseEntity.ok(list);
     }
 
     @PostMapping("/cancellations/{id}/decision")
@@ -205,137 +168,108 @@ public class PolicyCancellationController {
             @PathVariable Long id,
             @RequestBody CancellationDecisionRequest request,
             CurrentUser currentUser) {
-        RoleSecurity.assertRole(currentUser, UserRole.INSURER_ADMIN);
-
+        if (currentUser == null || (currentUser.getUserRole() != UserRole.INSURER_ADMIN
+                && currentUser.getUserRole() != UserRole.SYSTEM_ADMIN)) {
+            throw new AccessDeniedException("Only Insurer Admin can decide cancellation requests.");
+        }
         if (request == null || request.decision() == null || request.decision().isBlank()) {
-            throw new ValidationException("Decision ('Approve' or 'Reject') is required.");
+            throw new ValidationException("Field 'decision' is required ('Approve' or 'Reject').");
         }
 
         CancellationRequest cancelReq = cancellationRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cancellation request not found: " + id));
 
-        if (!Objects.equals(cancelReq.getInsurerId(), currentUser.getInsurerId())) {
-            throw new AccessDeniedException("You are not authorized to decide cancellation requests for another insurer.");
+        if (currentUser.getUserRole() == UserRole.INSURER_ADMIN
+                && !Objects.equals(currentUser.getInsurerId(), cancelReq.getInsurerId())) {
+            throw new AccessDeniedException("Cannot decide cancellation request belonging to another insurer.");
         }
+
         if (cancelReq.getStatus() != CancellationStatus.REQUESTED) {
-            throw new StateConflictException("Cancellation request has already been decided.");
+            throw new StateConflictException("Cancellation request has already been decided: " + cancelReq.getStatus());
         }
 
         Policy policy = policyRepository.findById(cancelReq.getPolicyId())
                 .orElseThrow(() -> new ResourceNotFoundException("Policy not found: " + cancelReq.getPolicyId()));
 
-        String normalized = request.decision().trim().toUpperCase();
-        boolean isApprove = "APPROVE".equals(normalized) || "APPROVED".equals(normalized);
-        boolean isReject = "REJECT".equals(normalized) || "REJECTED".equals(normalized);
+        String decisionNorm = request.decision().trim();
+        Instant now = Instant.now(clock);
+        LocalDate decisionDate = LocalDate.now(clock);
 
-        if (!isApprove && !isReject) {
-            throw new ValidationException("Decision must be 'Approve' or 'Reject'.");
-        }
+        if ("Approve".equalsIgnoreCase(decisionNorm) || "Approved".equalsIgnoreCase(decisionNorm)) {
+            boolean hasSettledClaim = claimService != null && claimService.hasPaidClaim(policy.getId());
 
-        if (isApprove) {
-            IClaimService claimService = claimServiceProvider != null ? claimServiceProvider.getIfAvailable() : null;
-            boolean claimPaid = claimService != null && claimService.hasPaidClaim(policy.getId());
-
-            LocalDate cancelDate = cancelReq.getCreatedAt() != null
-                    ? cancelReq.getCreatedAt().atZone(clock.getZone()).toLocalDate()
-                    : LocalDate.now(clock);
-            if (cancelDate.isBefore(policy.getStartDate())) {
-                cancelDate = policy.getStartDate();
-            } else if (cancelDate.isAfter(policy.getEndDate())) {
-                cancelDate = policy.getEndDate();
+            LocalDate effectiveCancelDate = decisionDate;
+            if (effectiveCancelDate.isBefore(policy.getStartDate())) {
+                effectiveCancelDate = policy.getStartDate();
+            } else if (effectiveCancelDate.isAfter(policy.getEndDate())) {
+                effectiveCancelDate = policy.getEndDate();
             }
 
             BigDecimal refundAmount = RefundCalculator.calculateRefund(
                     policy.getPremiumPaid(),
                     policy.getStartDate(),
                     policy.getEndDate(),
-                    cancelDate,
-                    claimPaid
+                    effectiveCancelDate,
+                    hasSettledClaim
             );
 
-            IPaymentService paymentService = paymentServiceProvider != null ? paymentServiceProvider.getIfAvailable() : null;
-            if (paymentService != null) {
-                String idempotencyKey = "cancel-" + policy.getId() + "-" + cancelReq.getId();
-                paymentService.refund(policy.getId(), refundAmount, idempotencyKey, cancelReq.getReason());
+            if (paymentService != null && refundAmount.compareTo(BigDecimal.ZERO) > 0) {
+                paymentService.refund(policy.getId(), refundAmount, "cancel-" + id);
             }
 
             cancelReq.setStatus(CancellationStatus.APPROVED);
-            cancelReq.setDecidedBy(currentUser.getUserId());
-            cancelReq.setDecidedAt(Instant.now(clock));
             cancelReq.setRefundAmount(refundAmount);
+            cancelReq.setDecidedBy(currentUser.getUserId());
+            cancelReq.setDecidedAt(now);
             cancellationRequestRepository.save(cancelReq);
 
             policy.setStatus(PolicyStatus.CANCELLED);
             policyRepository.save(policy);
 
-            INotify notify = notifyProvider != null ? notifyProvider.getIfAvailable() : null;
-            if (notify != null) {
-                notify.send(
-                        NotificationEvent.CANCELLATION_APPROVED,
-                        policy.getCustomerId(),
-                        Map.of(
-                                "policyNo", policy.getPolicyNo(),
-                                "refundAmount", refundAmount.toPlainString()
-                        )
-                );
-            }
-
-            IAuditLog auditLog = auditLogProvider != null ? auditLogProvider.getIfAvailable() : null;
             if (auditLog != null) {
-                auditLog.record(
-                        currentUser.getUserId(),
-                        "CANCELLATION_APPROVED",
-                        "CancellationRequest",
-                        cancelReq.getId(),
-                        "refundAmount=" + refundAmount.toPlainString()
-                );
+                auditLog.record(currentUser.getUserId(), "CANCELLATION_APPROVED", "Policy", policy.getId(),
+                        "Approved cancellation request id=" + id + ", refundAmount=" + refundAmount);
+            }
+            if (notifyService != null) {
+                notifyService.send(NotificationEvent.CANCELLATION_APPROVED, policy.getCustomerId(), Map.of(
+                        "policyNo", policy.getPolicyNo(),
+                        "refundAmount", refundAmount.toPlainString()
+                ));
             }
 
-            return ResponseEntity.ok(new CancellationDecisionResponse(
-                    cancelReq.getId(),
-                    policy.getId(),
-                    "Approved",
-                    refundAmount
-            ));
-        } else {
+            return ResponseEntity.ok(new CancellationDecisionResponse("Approved", refundAmount));
+        } else if ("Reject".equalsIgnoreCase(decisionNorm) || "Rejected".equalsIgnoreCase(decisionNorm)) {
             cancelReq.setStatus(CancellationStatus.REJECTED);
-            cancelReq.setDecidedBy(currentUser.getUserId());
-            cancelReq.setDecidedAt(Instant.now(clock));
             cancelReq.setRefundAmount(BigDecimal.ZERO);
+            cancelReq.setDecidedBy(currentUser.getUserId());
+            cancelReq.setDecidedAt(now);
             cancellationRequestRepository.save(cancelReq);
 
             policy.setStatus(PolicyStatus.ACTIVE);
             policyRepository.save(policy);
 
-            INotify notify = notifyProvider != null ? notifyProvider.getIfAvailable() : null;
-            if (notify != null) {
-                notify.send(
-                        NotificationEvent.CANCELLATION_REJECTED,
-                        policy.getCustomerId(),
-                        Map.of(
-                                "policyNo", policy.getPolicyNo(),
-                                "reason", request.reason() != null ? request.reason() : "Rejected by insurer admin"
-                        )
-                );
-            }
-
-            IAuditLog auditLog = auditLogProvider != null ? auditLogProvider.getIfAvailable() : null;
             if (auditLog != null) {
-                auditLog.record(
-                        currentUser.getUserId(),
-                        "CANCELLATION_REJECTED",
-                        "CancellationRequest",
-                        cancelReq.getId(),
-                        request.reason() != null ? request.reason() : "Rejected by insurer admin"
-                );
+                auditLog.record(currentUser.getUserId(), "CANCELLATION_REJECTED", "Policy", policy.getId(),
+                        "Rejected cancellation request id=" + id);
+            }
+            if (notifyService != null) {
+                notifyService.send(NotificationEvent.CANCELLATION_REJECTED, policy.getCustomerId(), Map.of(
+                        "policyNo", policy.getPolicyNo(),
+                        "reason", request.reason() != null ? request.reason() : "Cancellation request rejected"
+                ));
             }
 
-            return ResponseEntity.ok(new CancellationDecisionResponse(
-                    cancelReq.getId(),
-                    policy.getId(),
-                    "Rejected",
-                    BigDecimal.ZERO
-            ));
+            return ResponseEntity.ok(new CancellationDecisionResponse("Rejected", BigDecimal.ZERO));
+        } else {
+            throw new ValidationException("Invalid decision value: " + request.decision() + ". Expected 'Approve' or 'Reject'.");
         }
     }
+
+    public record CancellationSubmitRequest(String reason) {}
+
+    public record CancellationSubmitResponse(Long requestId, String status) {}
+
+    public record CancellationDecisionRequest(String decision, String reason) {}
+
+    public record CancellationDecisionResponse(String status, BigDecimal refundAmount) {}
 }
