@@ -141,21 +141,26 @@ public class PolicyCancellationController {
             throw new AccessDeniedException("Authentication is required.");
         }
 
+        List<CancellationRequest> all = cancellationRequestRepository.findAll();
         List<CancellationRequest> list;
         if (currentUser.getUserRole() == UserRole.CUSTOMER) {
-            list = cancellationRequestRepository.findByRequestedByOrderByCreatedAtDesc(currentUser.getUserId());
+            list = all.stream()
+                    .filter(r -> Objects.equals(r.getRequestedBy(), currentUser.getUserId()))
+                    .filter(r -> status == null || r.getStatus() == status)
+                    .toList();
         } else if (currentUser.getUserRole() == UserRole.INSURER_ADMIN) {
             Long insurerId = currentUser.getInsurerId();
             if (insurerId == null) {
                 throw new AccessDeniedException("Insurer Admin context is missing insurerId.");
             }
-            if (status != null) {
-                list = cancellationRequestRepository.findByInsurerIdAndStatusOrderByCreatedAtDesc(insurerId, status);
-            } else {
-                list = cancellationRequestRepository.findByInsurerIdOrderByCreatedAtDesc(insurerId);
-            }
+            list = all.stream()
+                    .filter(r -> Objects.equals(r.getInsurerId(), insurerId))
+                    .filter(r -> status == null || r.getStatus() == status)
+                    .toList();
         } else if (currentUser.getUserRole() == UserRole.SYSTEM_ADMIN) {
-            list = cancellationRequestRepository.findAll();
+            list = all.stream()
+                    .filter(r -> status == null || r.getStatus() == status)
+                    .toList();
         } else {
             throw new AccessDeniedException("Access denied for role: " + currentUser.getUserRole());
         }
@@ -196,7 +201,8 @@ public class PolicyCancellationController {
         LocalDate decisionDate = LocalDate.now(clock);
 
         if ("Approve".equalsIgnoreCase(decisionNorm) || "Approved".equalsIgnoreCase(decisionNorm)) {
-            boolean hasSettledClaim = claimService != null && claimService.hasPaidClaim(policy.getId());
+            Long polId = policy.getId() != null ? policy.getId() : cancelReq.getPolicyId();
+            boolean hasSettledClaim = claimService != null && claimService.hasPaidClaim(polId);
 
             LocalDate effectiveCancelDate = decisionDate;
             if (effectiveCancelDate.isBefore(policy.getStartDate())) {
@@ -214,7 +220,12 @@ public class PolicyCancellationController {
             );
 
             if (paymentService != null && refundAmount.compareTo(BigDecimal.ZERO) > 0) {
-                paymentService.refund(policy.getId(), refundAmount, "cancel-" + id);
+                paymentService.refund(
+                        polId != null ? polId : id,
+                        refundAmount,
+                        "cancel-" + id,
+                        cancelReq.getReason() != null ? cancelReq.getReason() : "Approved cancellation"
+                );
             }
 
             cancelReq.setStatus(CancellationStatus.APPROVED);
@@ -227,7 +238,7 @@ public class PolicyCancellationController {
             policyRepository.save(policy);
 
             if (auditLog != null) {
-                auditLog.record(currentUser.getUserId(), "CANCELLATION_APPROVED", "Policy", policy.getId(),
+                auditLog.record(currentUser.getUserId(), "CANCELLATION_APPROVED", "Policy", polId,
                         "Approved cancellation request id=" + id + ", refundAmount=" + refundAmount);
             }
             if (notifyService != null) {
@@ -239,6 +250,7 @@ public class PolicyCancellationController {
 
             return ResponseEntity.ok(new CancellationDecisionResponse("Approved", refundAmount));
         } else if ("Reject".equalsIgnoreCase(decisionNorm) || "Rejected".equalsIgnoreCase(decisionNorm)) {
+            Long polId = policy.getId() != null ? policy.getId() : cancelReq.getPolicyId();
             cancelReq.setStatus(CancellationStatus.REJECTED);
             cancelReq.setRefundAmount(BigDecimal.ZERO);
             cancelReq.setDecidedBy(currentUser.getUserId());
@@ -249,7 +261,7 @@ public class PolicyCancellationController {
             policyRepository.save(policy);
 
             if (auditLog != null) {
-                auditLog.record(currentUser.getUserId(), "CANCELLATION_REJECTED", "Policy", policy.getId(),
+                auditLog.record(currentUser.getUserId(), "CANCELLATION_REJECTED", "Policy", polId,
                         "Rejected cancellation request id=" + id);
             }
             if (notifyService != null) {
