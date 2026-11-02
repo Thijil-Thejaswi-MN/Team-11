@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Insurance Workflow Automation System API" tests="38" time="1.967">
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Actuator Health Check (Real Endpoint)" id="ae246160-bc96-40b1-95dc-6afcd6dabbf9" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.050">
+    <testcase name="Status code is 200" time="0.050" classname="01AuthenticationKycAndPlansContract02ActuatorHealthCheckRealEndpoint"/>
+    <testcase name="Application health status is UP" time="0.050" classname="01AuthenticationKycAndPlansContract02ActuatorHealthCheckRealEndpoint"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Register Customer (Contract INS-F-001)" id="eca11cc0-b6d7-4970-9bd1-8c1e576925ac" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.037">
+    <testcase name="Status code is 201 Created or expected contract validation" time="0.037" classname="01AuthenticationKycAndPlansContract02RegisterCustomerContractInsF001"/>
+    <testcase name="Password is never exposed in response body" time="0.037" classname="01AuthenticationKycAndPlansContract02RegisterCustomerContractInsF001"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Login Customer (Contract INS-F-001)" id="82e30e81-fc92-4fb8-a989-c9357989cdf8" timestamp="2026-11-02T07:57:27.253Z" tests="1" failures="0" errors="0" time="0.593">
+    <testcase name="Status code is 200 or 401" time="0.593" classname="01AuthenticationKycAndPlansContract02LoginCustomerContractInsF001"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / kyc / Submit KYC Documents - Verified PAN (Contract INS-F-002)" id="e1d55e1d-2c30-4597-9adc-1a84f7819dc7" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.076">
+    <testcase name="Status code is 200 OK or 202 Accepted" time="0.076" classname="01AuthenticationKycAndPlansContract02KycSubmitKycDocumentsVerifiedPanContractInsF002"/>
+    <testcase name="KYC status is Verified" time="0.076" classname="01AuthenticationKycAndPlansContract02KycSubmitKycDocumentsVerifiedPanContractInsF002"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / kyc / Get KYC Status (Contract INS-F-002)" id="ce22bb4e-2986-434f-b490-a4002516d0ce" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.021">
+    <testcase name="Status code is 200 OK" time="0.021" classname="01AuthenticationKycAndPlansContract02KycGetKycStatusContractInsF002"/>
+    <testcase name="Response contains kycStatus" time="0.021" classname="01AuthenticationKycAndPlansContract02KycGetKycStatusContractInsF002"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / kyc / Submit KYC Documents - Rejected PAN ZZZZZ0000Z (Contract INS-F-002)" id="b99d8711-dd5a-4b22-9719-04843f89a417" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.067">
+    <testcase name="Status code is 200 OK or 202 Accepted" time="0.067" classname="01AuthenticationKycAndPlansContract02KycSubmitKycDocumentsRejectedPanZzzzz0000ZContractInsF002"/>
+    <testcase name="KYC status is Rejected" time="0.067" classname="01AuthenticationKycAndPlansContract02KycSubmitKycDocumentsRejectedPanZzzzz0000ZContractInsF002"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / kyc / Submit KYC Documents - Malformed PAN (Contract INS-F-002, Expect 422)" id="b27d8e29-a7b1-4d39-bc0c-03663ab45a7f" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.030">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.030" classname="01AuthenticationKycAndPlansContract02KycSubmitKycDocumentsMalformedPanContractInsF002Expect422"/>
+    <testcase name="Error code is VALID-422" time="0.030" classname="01AuthenticationKycAndPlansContract02KycSubmitKycDocumentsMalformedPanContractInsF002Expect422"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Browse Plans (Public, Contract INS-F-004, INS-F-022)" id="248b4292-7612-4540-85fb-482b752f39bd" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.030">
+    <testcase name="Status code is 200 OK" time="0.030" classname="01AuthenticationKycAndPlansContract02BrowsePlansPublicContractInsF004InsF022"/>
+    <testcase name="Response contains items array" time="0.030" classname="01AuthenticationKycAndPlansContract02BrowsePlansPublicContractInsF004InsF022"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Compare Plans (Public, Contract INS-F-004)" id="75c1782b-4f91-47c5-8120-ba50fa593ac6" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.016">
+    <testcase name="Status code is 200 OK" time="0.016" classname="01AuthenticationKycAndPlansContract02ComparePlansPublicContractInsF004"/>
+    <testcase name="Response contains plans array" time="0.016" classname="01AuthenticationKycAndPlansContract02ComparePlansPublicContractInsF004"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Compare Plans - Exceeding 3 IDs (Contract INS-F-004, Expect 400)" id="9803ffe3-b142-425c-ac6b-f19d145684e5" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.010">
+    <testcase name="Status code is 400 Bad Request" time="0.010" classname="01AuthenticationKycAndPlansContract02ComparePlansExceeding3IDsContractInsF004Expect400"/>
+    <testcase name="Error response indicates maximum 3 plans allowed" time="0.010" classname="01AuthenticationKycAndPlansContract02ComparePlansExceeding3IDsContractInsF004Expect400"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Compare Plans - Unknown Plan ID (Contract INS-F-004, Expect 404)" id="f9d80aeb-d31d-41f0-b1e1-5a43e544238c" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.009">
+    <testcase name="Status code is 404 Not Found" time="0.009" classname="01AuthenticationKycAndPlansContract02ComparePlansUnknownPlanIdContractInsF004Expect404"/>
+    <testcase name="Error code is NOTFOUND-404" time="0.009" classname="01AuthenticationKycAndPlansContract02ComparePlansUnknownPlanIdContractInsF004Expect404"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Create Plan (Insurer Admin, Contract INS-F-003)" id="d11a72ba-8e72-4a19-b543-bacc5a785974" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.031">
+    <testcase name="Status code is 201 Created" time="0.031" classname="01AuthenticationKycAndPlansContract02CreatePlanInsurerAdminContractInsF003"/>
+    <testcase name="Response contains created planId" time="0.031" classname="01AuthenticationKycAndPlansContract02CreatePlanInsurerAdminContractInsF003"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Deactivate Plan (Insurer Admin, Contract INS-F-003)" id="cc323cca-0bb8-4949-8b47-dc03af502686" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.034">
+    <testcase name="Status code is 200 OK" time="0.034" classname="01AuthenticationKycAndPlansContract02DeactivatePlanInsurerAdminContractInsF003"/>
+    <testcase name="Plan active flag is updated to false" time="0.034" classname="01AuthenticationKycAndPlansContract02DeactivatePlanInsurerAdminContractInsF003"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 1: Motor Quote - Age 7 with ZERO_DEP (PLAN-A-M1)" id="4e7d3a46-6ec3-4404-a08e-4a5620d192f4" timestamp="2026-11-02T07:57:27.253Z" tests="3" failures="0" errors="0" time="0.018">
+    <testcase name="Status code is 200 OK" time="0.018" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step1MotorQuoteAge7WithZeroDepPlanAM1"/>
+    <testcase name="TC-Quote-01 Step 1: Calculated total premium is Rs 9480.00" time="0.018" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step1MotorQuoteAge7WithZeroDepPlanAM1"/>
+    <testcase name="TC-Perf-01 / INS-NF-001: Response time is within 5 seconds" time="0.018" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step1MotorQuoteAge7WithZeroDepPlanAM1"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 2: Motor Quote - Age 2 No Add-ons (PLAN-A-M1)" id="902a9a45-8b67-4ea0-b12c-5935ccf62aec" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.018">
+    <testcase name="Status code is 200 OK" time="0.018" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step2MotorQuoteAge2NoAddOnsPlanAM1"/>
+    <testcase name="TC-Quote-01 Step 2: Normal age premium is Rs 8000.00 with 0 loading" time="0.018" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step2MotorQuoteAge2NoAddOnsPlanAM1"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 3: Motor Quote - Higher IDV 6L Age 2 (PLAN-A-M1)" id="fa8fdea1-c144-4bd5-bf37-c367e63b2e61" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.165">
+    <testcase name="Status code is 200 OK" time="0.165" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step3MotorQuoteHigherIdv6LAge2PlanAM1"/>
+    <testcase name="TC-Quote-01 Step 3: Higher IDV 6L premium is Rs 12000.00" time="0.165" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step3MotorQuoteHigherIdv6LAge2PlanAM1"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Boundary: Motor Quote - Age 6 Boundary (5% Loading)" id="5e62948d-08e4-41a0-9af3-de499a972dd2" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.073">
+    <testcase name="Status code is 200 OK" time="0.073" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01BoundaryMotorQuoteAge6Boundary5Loading"/>
+    <testcase name="Vehicle age 6 boundary receives 5% age loading (total Rs 8400.00)" time="0.073" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01BoundaryMotorQuoteAge6Boundary5Loading"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Boundary: Motor Quote - Age 10 Boundary (5% Loading)" id="bd674fb5-66ae-46c9-865f-a8daf0c27838" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.350">
+    <testcase name="Status code is 200 OK" time="0.350" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01BoundaryMotorQuoteAge10Boundary5Loading"/>
+    <testcase name="Vehicle age 10 boundary receives 5% age loading (total Rs 8400.00)" time="0.350" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01BoundaryMotorQuoteAge10Boundary5Loading"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Boundary: Motor Quote - Age 11 Boundary (0% Loading)" id="10e3cf50-365e-44b6-874e-ad5a8a7c9772" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.045">
+    <testcase name="Status code is 200 OK" time="0.045" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01BoundaryMotorQuoteAge11Boundary0Loading"/>
+    <testcase name="Vehicle age 11 boundary receives NO age loading (total Rs 8000.00)" time="0.045" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01BoundaryMotorQuoteAge11Boundary0Loading"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 4a: Motor Quote - Future Registration Year (Expect 422)" id="0fac943d-ca73-4149-b057-4cd6841469a6" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.014">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.014" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step4AMotorQuoteFutureRegistrationYearExpect422"/>
+    <testcase name="Error response conforms to VALID-422 schema" time="0.014" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step4AMotorQuoteFutureRegistrationYearExpect422"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 4b: Motor Quote - Negative IDV (Expect 422)" id="157b7538-e166-4d63-a47c-a76c93388be9" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.011">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.011" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step4BMotorQuoteNegativeIdvExpect422"/>
+    <testcase name="Error response conforms to VALID-422 schema" time="0.011" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step4BMotorQuoteNegativeIdvExpect422"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 4c: Motor Quote - Incompatible Vehicle Type 2W on 4W Plan (Expect 422)" id="3435c67b-e63c-47c8-aeba-ae5162cd93c9" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.010">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.010" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step4CMotorQuoteIncompatibleVehicleType2WOn4WPlanExpect422"/>
+    <testcase name="Error response conforms to VALID-422 schema" time="0.010" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step4CMotorQuoteIncompatibleVehicleType2WOn4WPlanExpect422"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-02 Step 1: Health Quote - 1 Member Age 45 (PLAN-A-H1)" id="beaa6ebb-90be-4c42-aea2-529db3a3c6a7" timestamp="2026-11-02T07:57:27.253Z" tests="3" failures="0" errors="0" time="0.009">
+    <testcase name="Status code is 200 OK" time="0.009" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step1HealthQuote1MemberAge45PlanAH1"/>
+    <testcase name="TC-Quote-02 Step 1: 1 member age 45, 5L, No PED is Rs 4500.00" time="0.009" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step1HealthQuote1MemberAge45PlanAH1"/>
+    <testcase name="TC-Perf-01 / INS-NF-001: Response time is within 5 seconds" time="0.009" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step1HealthQuote1MemberAge45PlanAH1"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-02 Step 2: Health Quote - 2 Members Ages 30 &amp; 32 (PLAN-A-H1)" id="21b6134e-2c95-486a-8025-f7afc53bbcb2" timestamp="2026-11-02T07:57:27.253Z" tests="3" failures="0" errors="0" time="0.017">
+    <testcase name="Status code is 200 OK" time="0.017" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step2HealthQuote2MembersAges30Amp32PlanAH1"/>
+    <testcase name="TC-Quote-02 Step 2: 2 members ages 30 and 32, 5L, No PED is Rs 6000.00" time="0.017" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step2HealthQuote2MembersAges30Amp32PlanAH1"/>
+    <testcase name="TC-Perf-01 / INS-NF-001: Response time is within 5 seconds" time="0.017" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step2HealthQuote2MembersAges30Amp32PlanAH1"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-02 Step 3: Health Quote - 2 Members Higher Coverage 10L (PLAN-A-H1)" id="2f4a3ed2-b68e-4d1f-8660-61482029307a" timestamp="2026-11-02T07:57:27.253Z" tests="3" failures="0" errors="0" time="0.010">
+    <testcase name="Status code is 200 OK" time="0.010" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step3HealthQuote2MembersHigherCoverage10LPlanAH1"/>
+    <testcase name="TC-Quote-02 Step 3: 2 members ages 30 and 32, 10L, No PED is Rs 9600.00" time="0.010" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step3HealthQuote2MembersHigherCoverage10LPlanAH1"/>
+    <testcase name="TC-Perf-01 / INS-NF-001: Response time is within 5 seconds" time="0.010" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step3HealthQuote2MembersHigherCoverage10LPlanAH1"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-02 Step 4: Health Quote - 2 Members with Pre-Existing Condition (PLAN-A-H1)" id="6196be58-eef5-4488-88b4-53e44af2c3dd" timestamp="2026-11-02T07:57:27.253Z" tests="3" failures="0" errors="0" time="0.020">
+    <testcase name="Status code is 200 OK" time="0.020" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step4HealthQuote2MembersWithPreExistingConditionPlanAH1"/>
+    <testcase name="TC-Quote-02 Step 4: 2 members ages 30 and 32, 5L, Pre-existing Yes is Rs 7200.00" time="0.020" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step4HealthQuote2MembersWithPreExistingConditionPlanAH1"/>
+    <testcase name="TC-Perf-01 / INS-NF-001: Response time is within 5 seconds" time="0.020" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step4HealthQuote2MembersWithPreExistingConditionPlanAH1"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-02 Step 5a: Health Quote - No Members (Expect 422)" id="66702781-3400-4ca1-8189-57f301c251fc" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.010">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.010" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step5AHealthQuoteNoMembersExpect422"/>
+    <testcase name="Error schema complies with SAD Section 4.4" time="0.010" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step5AHealthQuoteNoMembersExpect422"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-02 Step 5b: Health Quote - Unsupported Sum Insured 7.5L (Expect 422)" id="59146bc9-33b6-43d1-9565-e700d455e8d1" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.010">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.010" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step5BHealthQuoteUnsupportedSumInsured75LExpect422"/>
+    <testcase name="Error schema complies with SAD Section 4.4" time="0.010" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step5BHealthQuoteUnsupportedSumInsured75LExpect422"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / underwriting / Get Referred Applications (Underwriter, Contract INS-F-011)" id="c7580c8d-95fe-479c-acc7-d788179243ee" timestamp="2026-11-02T07:57:27.253Z" tests="0" failures="0" errors="0" time="0.014"/>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / underwriting / Underwriter Decision (Contract INS-F-011)" id="2c48454c-dfb1-44e8-9d88-67f58cf6f1d2" timestamp="2026-11-02T07:57:27.253Z" tests="0" failures="0" errors="0" time="0.033"/>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / File Insurance Claim (Contract INS-F-012)" id="3195a601-59bc-4382-bbd4-6c110be445a0" timestamp="2026-11-02T07:57:27.253Z" tests="0" failures="0" errors="0" time="0.025"/>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / Track Claim Status (Contract INS-F-015)" id="b465d5b2-3431-4d8a-a7a9-c890a5450124" timestamp="2026-11-02T07:57:27.253Z" tests="0" failures="0" errors="0" time="0.021"/>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / Assess Claim (Claims Officer, Contract INS-F-014)" id="a6297546-894d-453b-b585-be495b48177a" timestamp="2026-11-02T07:57:27.253Z" tests="0" failures="0" errors="0" time="0.035"/>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - System Admin (200 OK)" id="d2735d38-df61-4628-9c0d-acb39d568d31" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.021">
+    <testcase name="Status code is 200 OK" time="0.021" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsSystemAdmin200Ok"/>
+    <testcase name="Response contains paginated audit items array" time="0.021" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsSystemAdmin200Ok"/>
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Customer Access Denied (403 Forbidden)" id="4e357e4d-b1f1-4acf-af41-8cc86b67f6df" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.008">
+    <testcase name="Status code is 403 Forbidden" time="0.008" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsCustomerAccessDenied403Forbidden"/>
+    <testcase name="Error code is ACCESS-403" time="0.008" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsCustomerAccessDenied403Forbidden"/>
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Unauthenticated Access Denied (401 Unauthorized)" id="2432e4f6-5517-43dd-a129-9fe192f4f412" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="2" errors="0" time="0.007">
+    <testcase name="Status code is 401 Unauthorized" time="0.007" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsUnauthenticatedAccessDenied401Unauthorized">
+      <failure type="AssertionFailure" message="expected response to have status code 401 but got 403">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Unauthenticated Access Denied (401 Unauthorized).]]>
+        <![CDATA[Test description: Status code is 401 Unauthorized.]]>
+        <![CDATA[Error message: expected response to have status code 401 but got 403.]]>
+        <![CDATA[Stacktrace: AssertionError: expected response to have status code 401 but got 403
+   at Object.eval sandbox-script.js:1:36).]]>
+      </failure>
+    </testcase>
+    <testcase name="Error code is AUTH-401" time="0.007" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsUnauthenticatedAccessDenied401Unauthorized">
+      <failure type="AssertionFailure" message="expected 'ACCESS-403' to deeply equal 'AUTH-401'">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Unauthenticated Access Denied (401 Unauthorized).]]>
+        <![CDATA[Test description: Error code is AUTH-401.]]>
+        <![CDATA[Error message: expected 'ACCESS-403' to deeply equal 'AUTH-401'.]]>
+        <![CDATA[Stacktrace: AssertionError: expected 'ACCESS-403' to deeply equal 'AUTH-401'
+   at Object.eval sandbox-script.js:2:36).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Filter by Action (200 OK)" id="c3c5c120-625e-4d60-8eaf-591c46d8fbf4" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.012">
+    <testcase name="Status code is 200 OK" time="0.012" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsFilterByAction200Ok"/>
+    <testcase name="Items array is returned with matching filter criteria" time="0.012" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsFilterByAction200Ok"/>
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Invalid Filter Range (422 Unprocessable Entity)" id="df1b20fd-e9e0-4cf7-99ef-ca411d29f942" timestamp="2026-11-02T07:57:27.253Z" tests="2" failures="0" errors="0" time="0.007">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.007" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsInvalidFilterRange422UnprocessableEntity"/>
+    <testcase name="Error code is VALID-422" time="0.007" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsInvalidFilterRange422UnprocessableEntity"/>
+  </testsuite>
+</testsuites>
