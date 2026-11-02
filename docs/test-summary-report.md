@@ -109,6 +109,7 @@
 
 | Issue # | Severity | Summary | Module | Status |
 |:---:|:---:|---|---|:---:|
+| **#187** | High | [Audit API] Unauthenticated GET /api/v1/audit returns 403 ACCESS-403 instead of 401 AUTH-401 (TC-Aud-01 / TC-Sec-03) | Admin / Audit | OPEN |
 | **#179** | Medium | [System Admin] Hardcoded sample audit records in SystemAdminDashboardView.jsx | Admin | OPEN |
 | **#178** | Medium | [Customer Policies] Fallback synthetic policies in MyPoliciesView.jsx | Policies | OPEN |
 | **#177** | Medium | [Customer Dashboard] Hardcoded portfolio metrics and sample policy in CustomerDashboardView.jsx | Customer | OPEN |

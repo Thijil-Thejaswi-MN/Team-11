@@ -13,9 +13,17 @@
 
 ## 1. Automated Newman Execution Commands & Metrics (TC-Acc-02 & TC-Aud-01)
 
-### A. Execution Commands
+### A. Execution Commands & Environment Details
+The backend server was launched with the `test` profile using the test classpath (`-Dspring-boot.run.useTestClasspath=true`) against an in-memory H2 database because the development profile (`dev`, targeting local MySQL 8) failed to start due to local database authentication/connectivity failure (`Access denied for user 'root'@'localhost'`).
+
+Because the application context was run with the `test` profile context path `/api/v1`, standard root Spring Boot Actuator paths were located under the API context root, resulting in HTTP 404 responses for requests sent to root `/actuator/health` in the Newman environment setup.
+
 ```powershell
-# Executed against local test harness at freeze SHA eb6dd25
+# Backend launch command:
+cd backend
+mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=test -Dspring-boot.run.useTestClasspath=true
+
+# Newman execution against local test harness at freeze SHA eb6dd25
 cd tests
 npx newman run postman/insurance-workflow-api.postman_collection.json \
   -e postman/insurance-workflow-environment.postman_environment.json \
@@ -27,9 +35,9 @@ npx newman run postman/insurance-workflow-api.postman_collection.json \
 
 ### B. Observed Suite Metrics
 - **Requests Evaluated:** 18 HTTP requests across Auth, KYC, Plans, Claims, and Audit
-- **Total Assertions Evaluated:** 27 assertions
-- **Passed Assertions:** 21
-- **Failed Assertions:** 6 (Actuator health check endpoint path on test profile, KYC dummy test payload file missing, unauthenticated audit expected 401 but got 403)
+- **Total Assertions Evaluated:** 33 assertions
+- **Passed Assertions:** 27
+- **Failed Assertions:** 6 (2 failures on Actuator health check due to test profile context path routing returning 404; 2 failures on KYC file submission due to missing local dummy test payload file; 2 failures on unauthenticated audit log access returning 403 instead of expected 401 per issue #187)
 - **Execution Time:** ~2.1s (total run duration: 7s including runner bootstrap)
 
 ### C. Breakdown by Assigned STP Row
@@ -78,3 +86,4 @@ npx newman run postman/insurance-workflow-api.postman_collection.json \
 | 14 | `CLAIM_SUBMITTED` | Claim filed with initial documents | [ ] | [ ] | _(Thijil to inspect)_ |
 | 15 | `CLAIM_DOCUMENTS_REQUESTED` | Claims Officer requests further evidence | [ ] | [ ] | _(Thijil to inspect)_ |
 | 16 | `CLAIM_SETTLED` | Claim payout disbursed and marked settled | [ ] | [ ] | _(Thijil to inspect)_ |
+
