@@ -18,7 +18,7 @@ import QuotingPlaceholder from '../views/customer/QuotingPlaceholder';
 import ApplicationsPlaceholder from '../views/customer/ApplicationsPlaceholder';
 import MyPoliciesView from '../views/customer/MyPoliciesView';
 import PaymentView from '../views/customer/PaymentView';
-import ClaimsPlaceholder from '../views/customer/ClaimsPlaceholder';
+import CustomerClaimsView from '../views/customer/CustomerClaimsView';
 
 // Auth Guards & Session Listener
 import ProtectedRoute from '../components/auth/ProtectedRoute';
@@ -111,7 +111,7 @@ export default function AppRoutes() {
         {/* Person 4 Customer Hook: Claims Tracker & Filing */}
         <Route
           path={ROUTES.CUSTOMER_CLAIMS}
-          element={<ClaimsPlaceholder />}
+          element={<CustomerClaimsView />}
         />
 
         {/* =================================================== */}
