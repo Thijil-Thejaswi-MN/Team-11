@@ -1,7 +1,7 @@
 # User Acceptance Testing (UAT) Execution Sheet — 29 Oct 2026
 
-**Build SHA:** `693a22969da71928e30891bd49ac8eb7bb82d7bc` (short: `693a229`)  
-**Date:** 29 Oct 2026  
+**Build SHA:** `eb6dd25869b70542d4724214e8049dd7f8abd74b` (short: `eb6dd25`)  
+**Date:** 29 Oct 2026 / 2 Nov 2026  
 **Roles & Assigned Team Members:**
 - **Sharana (Person 2):** Test Execution Lead
 - **Thijil (Person 1):** QA Recording Lead & System Admin

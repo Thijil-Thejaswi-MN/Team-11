@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Insurance Workflow Automation System API" tests="21" time="1.834">
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Actuator Health Check (Real Endpoint)" id="266a7661-2a86-4eb6-9e6a-7cf0fbf93705" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="2" errors="0" time="0.098">
+    <testcase name="Status code is 200" time="0.098" classname="01AuthenticationKycAndPlansContract02ActuatorHealthCheckRealEndpoint">
+      <failure type="AssertionFailure" message="expected response to have status code 200 but got 404">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 01 - Authentication, KYC and Plans (Contract 02) / Actuator Health Check (Real Endpoint).]]>
+        <![CDATA[Test description: Status code is 200.]]>
+        <![CDATA[Error message: expected response to have status code 200 but got 404.]]>
+        <![CDATA[Stacktrace: AssertionError: expected response to have status code 200 but got 404
+   at Object.eval sandbox-script.js:1:1).]]>
+      </failure>
+    </testcase>
+    <testcase name="Application health status is UP" time="0.098" classname="01AuthenticationKycAndPlansContract02ActuatorHealthCheckRealEndpoint">
+      <failure type="AssertionFailure" message="Unexpected token '&lt;' at 1:1&#xA;&lt;!doctype html>&lt;html lang=&quot;en&quot;>&lt;head>&lt;title>HTTP Status 404 – Not Found&lt;/title>&#xA;^">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 01 - Authentication, KYC and Plans (Contract 02) / Actuator Health Check (Real Endpoint).]]>
+        <![CDATA[Test description: Application health status is UP.]]>
+        <![CDATA[Error message: Unexpected token '<' at 1:1
+<!doctype html><html lang="en"><head><title>HTTP Status 404 – Not Found</title>
+^.]]>
+        <![CDATA[Stacktrace: JSONError: Unexpected token '<' at 1:1
+<!doctype html><html lang="en"><head><title>HTTP Status 404 – Not Found</title>
+^
+   at Object.eval sandbox-script.js:2:1).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Register Customer (Contract INS-F-001)" id="13d90930-08f1-40cd-8ab6-d0cda59e7de9" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="0" errors="0" time="0.725">
+    <testcase name="Status code is 201 Created or expected contract validation" time="0.725" classname="01AuthenticationKycAndPlansContract02RegisterCustomerContractInsF001"/>
+    <testcase name="Password is never exposed in response body" time="0.725" classname="01AuthenticationKycAndPlansContract02RegisterCustomerContractInsF001"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Login Customer (Contract INS-F-001)" id="9ba33341-e67d-447c-aad2-e2239e908dc4" timestamp="2026-11-02T04:54:23.527Z" tests="1" failures="0" errors="0" time="0.505">
+    <testcase name="Status code is 200 or 401" time="0.505" classname="01AuthenticationKycAndPlansContract02LoginCustomerContractInsF001"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / kyc / Submit KYC Documents - Verified PAN (Contract INS-F-002)" id="fc91706a-88c0-434b-97c7-f804a2405fee" timestamp="2026-11-02T04:54:23.527Z" tests="1" failures="1" errors="0" time="0.095">
+    <testcase name="Status code is 200 OK or 202 Accepted" time="0.095" classname="01AuthenticationKycAndPlansContract02KycSubmitKycDocumentsVerifiedPanContractInsF002">
+      <failure type="AssertionFailure" message="expected 422 to be one of [ 200, 202, 401 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 01 - Authentication, KYC and Plans (Contract 02) / kyc / Submit KYC Documents - Verified PAN (Contract INS-F-002).]]>
+        <![CDATA[Test description: Status code is 200 OK or 202 Accepted.]]>
+        <![CDATA[Error message: expected 422 to be one of [ 200, 202, 401 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected 422 to be one of [ 200, 202, 401 ]
+   at Object.eval sandbox-script.js:1:4).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / kyc / Get KYC Status (Contract INS-F-002)" id="5aa530cd-49db-43ca-b811-cda83a1fc1c4" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="0" errors="0" time="0.027">
+    <testcase name="Status code is 200 OK" time="0.027" classname="01AuthenticationKycAndPlansContract02KycGetKycStatusContractInsF002"/>
+    <testcase name="Response contains kycStatus" time="0.027" classname="01AuthenticationKycAndPlansContract02KycGetKycStatusContractInsF002"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / kyc / Submit KYC Documents - Rejected PAN ZZZZZ0000Z (Contract INS-F-002)" id="06bbb859-3646-433d-ae73-465b03a2575d" timestamp="2026-11-02T04:54:23.527Z" tests="1" failures="1" errors="0" time="0.022">
+    <testcase name="Status code is 200 OK or 202 Accepted" time="0.022" classname="01AuthenticationKycAndPlansContract02KycSubmitKycDocumentsRejectedPanZzzzz0000ZContractInsF002">
+      <failure type="AssertionFailure" message="expected 422 to be one of [ 200, 202, 401 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 01 - Authentication, KYC and Plans (Contract 02) / kyc / Submit KYC Documents - Rejected PAN ZZZZZ0000Z (Contract INS-F-002).]]>
+        <![CDATA[Test description: Status code is 200 OK or 202 Accepted.]]>
+        <![CDATA[Error message: expected 422 to be one of [ 200, 202, 401 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected 422 to be one of [ 200, 202, 401 ]
+   at Object.eval sandbox-script.js:1:6).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / kyc / Submit KYC Documents - Malformed PAN (Contract INS-F-002, Expect 422)" id="760635bb-b74f-4288-ae07-b813c5eccc5c" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="0" errors="0" time="0.020">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.020" classname="01AuthenticationKycAndPlansContract02KycSubmitKycDocumentsMalformedPanContractInsF002Expect422"/>
+    <testcase name="Error code is VALID-422" time="0.020" classname="01AuthenticationKycAndPlansContract02KycSubmitKycDocumentsMalformedPanContractInsF002Expect422"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Browse Plans (Public, Contract INS-F-004, INS-F-022)" id="f610f511-42ba-4a9e-8241-f410022b541f" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="0" errors="0" time="0.046">
+    <testcase name="Status code is 200 OK" time="0.046" classname="01AuthenticationKycAndPlansContract02BrowsePlansPublicContractInsF004InsF022"/>
+    <testcase name="Response contains items array" time="0.046" classname="01AuthenticationKycAndPlansContract02BrowsePlansPublicContractInsF004InsF022"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Compare Plans (Public, Contract INS-F-004)" id="f7fb0f98-7a02-4c44-a1e8-8efda688e87f" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="0" errors="0" time="0.028">
+    <testcase name="Status code is 200 OK" time="0.028" classname="01AuthenticationKycAndPlansContract02ComparePlansPublicContractInsF004"/>
+    <testcase name="Response contains plans array" time="0.028" classname="01AuthenticationKycAndPlansContract02ComparePlansPublicContractInsF004"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Compare Plans - Exceeding 3 IDs (Contract INS-F-004, Expect 400)" id="14e970f5-f507-455b-a0ea-d772b2c3ebda" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="0" errors="0" time="0.012">
+    <testcase name="Status code is 400 Bad Request" time="0.012" classname="01AuthenticationKycAndPlansContract02ComparePlansExceeding3IDsContractInsF004Expect400"/>
+    <testcase name="Error response indicates maximum 3 plans allowed" time="0.012" classname="01AuthenticationKycAndPlansContract02ComparePlansExceeding3IDsContractInsF004Expect400"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Compare Plans - Unknown Plan ID (Contract INS-F-004, Expect 404)" id="7c52bdd3-530e-4020-b1f7-65e2ea2a0682" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="0" errors="0" time="0.020">
+    <testcase name="Status code is 404 Not Found" time="0.020" classname="01AuthenticationKycAndPlansContract02ComparePlansUnknownPlanIdContractInsF004Expect404"/>
+    <testcase name="Error code is NOTFOUND-404" time="0.020" classname="01AuthenticationKycAndPlansContract02ComparePlansUnknownPlanIdContractInsF004Expect404"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Create Plan (Insurer Admin, Contract INS-F-003)" id="4f453469-61a5-40af-a6a1-20b7766753de" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="0" errors="0" time="0.058">
+    <testcase name="Status code is 201 Created" time="0.058" classname="01AuthenticationKycAndPlansContract02CreatePlanInsurerAdminContractInsF003"/>
+    <testcase name="Response contains created planId" time="0.058" classname="01AuthenticationKycAndPlansContract02CreatePlanInsurerAdminContractInsF003"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Deactivate Plan (Insurer Admin, Contract INS-F-003)" id="b1fabaaf-2bfe-4c7a-b5bc-829910d7fca1" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="0" errors="0" time="0.049">
+    <testcase name="Status code is 200 OK" time="0.049" classname="01AuthenticationKycAndPlansContract02DeactivatePlanInsurerAdminContractInsF003"/>
+    <testcase name="Plan active flag is updated to false" time="0.049" classname="01AuthenticationKycAndPlansContract02DeactivatePlanInsurerAdminContractInsF003"/>
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / File Insurance Claim (Contract INS-F-012)" id="d07630cd-31c8-4df5-b4a5-914a0fd752e9" timestamp="2026-11-02T04:54:23.527Z" tests="0" failures="0" errors="0" time="0.017"/>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / Track Claim Status (Contract INS-F-015)" id="a63b434f-5213-4188-a6d0-dc2c94c01159" timestamp="2026-11-02T04:54:23.527Z" tests="0" failures="0" errors="0" time="0.015"/>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / Assess Claim (Claims Officer, Contract INS-F-014)" id="4942a394-484f-4a73-b9f7-266b845e2983" timestamp="2026-11-02T04:54:23.527Z" tests="0" failures="0" errors="0" time="0.019"/>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - System Admin (200 OK)" id="ff6dbbd9-c461-4b1e-b475-72ceec2ed630" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="0" errors="0" time="0.042">
+    <testcase name="Status code is 200 OK" time="0.042" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsSystemAdmin200Ok"/>
+    <testcase name="Response contains paginated audit items array" time="0.042" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsSystemAdmin200Ok"/>
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Customer Access Denied (403 Forbidden)" id="27d3295d-1e69-4cdb-beea-7dc9723ba1b4" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="0" errors="0" time="0.009">
+    <testcase name="Status code is 403 Forbidden" time="0.009" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsCustomerAccessDenied403Forbidden"/>
+    <testcase name="Error code is ACCESS-403" time="0.009" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsCustomerAccessDenied403Forbidden"/>
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Unauthenticated Access Denied (401 Unauthorized)" id="9b5cfde5-036f-4482-96d9-3939b58af353" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="2" errors="0" time="0.009">
+    <testcase name="Status code is 401 Unauthorized" time="0.009" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsUnauthenticatedAccessDenied401Unauthorized">
+      <failure type="AssertionFailure" message="expected response to have status code 401 but got 403">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Unauthenticated Access Denied (401 Unauthorized).]]>
+        <![CDATA[Test description: Status code is 401 Unauthorized.]]>
+        <![CDATA[Error message: expected response to have status code 401 but got 403.]]>
+        <![CDATA[Stacktrace: AssertionError: expected response to have status code 401 but got 403
+   at Object.eval sandbox-script.js:1:19).]]>
+      </failure>
+    </testcase>
+    <testcase name="Error code is AUTH-401" time="0.009" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsUnauthenticatedAccessDenied401Unauthorized">
+      <failure type="AssertionFailure" message="expected 'ACCESS-403' to deeply equal 'AUTH-401'">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Unauthenticated Access Denied (401 Unauthorized).]]>
+        <![CDATA[Test description: Error code is AUTH-401.]]>
+        <![CDATA[Error message: expected 'ACCESS-403' to deeply equal 'AUTH-401'.]]>
+        <![CDATA[Stacktrace: AssertionError: expected 'ACCESS-403' to deeply equal 'AUTH-401'
+   at Object.eval sandbox-script.js:2:19).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Filter by Action (200 OK)" id="32455ff5-5b47-441e-824f-0d7d650863bf" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="0" errors="0" time="0.010">
+    <testcase name="Status code is 200 OK" time="0.010" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsFilterByAction200Ok"/>
+    <testcase name="Items array is returned with matching filter criteria" time="0.010" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsFilterByAction200Ok"/>
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Invalid Filter Range (422 Unprocessable Entity)" id="ffbe19bd-7455-4cd7-b06e-03111834034d" timestamp="2026-11-02T04:54:23.527Z" tests="2" failures="0" errors="0" time="0.008">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.008" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsInvalidFilterRange422UnprocessableEntity"/>
+    <testcase name="Error code is VALID-422" time="0.008" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsInvalidFilterRange422UnprocessableEntity"/>
+  </testsuite>
+</testsuites>
