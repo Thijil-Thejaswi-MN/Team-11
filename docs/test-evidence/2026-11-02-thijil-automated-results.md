@@ -16,7 +16,7 @@
 ### A. Execution Commands & Environment Details
 The backend server was launched with the `test` profile using the test classpath (`-Dspring-boot.run.useTestClasspath=true`) against an in-memory H2 database because the development profile (`dev`, targeting local MySQL 8) failed to start due to local database authentication/connectivity failure (`Access denied for user 'root'@'localhost'`).
 
-Because the application context was run with the `test` profile context path `/api/v1`, standard root Spring Boot Actuator paths were located under the API context root, resulting in HTTP 404 responses for requests sent to root `/actuator/health` in the Newman environment setup.
+Note on the Actuator health-check 404: The server context path `server.servlet.context-path: /api/v1` is configured in the main `backend/src/main/resources/application.yml` and applies to all profiles (not just `test`). The HTTP 404 on the health-check request occurs because the Newman Postman request queries `{{baseUrl}}/actuator/health` directly without the `/api/v1` context prefix. This is a test-setup issue in the Postman collection/environment configuration (flagged for Sharana's triage) and was not caused by running the `test` profile.
 
 ```powershell
 # Backend launch command:
@@ -37,7 +37,7 @@ npx newman run postman/insurance-workflow-api.postman_collection.json \
 - **Requests Evaluated:** 18 HTTP requests across Auth, KYC, Plans, Claims, and Audit
 - **Total Assertions Evaluated:** 33 assertions
 - **Passed Assertions:** 27
-- **Failed Assertions:** 6 (2 failures on Actuator health check due to test profile context path routing returning 404; 2 failures on KYC file submission due to missing local dummy test payload file; 2 failures on unauthenticated audit log access returning 403 instead of expected 401 per issue #187)
+- **Failed Assertions:** 6 (2 failures on Actuator health check due to test-setup mismatch in Postman targeting root `/actuator/health` rather than `/api/v1/actuator/health`; 2 failures on KYC file submission due to missing local dummy test payload file; 2 failures on unauthenticated audit log access returning 403 instead of expected 401 per issue #187)
 - **Execution Time:** ~2.1s (total run duration: 7s including runner bootstrap)
 
 ### C. Breakdown by Assigned STP Row
