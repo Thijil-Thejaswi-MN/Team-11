@@ -134,3 +134,51 @@ As established in Team 11 Governance and Decision `D-01`:
 - **PR #157** (Task C): Open without requested reviewer for team review.
 - **PR #158** (Task D): Open without requested reviewer for team review.
 - **PR #156** (Security): Open for QA Lead review.
+
+---
+
+## 5. Day 3 (28 Oct 2026) QA & PR Status
+
+### 5.1 Merged PRs on 28 Oct 2026
+- No PRs were merged on 28 Oct 2026. (Previous merges on 27 Oct: PR #155, PR #158, PR #166, PR #165).
+
+### 5.2 Open PRs (as of 28 Oct 2026 End-of-Day)
+- **PR #157:** feat(p1-12): Claims Officer appraisal desk and verification (INS-F-014, TC-Clm-03) — Author: Thijil (Thijil-Thejaswi-MN), State: Open, Review Decision: CHANGES_REQUESTED (awaiting peer re-approval following CI fix).
+- **PR #167:** feat(policies): P3-06 live application screen, P3-09 renewal, P3-10 cancellation, and P3-12 issuance recovery — Author: Samarth (Samarth-S-Maladkar), State: Open, Review Decision: REVIEW_REQUIRED.
+- **PR #173:** #19 P2-18 Audit log hardening — Author: Sharana (sharanabasavagouda113-debug), State: Open, Review Decision: REVIEW_REQUIRED.
+- **PR #174:** #29 P2-14 Responsive and cross-browser fixes — Author: Sharana (sharanabasavagouda113-debug), State: Open, Review Decision: REVIEW_REQUIRED.
+
+### 5.3 CI Status of main
+- Last commit on main on 28 Oct was 697ec0e (Merge PR #166). All 4 CI pipeline checks (Validate repository structure, Frontend CI, Backend CI, API Tests (Newman)) were green (SUCCESS).
+
+### 5.4 STP Test Executions Reported
+- No independent STP executions reported on 28 Oct.
+
+---
+
+## 6. Day 4 (29 Oct 2026 — UAT Day) QA & PR Status
+
+### 6.1 Merged PRs on 29 Oct 2026
+- **PR #180:** Remove hardcoded metrics from Insurer Admin dashboard (Decision D-10)
+  - Author: Thijil Thejaswi M N (Thijil-Thejaswi-MN)
+  - Approved by: Samarth S Maladkar (Samarth-S-Maladkar)
+  - Merged at: 2026-10-29 17:23:00 UTC (22:52:59 IST) by Samarth (Samarth-S-Maladkar)
+  - CI Status: All 4 checks SUCCESS
+
+*(Subsequent early 30 Oct merges: PR #173 merged at 02:05:52 UTC by Thijil; PR #174 merged at 02:54:57 UTC by Thijil).*
+
+### 6.2 Open PRs (Status following Day 4 Review)
+- **PR #167:** feat(policies): P3-06 live application screen, P3-09 renewal, P3-10 cancellation, and P3-12 issuance recovery
+  - Author: Samarth S Maladkar (Samarth-S-Maladkar)
+  - Status: Open (Unmerged)
+  - QA Finding: Misplaced controller/view files at root directory, .jav test extensions bypassing Maven build, and insurer isolation check bug. Held unmerged pending author remediation.
+- **PR #157:** feat(p1-12): Claims Officer appraisal desk and verification (INS-F-014, TC-Clm-03)
+  - Author: Thijil Thejaswi M N (Thijil-Thejaswi-MN)
+  - Status: Open. CI green (4/4 checks pass). Awaiting peer re-review approval to satisfy zero self-merge governance.
+
+### 6.3 CI Status of main
+- All workflow runs on main following PR #180, #173, and #174 completed with SUCCESS. Current HEAD commit 00add8445c4f0105a20d24c2fc28d3ebd6a32d45.
+
+### 6.4 STP / UAT Executions Reported
+- UAT preparation completed (docs/uat-29-oct.md) covering scenarios UAT-01 through UAT-08 across assigned team roles.
+- No independent formal STP pass records filed on 29 Oct pending UAT run against integrated deployment.

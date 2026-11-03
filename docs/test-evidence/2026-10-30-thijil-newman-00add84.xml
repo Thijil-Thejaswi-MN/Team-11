@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites name="Thijil QA Lead - TC-Acc-02 and TC-Aud-01 Automated API Verification" tests="17" failures="2" time="1.081">
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Register Customer (Contract INS-F-001)" id="53b9bf7d-a4bc-4298-9110-69d4d607f89f" timestamp="2026-10-30T05:06:33.988Z" tests="2" failures="0" errors="0" time="0.541">
+    <testcase name="Status code is 201 Created or expected contract validation" time="0.541" classname="01AuthenticationKycAndPlansContract02RegisterCustomerContractInsF001" />
+    <testcase name="Password is never exposed in response body" time="0.541" classname="01AuthenticationKycAndPlansContract02RegisterCustomerContractInsF001" />
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Login Customer (Contract INS-F-001)" id="fdfbaed8-773c-4fc0-9da7-0f278c43ec27" timestamp="2026-10-30T05:06:33.988Z" tests="1" failures="0" errors="0" time="0.394">
+    <testcase name="Status code is 200 or 401" time="0.394" classname="01AuthenticationKycAndPlansContract02LoginCustomerContractInsF001" />
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Create Plan (Insurer Admin, Contract INS-F-003)" id="dfd1abcd-9ac8-4759-8e2b-4e0fba7f8fb2" timestamp="2026-10-30T05:06:33.988Z" tests="2" failures="0" errors="0" time="0.054">
+    <testcase name="Status code is 201 Created" time="0.054" classname="01AuthenticationKycAndPlansContract02CreatePlanInsurerAdminContractInsF003" />
+    <testcase name="Response contains created planId" time="0.054" classname="01AuthenticationKycAndPlansContract02CreatePlanInsurerAdminContractInsF003" />
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Deactivate Plan (Insurer Admin, Contract INS-F-003)" id="4460c130-0114-486a-872f-864ee8e78eb9" timestamp="2026-10-30T05:06:33.988Z" tests="2" failures="0" errors="0" time="0.039">
+    <testcase name="Status code is 200 OK" time="0.039" classname="01AuthenticationKycAndPlansContract02DeactivatePlanInsurerAdminContractInsF003" />
+    <testcase name="Plan active flag is updated to false" time="0.039" classname="01AuthenticationKycAndPlansContract02DeactivatePlanInsurerAdminContractInsF003" />
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - System Admin (200 OK)" id="7b71cc57-d4c8-493b-884b-71455fcdeb1b" timestamp="2026-10-30T05:06:33.988Z" tests="2" failures="0" errors="0" time="0.023">
+    <testcase name="Status code is 200 OK" time="0.023" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsSystemAdmin200Ok" />
+    <testcase name="Response contains paginated audit items array" time="0.023" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsSystemAdmin200Ok" />
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Customer Access Denied (403 Forbidden)" id="9073b9c1-44a9-46f8-a645-d195e6b3a422" timestamp="2026-10-30T05:06:33.988Z" tests="2" failures="0" errors="0" time="0.008">
+    <testcase name="Status code is 403 Forbidden" time="0.008" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsCustomerAccessDenied403Forbidden" />
+    <testcase name="Error code is ACCESS-403" time="0.008" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsCustomerAccessDenied403Forbidden" />
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Unauthenticated Access Denied (401 Unauthorized)" id="4e7e34b2-5d00-4fba-be69-920832b7e27e" timestamp="2026-10-30T05:06:33.988Z" tests="2" failures="2" errors="0" time="0.004">
+    <testcase name="Status code is 401 Unauthorized" time="0.004" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsUnauthenticatedAccessDenied401Unauthorized">
+      <failure type="AssertionFailure" message="expected response to have status code 401 but got 403">
+        Failed 1 times.
+        Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.
+        Collection name: Insurance Workflow Automation System API.
+        Request name: 03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Unauthenticated Access Denied (401 Unauthorized).
+        Test description: Status code is 401 Unauthorized.
+        Error message: expected response to have status code 401 but got 403.
+        Stacktrace: AssertionError: expected response to have status code 401 but got 403
+   at Object.eval sandbox-script.js:1:36).
+      </failure>
+    </testcase>
+    <testcase name="Error code is AUTH-401" time="0.004" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsUnauthenticatedAccessDenied401Unauthorized">
+      <failure type="AssertionFailure" message="expected 'ACCESS-403' to deeply equal 'AUTH-401'">
+        Failed 1 times.
+        Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.
+        Collection name: Insurance Workflow Automation System API.
+        Request name: 03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Unauthenticated Access Denied (401 Unauthorized).
+        Test description: Error code is AUTH-401.
+        Error message: expected 'ACCESS-403' to deeply equal 'AUTH-401'.
+        Stacktrace: AssertionError: expected 'ACCESS-403' to deeply equal 'AUTH-401'
+   at Object.eval sandbox-script.js:2:36).
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Filter by Action (200 OK)" id="2dee61d2-ba29-4381-ac35-9b5d3b2b531d" timestamp="2026-10-30T05:06:33.988Z" tests="2" failures="0" errors="0" time="0.010">
+    <testcase name="Status code is 200 OK" time="0.010" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsFilterByAction200Ok" />
+    <testcase name="Items array is returned with matching filter criteria" time="0.010" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsFilterByAction200Ok" />
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Invalid Filter Range (422 Unprocessable Entity)" id="513ee1c7-d889-4055-979e-15e6fa5d36c3" timestamp="2026-10-30T05:06:33.988Z" tests="2" failures="0" errors="0" time="0.008">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.008" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsInvalidFilterRange422UnprocessableEntity" />
+    <testcase name="Error code is VALID-422" time="0.008" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsInvalidFilterRange422UnprocessableEntity" />
+  </testsuite>
+</testsuites>
