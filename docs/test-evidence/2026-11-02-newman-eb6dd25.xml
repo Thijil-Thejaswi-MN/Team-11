@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Insurance Workflow Automation System API" tests="38" time="1.293">
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Actuator Health Check (Real Endpoint)" id="0d8db402-8225-4a57-9420-b4c0f393323c" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="2" errors="0" time="0.034">
+    <testcase name="Status code is 200" time="0.034" classname="01AuthenticationKycAndPlansContract02ActuatorHealthCheckRealEndpoint">
+      <failure type="AssertionFailure" message="expected response to have status code 200 but got 404">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 01 - Authentication, KYC and Plans (Contract 02) / Actuator Health Check (Real Endpoint).]]>
+        <![CDATA[Test description: Status code is 200.]]>
+        <![CDATA[Error message: expected response to have status code 200 but got 404.]]>
+        <![CDATA[Stacktrace: AssertionError: expected response to have status code 200 but got 404
+   at Object.eval sandbox-script.js:1:1).]]>
+      </failure>
+    </testcase>
+    <testcase name="Application health status is UP" time="0.034" classname="01AuthenticationKycAndPlansContract02ActuatorHealthCheckRealEndpoint">
+      <failure type="AssertionFailure" message="Unexpected token '&lt;' at 1:1&#xA;&lt;!doctype html>&lt;html lang=&quot;en&quot;>&lt;head>&lt;title>HTTP Status 404 – Not Found&lt;/title>&#xA;^">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 01 - Authentication, KYC and Plans (Contract 02) / Actuator Health Check (Real Endpoint).]]>
+        <![CDATA[Test description: Application health status is UP.]]>
+        <![CDATA[Error message: Unexpected token '<' at 1:1
+<!doctype html><html lang="en"><head><title>HTTP Status 404 – Not Found</title>
+^.]]>
+        <![CDATA[Stacktrace: JSONError: Unexpected token '<' at 1:1
+<!doctype html><html lang="en"><head><title>HTTP Status 404 – Not Found</title>
+^
+   at Object.eval sandbox-script.js:2:1).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Register Customer (Contract INS-F-001)" id="4541f462-3c5e-4b75-a49c-d1ac5a2a0805" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.479">
+    <testcase name="Status code is 201 Created or expected contract validation" time="0.479" classname="01AuthenticationKycAndPlansContract02RegisterCustomerContractInsF001"/>
+    <testcase name="Password is never exposed in response body" time="0.479" classname="01AuthenticationKycAndPlansContract02RegisterCustomerContractInsF001"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Login Customer (Contract INS-F-001)" id="d94173f2-61a0-47ce-a9e0-ba9503738a61" timestamp="2026-11-02T07:45:34.745Z" tests="1" failures="0" errors="0" time="0.322">
+    <testcase name="Status code is 200 or 401" time="0.322" classname="01AuthenticationKycAndPlansContract02LoginCustomerContractInsF001"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / kyc / Submit KYC Documents - Verified PAN (Contract INS-F-002)" id="37772371-2a29-4dfe-8c3b-ce1f23fd53bc" timestamp="2026-11-02T07:45:34.745Z" tests="1" failures="1" errors="0" time="0.051">
+    <testcase name="Status code is 200 OK or 202 Accepted" time="0.051" classname="01AuthenticationKycAndPlansContract02KycSubmitKycDocumentsVerifiedPanContractInsF002">
+      <failure type="AssertionFailure" message="expected 422 to be one of [ 200, 202, 401 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 01 - Authentication, KYC and Plans (Contract 02) / kyc / Submit KYC Documents - Verified PAN (Contract INS-F-002).]]>
+        <![CDATA[Test description: Status code is 200 OK or 202 Accepted.]]>
+        <![CDATA[Error message: expected 422 to be one of [ 200, 202, 401 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected 422 to be one of [ 200, 202, 401 ]
+   at Object.eval sandbox-script.js:1:4).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / kyc / Get KYC Status (Contract INS-F-002)" id="61d492f6-251f-4df5-b813-ab9bbb9f54e3" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.011">
+    <testcase name="Status code is 200 OK" time="0.011" classname="01AuthenticationKycAndPlansContract02KycGetKycStatusContractInsF002"/>
+    <testcase name="Response contains kycStatus" time="0.011" classname="01AuthenticationKycAndPlansContract02KycGetKycStatusContractInsF002"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / kyc / Submit KYC Documents - Rejected PAN ZZZZZ0000Z (Contract INS-F-002)" id="051b54c5-58ad-42c2-b421-333ecf238890" timestamp="2026-11-02T07:45:34.745Z" tests="1" failures="1" errors="0" time="0.010">
+    <testcase name="Status code is 200 OK or 202 Accepted" time="0.010" classname="01AuthenticationKycAndPlansContract02KycSubmitKycDocumentsRejectedPanZzzzz0000ZContractInsF002">
+      <failure type="AssertionFailure" message="expected 422 to be one of [ 200, 202, 401 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 01 - Authentication, KYC and Plans (Contract 02) / kyc / Submit KYC Documents - Rejected PAN ZZZZZ0000Z (Contract INS-F-002).]]>
+        <![CDATA[Test description: Status code is 200 OK or 202 Accepted.]]>
+        <![CDATA[Error message: expected 422 to be one of [ 200, 202, 401 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected 422 to be one of [ 200, 202, 401 ]
+   at Object.eval sandbox-script.js:1:6).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / kyc / Submit KYC Documents - Malformed PAN (Contract INS-F-002, Expect 422)" id="5b77421b-c4c9-45f9-8bf1-b2e0ffde0a29" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.008">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.008" classname="01AuthenticationKycAndPlansContract02KycSubmitKycDocumentsMalformedPanContractInsF002Expect422"/>
+    <testcase name="Error code is VALID-422" time="0.008" classname="01AuthenticationKycAndPlansContract02KycSubmitKycDocumentsMalformedPanContractInsF002Expect422"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Browse Plans (Public, Contract INS-F-004, INS-F-022)" id="7c35890f-810d-4ffd-8297-cc0d37382a2d" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.034">
+    <testcase name="Status code is 200 OK" time="0.034" classname="01AuthenticationKycAndPlansContract02BrowsePlansPublicContractInsF004InsF022"/>
+    <testcase name="Response contains items array" time="0.034" classname="01AuthenticationKycAndPlansContract02BrowsePlansPublicContractInsF004InsF022"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Compare Plans (Public, Contract INS-F-004)" id="b5d61a8a-f6ad-4fa9-a604-ab6cf7a4f091" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.012">
+    <testcase name="Status code is 200 OK" time="0.012" classname="01AuthenticationKycAndPlansContract02ComparePlansPublicContractInsF004"/>
+    <testcase name="Response contains plans array" time="0.012" classname="01AuthenticationKycAndPlansContract02ComparePlansPublicContractInsF004"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Compare Plans - Exceeding 3 IDs (Contract INS-F-004, Expect 400)" id="823a0b8c-89ec-417c-bff9-372e405ae15e" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.007">
+    <testcase name="Status code is 400 Bad Request" time="0.007" classname="01AuthenticationKycAndPlansContract02ComparePlansExceeding3IDsContractInsF004Expect400"/>
+    <testcase name="Error response indicates maximum 3 plans allowed" time="0.007" classname="01AuthenticationKycAndPlansContract02ComparePlansExceeding3IDsContractInsF004Expect400"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Compare Plans - Unknown Plan ID (Contract INS-F-004, Expect 404)" id="1c794169-5852-41f0-b00a-3b9518e93931" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.012">
+    <testcase name="Status code is 404 Not Found" time="0.012" classname="01AuthenticationKycAndPlansContract02ComparePlansUnknownPlanIdContractInsF004Expect404"/>
+    <testcase name="Error code is NOTFOUND-404" time="0.012" classname="01AuthenticationKycAndPlansContract02ComparePlansUnknownPlanIdContractInsF004Expect404"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Create Plan (Insurer Admin, Contract INS-F-003)" id="74d412b3-3bc4-41f6-afb9-24fdaf20dd14" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.031">
+    <testcase name="Status code is 201 Created" time="0.031" classname="01AuthenticationKycAndPlansContract02CreatePlanInsurerAdminContractInsF003"/>
+    <testcase name="Response contains created planId" time="0.031" classname="01AuthenticationKycAndPlansContract02CreatePlanInsurerAdminContractInsF003"/>
+  </testsuite>
+  <testsuite name="01 - Authentication, KYC and Plans (Contract 02) / Deactivate Plan (Insurer Admin, Contract INS-F-003)" id="d2d81995-c74f-442f-bbb4-279806abb9d3" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.029">
+    <testcase name="Status code is 200 OK" time="0.029" classname="01AuthenticationKycAndPlansContract02DeactivatePlanInsurerAdminContractInsF003"/>
+    <testcase name="Plan active flag is updated to false" time="0.029" classname="01AuthenticationKycAndPlansContract02DeactivatePlanInsurerAdminContractInsF003"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 1: Motor Quote - Age 7 with ZERO_DEP (PLAN-A-M1)" id="f9183a39-31ae-45d2-a506-ead3389a2a99" timestamp="2026-11-02T07:45:34.745Z" tests="3" failures="2" errors="0" time="0.010">
+    <testcase name="Status code is 200 OK" time="0.010" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step1MotorQuoteAge7WithZeroDepPlanAM1">
+      <failure type="AssertionFailure" message="expected response to have status code 200 but got 422">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 1: Motor Quote - Age 7 with ZERO_DEP (PLAN-A-M1).]]>
+        <![CDATA[Test description: Status code is 200 OK.]]>
+        <![CDATA[Error message: expected response to have status code 200 but got 422.]]>
+        <![CDATA[Stacktrace: AssertionError: expected response to have status code 200 but got 422
+   at Object.eval sandbox-script.js:1:14).]]>
+      </failure>
+    </testcase>
+    <testcase name="TC-Quote-01 Step 1: Calculated total premium is Rs 9480.00" time="0.010" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step1MotorQuoteAge7WithZeroDepPlanAM1">
+      <failure type="AssertionFailure" message="expected undefined to deeply equal 9480">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 1: Motor Quote - Age 7 with ZERO_DEP (PLAN-A-M1).]]>
+        <![CDATA[Test description: TC-Quote-01 Step 1: Calculated total premium is Rs 9480.00.]]>
+        <![CDATA[Error message: expected undefined to deeply equal 9480.]]>
+        <![CDATA[Stacktrace: AssertionError: expected undefined to deeply equal 9480
+   at Object.eval sandbox-script.js:2:14).]]>
+      </failure>
+    </testcase>
+    <testcase name="TC-Perf-01 / INS-NF-001: Response time is within 5 seconds" time="0.010" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step1MotorQuoteAge7WithZeroDepPlanAM1"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 2: Motor Quote - Age 2 No Add-ons (PLAN-A-M1)" id="636975a5-b054-4d10-838b-c9816d932451" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="2" errors="0" time="0.013">
+    <testcase name="Status code is 200 OK" time="0.013" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step2MotorQuoteAge2NoAddOnsPlanAM1">
+      <failure type="AssertionFailure" message="expected response to have status code 200 but got 422">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 2: Motor Quote - Age 2 No Add-ons (PLAN-A-M1).]]>
+        <![CDATA[Test description: Status code is 200 OK.]]>
+        <![CDATA[Error message: expected response to have status code 200 but got 422.]]>
+        <![CDATA[Stacktrace: AssertionError: expected response to have status code 200 but got 422
+   at Object.eval sandbox-script.js:1:15).]]>
+      </failure>
+    </testcase>
+    <testcase name="TC-Quote-01 Step 2: Normal age premium is Rs 8000.00 with 0 loading" time="0.013" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step2MotorQuoteAge2NoAddOnsPlanAM1">
+      <failure type="AssertionFailure" message="expected undefined to deeply equal 8000">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 2: Motor Quote - Age 2 No Add-ons (PLAN-A-M1).]]>
+        <![CDATA[Test description: TC-Quote-01 Step 2: Normal age premium is Rs 8000.00 with 0 loading.]]>
+        <![CDATA[Error message: expected undefined to deeply equal 8000.]]>
+        <![CDATA[Stacktrace: AssertionError: expected undefined to deeply equal 8000
+   at Object.eval sandbox-script.js:2:15).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 3: Motor Quote - Higher IDV 6L Age 2 (PLAN-A-M1)" id="67c59f33-1231-4422-bb1a-d1f3728cfbaa" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="2" errors="0" time="0.008">
+    <testcase name="Status code is 200 OK" time="0.008" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step3MotorQuoteHigherIdv6LAge2PlanAM1">
+      <failure type="AssertionFailure" message="expected response to have status code 200 but got 422">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 3: Motor Quote - Higher IDV 6L Age 2 (PLAN-A-M1).]]>
+        <![CDATA[Test description: Status code is 200 OK.]]>
+        <![CDATA[Error message: expected response to have status code 200 but got 422.]]>
+        <![CDATA[Stacktrace: AssertionError: expected response to have status code 200 but got 422
+   at Object.eval sandbox-script.js:1:16).]]>
+      </failure>
+    </testcase>
+    <testcase name="TC-Quote-01 Step 3: Higher IDV 6L premium is Rs 12000.00" time="0.008" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step3MotorQuoteHigherIdv6LAge2PlanAM1">
+      <failure type="AssertionFailure" message="expected undefined to deeply equal 12000">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 3: Motor Quote - Higher IDV 6L Age 2 (PLAN-A-M1).]]>
+        <![CDATA[Test description: TC-Quote-01 Step 3: Higher IDV 6L premium is Rs 12000.00.]]>
+        <![CDATA[Error message: expected undefined to deeply equal 12000.]]>
+        <![CDATA[Stacktrace: AssertionError: expected undefined to deeply equal 12000
+   at Object.eval sandbox-script.js:2:16).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Boundary: Motor Quote - Age 6 Boundary (5% Loading)" id="1d8727a0-20f9-4217-8d47-5d0ecc4fbaac" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="2" errors="0" time="0.007">
+    <testcase name="Status code is 200 OK" time="0.007" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01BoundaryMotorQuoteAge6Boundary5Loading">
+      <failure type="AssertionFailure" message="expected response to have status code 200 but got 422">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Boundary: Motor Quote - Age 6 Boundary (5% Loading).]]>
+        <![CDATA[Test description: Status code is 200 OK.]]>
+        <![CDATA[Error message: expected response to have status code 200 but got 422.]]>
+        <![CDATA[Stacktrace: AssertionError: expected response to have status code 200 but got 422
+   at Object.eval sandbox-script.js:1:17).]]>
+      </failure>
+    </testcase>
+    <testcase name="Vehicle age 6 boundary receives 5% age loading (total Rs 8400.00)" time="0.007" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01BoundaryMotorQuoteAge6Boundary5Loading">
+      <failure type="AssertionFailure" message="expected undefined to deeply equal 8400">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Boundary: Motor Quote - Age 6 Boundary (5% Loading).]]>
+        <![CDATA[Test description: Vehicle age 6 boundary receives 5% age loading (total Rs 8400.00).]]>
+        <![CDATA[Error message: expected undefined to deeply equal 8400.]]>
+        <![CDATA[Stacktrace: AssertionError: expected undefined to deeply equal 8400
+   at Object.eval sandbox-script.js:2:17).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Boundary: Motor Quote - Age 10 Boundary (5% Loading)" id="a5c02121-22f8-4559-b19e-832d85889bb2" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="2" errors="0" time="0.009">
+    <testcase name="Status code is 200 OK" time="0.009" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01BoundaryMotorQuoteAge10Boundary5Loading">
+      <failure type="AssertionFailure" message="expected response to have status code 200 but got 422">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Boundary: Motor Quote - Age 10 Boundary (5% Loading).]]>
+        <![CDATA[Test description: Status code is 200 OK.]]>
+        <![CDATA[Error message: expected response to have status code 200 but got 422.]]>
+        <![CDATA[Stacktrace: AssertionError: expected response to have status code 200 but got 422
+   at Object.eval sandbox-script.js:1:18).]]>
+      </failure>
+    </testcase>
+    <testcase name="Vehicle age 10 boundary receives 5% age loading (total Rs 8400.00)" time="0.009" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01BoundaryMotorQuoteAge10Boundary5Loading">
+      <failure type="AssertionFailure" message="expected undefined to deeply equal 8400">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Boundary: Motor Quote - Age 10 Boundary (5% Loading).]]>
+        <![CDATA[Test description: Vehicle age 10 boundary receives 5% age loading (total Rs 8400.00).]]>
+        <![CDATA[Error message: expected undefined to deeply equal 8400.]]>
+        <![CDATA[Stacktrace: AssertionError: expected undefined to deeply equal 8400
+   at Object.eval sandbox-script.js:2:18).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Boundary: Motor Quote - Age 11 Boundary (0% Loading)" id="ca57b525-7d55-4340-a977-c8d6107f4564" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="2" errors="0" time="0.007">
+    <testcase name="Status code is 200 OK" time="0.007" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01BoundaryMotorQuoteAge11Boundary0Loading">
+      <failure type="AssertionFailure" message="expected response to have status code 200 but got 422">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Boundary: Motor Quote - Age 11 Boundary (0% Loading).]]>
+        <![CDATA[Test description: Status code is 200 OK.]]>
+        <![CDATA[Error message: expected response to have status code 200 but got 422.]]>
+        <![CDATA[Stacktrace: AssertionError: expected response to have status code 200 but got 422
+   at Object.eval sandbox-script.js:1:19).]]>
+      </failure>
+    </testcase>
+    <testcase name="Vehicle age 11 boundary receives NO age loading (total Rs 8000.00)" time="0.007" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01BoundaryMotorQuoteAge11Boundary0Loading">
+      <failure type="AssertionFailure" message="expected undefined to deeply equal 8000">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Boundary: Motor Quote - Age 11 Boundary (0% Loading).]]>
+        <![CDATA[Test description: Vehicle age 11 boundary receives NO age loading (total Rs 8000.00).]]>
+        <![CDATA[Error message: expected undefined to deeply equal 8000.]]>
+        <![CDATA[Stacktrace: AssertionError: expected undefined to deeply equal 8000
+   at Object.eval sandbox-script.js:2:19).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 4a: Motor Quote - Future Registration Year (Expect 422)" id="fe3852c5-7073-469f-b628-155f87db7127" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="1" errors="0" time="0.008">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.008" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step4AMotorQuoteFutureRegistrationYearExpect422"/>
+    <testcase name="Error response conforms to VALID-422 schema" time="0.008" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step4AMotorQuoteFutureRegistrationYearExpect422">
+      <failure type="AssertionFailure" message="expected 'Selected plan \'PLAN-A-M1\' is inacti…' to include 'future'">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 4a: Motor Quote - Future Registration Year (Expect 422).]]>
+        <![CDATA[Test description: Error response conforms to VALID-422 schema.]]>
+        <![CDATA[Error message: expected 'Selected plan \'PLAN-A-M1\' is inacti…' to include 'future'.]]>
+        <![CDATA[Stacktrace: AssertionError: expected 'Selected plan \'PLAN-A-M1\' is inacti…' to include 'future'
+   at Object.eval sandbox-script.js:2:20).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 4b: Motor Quote - Negative IDV (Expect 422)" id="3218f54f-f8e7-4d16-88f8-6aab8d9cae89" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.006">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.006" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step4BMotorQuoteNegativeIdvExpect422"/>
+    <testcase name="Error response conforms to VALID-422 schema" time="0.006" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step4BMotorQuoteNegativeIdvExpect422"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-01 Step 4c: Motor Quote - Incompatible Vehicle Type 2W on 4W Plan (Expect 422)" id="8a648354-bc0a-4549-ad99-bbe9b483dcb5" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.008">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.008" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step4CMotorQuoteIncompatibleVehicleType2WOn4WPlanExpect422"/>
+    <testcase name="Error response conforms to VALID-422 schema" time="0.008" classname="02QuotingAndUnderwritingContract01QuotesTcQuote01Step4CMotorQuoteIncompatibleVehicleType2WOn4WPlanExpect422"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-02 Step 1: Health Quote - 1 Member Age 45 (PLAN-A-H1)" id="6323c30a-ccc1-4ad4-a2c9-95daa0973083" timestamp="2026-11-02T07:45:34.745Z" tests="3" failures="0" errors="0" time="0.028">
+    <testcase name="Status code is 200 OK" time="0.028" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step1HealthQuote1MemberAge45PlanAH1"/>
+    <testcase name="TC-Quote-02 Step 1: 1 member age 45, 5L, No PED is Rs 4500.00" time="0.028" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step1HealthQuote1MemberAge45PlanAH1"/>
+    <testcase name="TC-Perf-01 / INS-NF-001: Response time is within 5 seconds" time="0.028" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step1HealthQuote1MemberAge45PlanAH1"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-02 Step 2: Health Quote - 2 Members Ages 30 &amp; 32 (PLAN-A-H1)" id="08f3b178-bf72-4608-9cb0-ecabd310a15f" timestamp="2026-11-02T07:45:34.745Z" tests="3" failures="0" errors="0" time="0.009">
+    <testcase name="Status code is 200 OK" time="0.009" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step2HealthQuote2MembersAges30Amp32PlanAH1"/>
+    <testcase name="TC-Quote-02 Step 2: 2 members ages 30 and 32, 5L, No PED is Rs 6000.00" time="0.009" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step2HealthQuote2MembersAges30Amp32PlanAH1"/>
+    <testcase name="TC-Perf-01 / INS-NF-001: Response time is within 5 seconds" time="0.009" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step2HealthQuote2MembersAges30Amp32PlanAH1"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-02 Step 3: Health Quote - 2 Members Higher Coverage 10L (PLAN-A-H1)" id="59405939-19f6-4ce3-98ee-8f41b4c53931" timestamp="2026-11-02T07:45:34.745Z" tests="3" failures="0" errors="0" time="0.008">
+    <testcase name="Status code is 200 OK" time="0.008" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step3HealthQuote2MembersHigherCoverage10LPlanAH1"/>
+    <testcase name="TC-Quote-02 Step 3: 2 members ages 30 and 32, 10L, No PED is Rs 9600.00" time="0.008" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step3HealthQuote2MembersHigherCoverage10LPlanAH1"/>
+    <testcase name="TC-Perf-01 / INS-NF-001: Response time is within 5 seconds" time="0.008" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step3HealthQuote2MembersHigherCoverage10LPlanAH1"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-02 Step 4: Health Quote - 2 Members with Pre-Existing Condition (PLAN-A-H1)" id="a0139419-6eb6-4e45-a8e8-b2f39e74cf3c" timestamp="2026-11-02T07:45:34.745Z" tests="3" failures="0" errors="0" time="0.009">
+    <testcase name="Status code is 200 OK" time="0.009" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step4HealthQuote2MembersWithPreExistingConditionPlanAH1"/>
+    <testcase name="TC-Quote-02 Step 4: 2 members ages 30 and 32, 5L, Pre-existing Yes is Rs 7200.00" time="0.009" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step4HealthQuote2MembersWithPreExistingConditionPlanAH1"/>
+    <testcase name="TC-Perf-01 / INS-NF-001: Response time is within 5 seconds" time="0.009" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step4HealthQuote2MembersWithPreExistingConditionPlanAH1"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-02 Step 5a: Health Quote - No Members (Expect 422)" id="ae9e7516-7664-4150-8560-01913c72334c" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.005">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.005" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step5AHealthQuoteNoMembersExpect422"/>
+    <testcase name="Error schema complies with SAD Section 4.4" time="0.005" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step5AHealthQuoteNoMembersExpect422"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / quotes / TC-Quote-02 Step 5b: Health Quote - Unsupported Sum Insured 7.5L (Expect 422)" id="2dd89a76-723f-4987-9385-8c09ad3d8013" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.009">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.009" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step5BHealthQuoteUnsupportedSumInsured75LExpect422"/>
+    <testcase name="Error schema complies with SAD Section 4.4" time="0.009" classname="02QuotingAndUnderwritingContract01QuotesTcQuote02Step5BHealthQuoteUnsupportedSumInsured75LExpect422"/>
+  </testsuite>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / underwriting / Get Referred Applications (Underwriter, Contract INS-F-011)" id="afa74091-b58c-461e-acbf-2fe46b5b5d7e" timestamp="2026-11-02T07:45:34.745Z" tests="0" failures="0" errors="0" time="0.015"/>
+  <testsuite name="02 - Quoting and Underwriting (Contract 01) / underwriting / Underwriter Decision (Contract INS-F-011)" id="bbdda093-a046-472f-afc6-10c0d87e3ab7" timestamp="2026-11-02T07:45:34.745Z" tests="0" failures="0" errors="0" time="0.010"/>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / File Insurance Claim (Contract INS-F-012)" id="6f841d13-1a8a-4dc5-ab89-398104b7cda5" timestamp="2026-11-02T07:45:34.745Z" tests="0" failures="0" errors="0" time="0.014"/>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / Track Claim Status (Contract INS-F-015)" id="7df6e292-fcb3-4c09-900b-31fd37ecbc81" timestamp="2026-11-02T07:45:34.745Z" tests="0" failures="0" errors="0" time="0.011"/>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / Assess Claim (Claims Officer, Contract INS-F-014)" id="34294b59-cb89-45c9-a4cb-67ef8bff9785" timestamp="2026-11-02T07:45:34.745Z" tests="0" failures="0" errors="0" time="0.008"/>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - System Admin (200 OK)" id="7f246f50-78f4-42bc-ab0f-14e5abab01cc" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.026">
+    <testcase name="Status code is 200 OK" time="0.026" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsSystemAdmin200Ok"/>
+    <testcase name="Response contains paginated audit items array" time="0.026" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsSystemAdmin200Ok"/>
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Customer Access Denied (403 Forbidden)" id="630b6d58-d27c-4b34-8cf7-4ff897a016f9" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.005">
+    <testcase name="Status code is 403 Forbidden" time="0.005" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsCustomerAccessDenied403Forbidden"/>
+    <testcase name="Error code is ACCESS-403" time="0.005" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsCustomerAccessDenied403Forbidden"/>
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Unauthenticated Access Denied (401 Unauthorized)" id="9cfc13e8-32bb-4a78-87ef-83f273b9321f" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="2" errors="0" time="0.006">
+    <testcase name="Status code is 401 Unauthorized" time="0.006" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsUnauthenticatedAccessDenied401Unauthorized">
+      <failure type="AssertionFailure" message="expected response to have status code 401 but got 403">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Unauthenticated Access Denied (401 Unauthorized).]]>
+        <![CDATA[Test description: Status code is 401 Unauthorized.]]>
+        <![CDATA[Error message: expected response to have status code 401 but got 403.]]>
+        <![CDATA[Stacktrace: AssertionError: expected response to have status code 401 but got 403
+   at Object.eval sandbox-script.js:1:36).]]>
+      </failure>
+    </testcase>
+    <testcase name="Error code is AUTH-401" time="0.006" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsUnauthenticatedAccessDenied401Unauthorized">
+      <failure type="AssertionFailure" message="expected 'ACCESS-403' to deeply equal 'AUTH-401'">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d.]]>
+        <![CDATA[Collection name: Insurance Workflow Automation System API.]]>
+        <![CDATA[Request name: 03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Unauthenticated Access Denied (401 Unauthorized).]]>
+        <![CDATA[Test description: Error code is AUTH-401.]]>
+        <![CDATA[Error message: expected 'ACCESS-403' to deeply equal 'AUTH-401'.]]>
+        <![CDATA[Stacktrace: AssertionError: expected 'ACCESS-403' to deeply equal 'AUTH-401'
+   at Object.eval sandbox-script.js:2:36).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Filter by Action (200 OK)" id="ae05e2e5-25e6-487c-8330-70d4bcb35d52" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.008">
+    <testcase name="Status code is 200 OK" time="0.008" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsFilterByAction200Ok"/>
+    <testcase name="Items array is returned with matching filter criteria" time="0.008" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsFilterByAction200Ok"/>
+  </testsuite>
+  <testsuite name="03 - Claims and Audit (Contract 01 / SAD) / audit / Query Audit Logs - Invalid Filter Range (422 Unprocessable Entity)" id="9fe34552-899b-4289-9dda-b1faa2075887" timestamp="2026-11-02T07:45:34.745Z" tests="2" failures="0" errors="0" time="0.006">
+    <testcase name="Status code is 422 Unprocessable Entity" time="0.006" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsInvalidFilterRange422UnprocessableEntity"/>
+    <testcase name="Error code is VALID-422" time="0.006" classname="03ClaimsAndAuditContract01SadAuditQueryAuditLogsInvalidFilterRange422UnprocessableEntity"/>
+  </testsuite>
+</testsuites>

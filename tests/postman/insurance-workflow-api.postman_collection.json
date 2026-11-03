@@ -33,11 +33,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/actuator/health",
+              "raw": "{{baseUrl}}/{{apiPrefix}}/actuator/health",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "actuator",
                 "health"
               ]
@@ -217,7 +219,7 @@
                       "key": "files[]",
                       "description": "Identity document upload (PDF/JPG/PNG)",
                       "type": "file",
-                      "src": []
+                      "src": "postman/sample-kyc.pdf"
                     }
                   ]
                 },
@@ -336,7 +338,7 @@
                       "key": "files[]",
                       "description": "Identity document upload (PDF/JPG/PNG)",
                       "type": "file",
-                      "src": []
+                      "src": "postman/sample-kyc.pdf"
                     }
                   ]
                 },
@@ -405,7 +407,7 @@
                       "key": "files[]",
                       "description": "Identity document upload (PDF/JPG/PNG)",
                       "type": "file",
-                      "src": []
+                      "src": "postman/sample-kyc.pdf"
                     }
                   ]
                 },
@@ -723,7 +725,7 @@
               "raw": "{\n  \"active\": false\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/{{apiPrefix}}/plans/1",
+              "raw": "{{baseUrl}}/{{apiPrefix}}/plans/{{lastCreatedPlanId}}",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -731,7 +733,7 @@
                 "api",
                 "v1",
                 "plans",
-                "1"
+                "{{lastCreatedPlanId}}"
               ]
             },
             "description": "Deactivate plan via PATCH /api/v1/plans/{id}."
