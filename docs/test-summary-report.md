@@ -30,11 +30,11 @@
 - Frontend: `CustomerDashboard`, `ClaimsOfficerView`, `AuditLogView`, responsive layouts
 
 ### Out of Scope / Deferred (D-10 — docs/decisions.md)
-- INS-F-017: Customer quote-filter step (TC-F-022 deferred)
-- INS-F-021: Duplicate-claim auto-flag (UI surface only; logic deferred)
-- INS-F-022: Policy application filter (deferred to next sprint)
-- INS-F-025: System Admin reports (INS-F-025 deferred)
-- NF-007: Performance / load testing
+- INS-F-017 Renewal reminders 30/15/1 days before expiry (P4-13)
+- INS-F-021 Role-specific dashboards (P2-15)
+- INS-F-022 Search and filter plans (P2-13)
+- INS-F-025 System Admin reports (P3-11)
+- INS-NF-007 Audit records retained and retrievable for 5 years (P1-13)
 
 ---
 
@@ -59,8 +59,8 @@
 |----------|--------|:---:|:---:|:---:|:---:|:---:|
 | Backend unit & integration | Maven Surefire (`mvnw.cmd -B verify`) on `eb6dd25` (2 Nov 2026 10:18 IST) | 622 | 622 | 0 | 0 | 0 |
 | Frontend component tests | Vitest (`npm test -- --run`) on `eb6dd25` (2 Nov 2026 10:18 IST) | 92 (17 files) | 92 (17 files) | 0 | 0 | 0 |
-| Newman API Assertions | Sharana Newman run (`docs/test-evidence/2026-10-29-newman-00add84.xml`) | 54 (38 requests) | 35 | 19 | 0 | 0 |
-| Selenium E2E Smoke | Sharana Selenium run (`docs/test-evidence/2026-10-29-selenium-00add84.xml`) | 3 | 3 | 0 | 0 | 0 |
+| Newman API Assertions | Sharana Newman re-run (`docs/test-evidence/2026-11-02-newman-eb6dd25-rerun.xml`) | 70 | 68 | 2 | 0 | 0 |
+| Selenium E2E Smoke | Sharana Selenium run (`docs/test-evidence/2026-11-02-selenium-eb6dd25.xml`) | 3 | 3 | 0 | 0 | 0 |
 | STP Independent Test Cases | `docs/test-execution-matrix.md` | 52 | 0 | 0 | 0 | Blocked / Deferred / Not Run |
 | UAT Scenarios | `docs/uat-29-oct.md` (UAT-01..UAT-08) | 8 | _(to fill)_ | _(to fill)_ | 0 | _(to fill)_ |
 
@@ -128,11 +128,11 @@ Per `docs/decisions.md`:
 
 | ID | Requirement ID | Feature / Requirement | Reason | Planned Sprint |
 |----|----------------|----------------------|--------|:---:|
-| D-10-F017 | INS-F-017 | Customer quote filter step (TC-F-022) | Scope / time capacity | Sprint 3 |
-| D-10-F021 | INS-F-021 | Duplicate claim auto-flagging engine logic (UI notice implemented) | Scope / time capacity | Sprint 3 |
-| D-10-F022 | INS-F-022 | Policy application filtering | Scope / time capacity | Sprint 3 |
-| D-10-F025 | INS-F-025 | System Admin reports generation | Scope / time capacity | Sprint 3 |
-| D-10-NF007| NF-007 | Performance & stress load testing | Test environment limitations | Sprint 3 |
+| D-10-F017 | INS-F-017 | Renewal reminders 30/15/1 days before expiry (P4-13) | Scope / time capacity | Sprint 3 |
+| D-10-F021 | INS-F-021 | Role-specific dashboards (P2-15) | Scope / time capacity | Sprint 3 |
+| D-10-F022 | INS-F-022 | Search and filter plans (P2-13) | Scope / time capacity | Sprint 3 |
+| D-10-F025 | INS-F-025 | System Admin reports (P3-11) | Scope / time capacity | Sprint 3 |
+| D-10-NF007| INS-NF-007 | Audit records retained and retrievable for 5 years (P1-13) | Scope / time capacity | Sprint 3 |
 | D-11 | — | Claims module ownership split between P1 and P4 | Technical architecture | docs/decisions.md |
 
 ---
