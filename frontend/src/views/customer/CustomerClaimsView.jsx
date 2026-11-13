@@ -57,6 +57,23 @@ export default function CustomerClaimsView() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
   const [submitResult, setSubmitResult] = useState(null);
+  const [claimDetailError, setClaimDetailError] = useState(null);
+
+  const retryLoadClaimDetails = async (claimId, claimNo) => {
+    try {
+      const claimDetailRes = await apiClient.get(`/claims/${claimId}`);
+      const freshClaim = claimDetailRes.data;
+      setClaimsList((prev) => [freshClaim, ...prev.filter((c) => c.id !== freshClaim.id)]);
+      setSelectedClaim(freshClaim);
+      setClaimDetailError(null);
+    } catch (err) {
+      setClaimDetailError({
+        claimId,
+        claimNo,
+        message: `Claim submitted (${claimNo || claimId}); details could not be loaded - Retry`,
+      });
+    }
+  };
 
   // Claim Lookup state (for tracking by claim ID)
   const [lookupClaimId, setLookupClaimId] = useState('');
@@ -220,22 +237,13 @@ export default function CustomerClaimsView() {
         const freshClaim = claimDetailRes.data;
         setClaimsList((prev) => [freshClaim, ...prev.filter((c) => c.id !== freshClaim.id)]);
         setSelectedClaim(freshClaim);
+        setClaimDetailError(null);
       } catch {
-        // Fallback optimistic claim view
-        const optimistic = {
-          id: data.claimId,
+        setClaimDetailError({
+          claimId: data.claimId,
           claimNo: data.claimNo,
-          policyId: Number(selectedPolicyId),
-          policyNo: currentSelectedPolicy?.policyNo || `Policy #${selectedPolicyId}`,
-          incidentDate: payload.incidentDate,
-          claimedAmount: payload.claimedAmount,
-          status: data.status || 'DOCUMENT_VERIFICATION',
-          description: payload.description,
-          duplicateFlag: data.duplicateFlag,
-          createdAt: new Date().toISOString(),
-        };
-        setClaimsList((prev) => [optimistic, ...prev]);
-        setSelectedClaim(optimistic);
+          message: `Claim submitted (${data.claimNo || data.claimId}); details could not be loaded - Retry`,
+        });
       }
     } catch (err) {
       const status = err.response?.status;
@@ -328,6 +336,22 @@ export default function CustomerClaimsView() {
             Connects to <code>POST /api/v1/claims</code> and <code>GET /api/v1/claims/&#123;id&#125;</code>.
             Visualizes the 5-stage lifecycle: Submitted &rarr; Document Verification &rarr; Loss Assessment &rarr; Payment Processing &rarr; Settled / Rejected.
           </p>
+        </div>
+      )}
+
+      {claimDetailError && (
+        <div className="alert alert-warning mb-4 d-flex justify-content-between align-items-center" role="alert">
+          <div>
+            <i className="bi bi-exclamation-triangle me-2"></i>
+            <span>{claimDetailError.message}</span>
+          </div>
+          <button
+            type="button"
+            className="btn btn-outline-dark btn-sm ms-2"
+            onClick={() => retryLoadClaimDetails(claimDetailError.claimId, claimDetailError.claimNo)}
+          >
+            Retry
+          </button>
         </div>
       )}
 
