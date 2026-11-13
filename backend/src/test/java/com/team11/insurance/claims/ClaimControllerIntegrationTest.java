@@ -50,12 +50,18 @@ class ClaimControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired(required = false)
+    private com.team11.insurance.common.time.MutableTestClock testClock;
+
     private Policy activePolicyInsurer1;
     private Policy inactivePolicyInsurer1;
     private Claim existingClaimInsurer1;
 
     @BeforeEach
     void setUp() {
+        if (testClock != null) {
+            testClock.reset();
+        }
         activePolicyInsurer1 = new Policy();
         activePolicyInsurer1.setPolicyNo("POL-TEST-001");
         activePolicyInsurer1.setCustomerId(1001L);
@@ -92,6 +98,9 @@ class ClaimControllerIntegrationTest {
 
     @AfterEach
     void tearDown() {
+        if (testClock != null) {
+            testClock.reset();
+        }
         TestCurrentUserProvider.clearSyntheticUser();
     }
 
