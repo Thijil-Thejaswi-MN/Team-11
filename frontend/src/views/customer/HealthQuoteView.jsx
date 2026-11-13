@@ -72,41 +72,12 @@ export default function HealthQuoteView() {
       const response = await apiClient.post('/quotes/health', payload);
       setQuoteData(response.data);
     } catch (err) {
-      // Graceful offline/simulation fallback for testing when backend isn't running
-      const eldestAge = Math.max(...members.map((m) => m.age));
-      const baseRate = eldestAge < 35 ? 0.012 : eldestAge < 50 ? 0.018 : 0.025;
-      const basePrem = Math.round(Number(sumInsured) * baseRate);
-      const loadingAmt = hasPreExisting ? Math.round(basePrem * 0.20) : 0;
-      
-      const addOnsMap = {};
-      let addOnsTotal = 0;
-      selectedAddOns.forEach((code) => {
-        const addon = AVAILABLE_HEALTH_ADDONS.find((a) => a.code === code);
-        const cost = addon ? addon.price : 600;
-        addOnsMap[code] = cost;
-        addOnsTotal += cost;
-      });
-
-      const netBeforeTax = basePrem + loadingAmt + addOnsTotal;
-      const gst = Math.round(netBeforeTax * 0.18);
-      const total = netBeforeTax + gst;
-
-      const syntheticId = Math.floor(200000 + Math.random() * 800000);
-      const validUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-
-      setQuoteData({
-        quoteId: syntheticId,
-        premium: total,
-        validUntil,
-        breakdown: {
-          basePremium: basePrem,
-          ageLoading: loadingAmt,
-          addOns: addOnsMap,
-          netPremium: netBeforeTax,
-          gst,
-          totalPremium: total,
-        },
-      });
+      setQuoteData(null);
+      const msg =
+        err.details && err.details.length > 0
+          ? err.details.join(', ')
+          : err.response?.data?.message || err.message || 'Failed to calculate quote. Please check your inputs.';
+      setErrorMsg(msg);
     } finally {
       setLoading(false);
     }
@@ -292,8 +263,15 @@ export default function HealthQuoteView() {
                 </div>
 
                 {errorMsg && (
-                  <div className="alert alert-danger small py-2 mb-3" role="alert">
-                    {errorMsg}
+                  <div className="alert alert-danger small py-2 mb-3 d-flex justify-content-between align-items-center" role="alert">
+                    <span>{errorMsg}</span>
+                    <button
+                      type="button"
+                      className="btn btn-outline-danger btn-sm py-0 ms-2"
+                      onClick={handleCalculateQuote}
+                    >
+                      Retry
+                    </button>
                   </div>
                 )}
 
