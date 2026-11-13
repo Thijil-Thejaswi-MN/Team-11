@@ -104,38 +104,7 @@
 | Availability | INS-NF-003 | Monthly availability >= 99.5% (TC-Avail-01) | **Not verified** — Actuator `/actuator/health` probe verified (`UP`), but a 30-day monthly availability percentage cannot be measured within a sprint test window. |
 | Reliability (Backup & Restore) | INS-NF-004 | Database backup and restore drill, RPO/RTO verification (TC-Rel-01) | **PASS (Scripted)** — Backup and restore procedure and verification scripts delivered in `PR #185` (`feat/p4-14-database-backup-recovery`). |
 | Browser & Viewport Compatibility | INS-NF-006 | Responsive viewports (360 px, 768 px, 1366 px) & cross-browser (TC-Compat-01) | **Partially Verified** — Verified on Chrome and Edge across 360 px, 768 px, and 1366 px viewports (`PR #174`, `ResponsiveViewport.test.jsx`, Selenium smoke `3/3`); Apple Safari (macOS/iOS) **Not verified** (no Apple hardware). |
-| Audit Retention (5 Years) | INS-NF-007 | Audit records retained and retrievable for 5 years (P1-13) | **Deferred (Decision D-10)** — Deferred to Sprint 3 per `docs/decisions.md`.
-
-## 4. Non-Functional / Security Results
-
-*Results recorded by Samarth (Person 3, Security & Non-Functional Lead):*
-
-| Area | Requirement | Scenario / Test Description | Result Reported by NF Executor |
-|------|-------------|----------------------------|--------------------------------|
-| Transport Security | INS-SR-001 | HTTPS and TLS 1.2+ configuration (TC-Sec-01) | Not reported by the NF/security executor |
-| Password Storage | INS-SR-002 | BCrypt work factor >= 12 (TC-Sec-02) | Not ## 4. Non-Functional / Security Results
-
-*Results recorded by Samarth (Person 3, Security & Non-Functional Lead) on build `eb6dd25`:*
-
-| Area | Requirement | Scenario / Test Description | Result Reported by NF Executor |
-|------|-------------|----------------------------|--------------------------------|
-| Transport Security | INS-SR-001 | HTTPS and TLS 1.2+ configuration (TC-Sec-01) | **PASS** — Verified via Nginx TLS 1.2/1.3 reverse proxy config and TLS verification script suite (`PR #184` / `scripts/verify-tls-environment.sh`): TLS 1.0/1.1 disabled, HTTP->HTTPS 301 redirect and HSTS header active. |
-| Password Storage | INS-SR-002 | BCrypt work factor >= 12 (TC-Sec-02) | **PASS** — Verified via `PasswordServiceTest` (6/6 JUnit tests passing on `eb6dd25`): BCrypt cost factor 12 (`$2a$12$` prefix) enforced; plaintext passwords never persisted. |
-| RBAC Matrix | INS-SR-003 | Deny by default, role scoping (TC-Sec-03) | **PASS (with Defect #187 noted)** — Verified via `SecurityConfig`, Newman `TC-Acc-02`, and `pen-test-checklist.md` §1.1–1.6: cross-role requests return `403 ACCESS-403`; unauthenticated requests denied (note open Defect #187: unauthenticated `GET /api/v1/audit` returns 403 instead of 401). |
-| Encryption at Rest | INS-SR-004 | AES-256 for documents and sensitive PII (TC-Sec-04) | **PASS** — Verified via `DiskFileStoreTest` (10/10 JUnit tests passing on `eb6dd25`): uploaded KYC, application, and policy PDF documents encrypted on disk with AES-256-GCM (unique 12-byte IV + 128-bit auth tag) and SHA-256 checksum verification. |
-| Account Lockout | INS-SR-005 | Lockout after 5 failed attempts (TC-Sec-05) | **PASS** — Verified via `AuthControllerIntegrationTest#testLoginFiveFailuresTriggers423Locked` on `eb6dd25`: 5 consecutive failed login attempts lock the account for 15 minutes and return `423 Locked` (`AUTH-423`) even with valid credentials. |
-| Injection & XSS | INS-SR-006 | OWASP ZAP automated scan (TC-Sec-06) | **PASS (Code/Integration) / ZAP Scan Not Verified** — Parameterized Spring Data JPA queries, React JSX escaping, and security headers (`CSP`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`) verified on `eb6dd25`; live OWASP ZAP container scan not executed (`Not verified`). |
-| File Upload Security| INS-SR-007 | Allow-list extensions, <= 5 MB limit (TC-Sec-07) | **PASS** — Verified via `DiskFileStoreTest` and `/api/v1/kyc` & `/api/v1/applications/documents` validation on `eb6dd25`: enforces PDF/JPG/PNG allow-list, <= 5 MB size cap, path-traversal sanitization, and storage outside web root. |
-| Audit Append-Only | INS-SR-008 | Append-only audit log, no UPDATE/DELETE (TC-Sec-08) | **PASS (with Defects #169–#172 noted)** — Verified via `P2-18` (`PR #173`) and Newman `TC-Aud-01`: audit log is append-only with no UPDATE/DELETE endpoints exposed and restricted to `SYSTEM_ADMIN` (see open low-severity defects #169–#172 for missing event hooks). |
-| Insurer Isolation | INS-SR-003 | Multi-tenant insurer data isolation (TC-Sec-09) | **PASS** — Verified via `PolicyCancellationController`, `PolicyServiceTest`, `ApplicationControllerIntegrationTest`, and `pen-test-checklist.md` §2.1–2.6 on `eb6dd25`: Insurer A staff cannot access or decide Insurer B plans, applications, claims, or cancellations (`403 ACCESS-403`); customer cross-tenant access returns `403`/`404`. |
-| Session Timeout | INS-SR-005 | 15-minute inactivity session expiration (TC-Sec-10) | **PASS** — Verified via `SessionServiceTest` and `pen-test-checklist.md` §1.5, §1.7, §4.4 on `eb6dd25`: sessions idle > 15 minutes (or > 8 hours absolute) and tokens replayed after `POST /api/v1/auth/logout` are rejected with `401 Unauthorized`. |
-| Log Masking | INS-SR-002 | Sensitive data masking in application logs (TC-Sec-11) | **PASS** — Verified via backend log inspection during Maven Surefire and Newman runs on `eb6dd25`: no plaintext passwords, JWT tokens, PAN/Aadhaar numbers, or payment secrets are emitted to application logs. |
-| Performance (Quote Latency) | INS-NF-001 | Quote response time p95 <= 5.0 s under 50 concurrent users (TC-Perf-01) | **Not verified** — JMeter plan (`docs/nf-security-tests/jmeter/TC-Perf-01-quote-response-time.jmx`) prepared; 10,000-policy / 5,000-claim volume dataset and separate load-generator host (`environment-needs.md`) not provisioned in single-host environment (single-user Newman quote calls complete in < 200 ms). |
-| Load / Stress (500 Users) | INS-NF-002 | 500 concurrent virtual users for 20 min, error rate < 1% (TC-Load-01) | **Not verified** — JMeter plan (`docs/nf-security-tests/jmeter/TC-Load-01-500-concurrent-users.jmx`) prepared; requires a dedicated second load-generator host (STP §6) and volume dataset, not measurable on a single developer machine without estimation. |
-| Availability | INS-NF-003 | Monthly availability >= 99.5% (TC-Avail-01) | **Not verified** — Actuator `/actuator/health` probe verified (`UP`), but a 30-day monthly availability percentage cannot be measured within a sprint test window. |
-| Reliability (Backup & Restore) | INS-NF-004 | Database backup and restore drill, RPO/RTO verification (TC-Rel-01) | **PASS (Scripted)** — Backup and restore procedure and verification scripts delivered in `PR #185` (`feat/p4-14-database-backup-recovery`). |
-| Browser & Viewport Compatibility | INS-NF-006 | Responsive viewports (360 px, 768 px, 1366 px) & cross-browser (TC-Compat-01) | **Partially Verified** — Verified on Chrome and Edge across 360 px, 768 px, and 1366 px viewports (`PR #174`, `ResponsiveViewport.test.jsx`, Selenium smoke `3/3`); Apple Safari (macOS/iOS) **Not verified** (no Apple hardware). |
-| Audit Retention (5 Years) | INS-NF-007 | Audit records retained and retrievable for 5 years (P1-13) | **Deferred (Decision D-10)** — Deferred to Sprint 3 per `docs/decisions.md`.
+| Audit Retention (5 Years) | INS-NF-007 | Audit records retained and retrievable for 5 years (P1-13) | **Deferred (Decision D-10)** — Deferred to Sprint 3 per `docs/decisions.md`. |
 
 ---
 
