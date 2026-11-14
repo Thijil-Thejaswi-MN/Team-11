@@ -49,7 +49,7 @@ describe('InsurerAdminDashboardView (INS-F-003, INS-F-021 Deferral, Issue #168)'
     const notice = await screen.findByTestId('metrics-deferred-notice');
     expect(notice).toBeInTheDocument();
     expect(
-      screen.getByText(/Portfolio metrics are not part of this release \(dashboards deferred, decision D-10\)/i)
+      screen.getByText(/Portfolio metrics are not available in this release/i)
     ).toBeInTheDocument();
 
     // Verify live plan count rendered from API

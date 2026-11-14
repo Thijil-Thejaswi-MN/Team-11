@@ -175,7 +175,7 @@ export default function CustomerKycView() {
   return (
     <PortalLayout
       title="KYC Verification"
-      subtitle="Submit regulatory identity documentation (INS-F-002, INS-SR-007, SAD §4.3.1)"
+      subtitle="Submit identity documentation for verification."
       badgeText="Customer Portal"
       badgeClass="bg-primary"
     >

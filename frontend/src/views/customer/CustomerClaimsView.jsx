@@ -57,6 +57,23 @@ export default function CustomerClaimsView() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
   const [submitResult, setSubmitResult] = useState(null);
+  const [claimDetailError, setClaimDetailError] = useState(null);
+
+  const retryLoadClaimDetails = async (claimId, claimNo) => {
+    try {
+      const claimDetailRes = await apiClient.get(`/claims/${claimId}`);
+      const freshClaim = claimDetailRes.data;
+      setClaimsList((prev) => [freshClaim, ...prev.filter((c) => c.id !== freshClaim.id)]);
+      setSelectedClaim(freshClaim);
+      setClaimDetailError(null);
+    } catch (err) {
+      setClaimDetailError({
+        claimId,
+        claimNo,
+        message: `Claim submitted (${claimNo || claimId}); details could not be loaded - Retry`,
+      });
+    }
+  };
 
   // Claim Lookup state (for tracking by claim ID)
   const [lookupClaimId, setLookupClaimId] = useState('');
@@ -220,22 +237,13 @@ export default function CustomerClaimsView() {
         const freshClaim = claimDetailRes.data;
         setClaimsList((prev) => [freshClaim, ...prev.filter((c) => c.id !== freshClaim.id)]);
         setSelectedClaim(freshClaim);
+        setClaimDetailError(null);
       } catch {
-        // Fallback optimistic claim view
-        const optimistic = {
-          id: data.claimId,
+        setClaimDetailError({
+          claimId: data.claimId,
           claimNo: data.claimNo,
-          policyId: Number(selectedPolicyId),
-          policyNo: currentSelectedPolicy?.policyNo || `Policy #${selectedPolicyId}`,
-          incidentDate: payload.incidentDate,
-          claimedAmount: payload.claimedAmount,
-          status: data.status || 'DOCUMENT_VERIFICATION',
-          description: payload.description,
-          duplicateFlag: data.duplicateFlag,
-          createdAt: new Date().toISOString(),
-        };
-        setClaimsList((prev) => [optimistic, ...prev]);
-        setSelectedClaim(optimistic);
+          message: `Claim submitted (${data.claimNo || data.claimId}); details could not be loaded - Retry`,
+        });
       }
     } catch (err) {
       const status = err.response?.status;
@@ -316,18 +324,24 @@ export default function CustomerClaimsView() {
   return (
     <PortalLayout
       title="Claims Tracker & Filing Desk"
-      subtitle="Customer claim lifecycle, filing, and status timeline (SAD §4.1.3, §4.3.5, P4-16)"
+      subtitle="File reimbursement claims and track their review and settlement progress in real time."
       badgeText="Claims Center"
       badgeClass="bg-primary text-white"
     >
-      {/* Dev Hook Box */}
-      {import.meta.env.DEV && (
-        <div className="dev-hook-box mb-4">
-          <span className="dev-hook-badge">Person 4 Scope: P4-16 Customer Claims &amp; Timeline</span>
-          <p className="mb-0 small">
-            Connects to <code>POST /api/v1/claims</code> and <code>GET /api/v1/claims/&#123;id&#125;</code>.
-            Visualizes the 5-stage lifecycle: Submitted &rarr; Document Verification &rarr; Loss Assessment &rarr; Payment Processing &rarr; Settled / Rejected.
-          </p>
+
+      {claimDetailError && (
+        <div className="alert alert-warning mb-4 d-flex justify-content-between align-items-center" role="alert">
+          <div>
+            <i className="bi bi-exclamation-triangle me-2"></i>
+            <span>{claimDetailError.message}</span>
+          </div>
+          <button
+            type="button"
+            className="btn btn-outline-dark btn-sm ms-2"
+            onClick={() => retryLoadClaimDetails(claimDetailError.claimId, claimDetailError.claimNo)}
+          >
+            Retry
+          </button>
         </div>
       )}
 
@@ -447,7 +461,7 @@ export default function CustomerClaimsView() {
                     <span
                       className="badge bg-danger text-white extra-small"
                       data-testid="claim-duplicate-badge"
-                      title="INS-F-023: Duplicate claim flag"
+                      title="Possible duplicate claim flag"
                     >
                       <i className="bi bi-exclamation-triangle-fill me-1"></i>Possible Duplicate
                     </span>
@@ -462,7 +476,7 @@ export default function CustomerClaimsView() {
                 {/* Duplicate Notification Banner */}
                 {selectedClaim.duplicateFlag && (
                   <div className="alert alert-danger py-2 small mb-4" data-testid="duplicate-alert-banner">
-                    <strong>Possible Duplicate Detected (INS-F-023):</strong> This claim was flagged as a potential duplicate (same policy, incident date, and claimed amount). It is currently being reviewed with extra scrutiny by a Claims Officer.
+                    <strong>Possible Duplicate Detected:</strong> This claim was flagged as a potential duplicate (same policy, incident date, and claimed amount). It is currently being reviewed with extra scrutiny by a Claims Officer.
                   </div>
                 )}
 
@@ -513,7 +527,7 @@ export default function CustomerClaimsView() {
                 {/* =========================================================================
                     5-Stage Claim State Machine Progress Timeline (ADR-008 & SAD §4.1.3)
                     ========================================================================= */}
-                <h5 className="h6 fw-bold mb-3">Claim State Machine Progress (ADR-008)</h5>
+                <h5 className="h6 fw-bold mb-3">Claim Progress Timeline</h5>
                 <div className="p-3 bg-light rounded-3 mb-3 border" data-testid="claim-timeline">
                   <div className="row text-center g-3 small">
                     {/* Step 1: Submission */}
@@ -707,7 +721,7 @@ export default function CustomerClaimsView() {
                 {submitResult.duplicateFlag && (
                   <div className="badge bg-danger text-white mb-2 p-2 d-inline-block">
                     <i className="bi bi-exclamation-triangle-fill me-1"></i>
-                    Possible Duplicate Detected (INS-F-023) — Held for Manual Inspection
+                    Possible Duplicate Detected — Held for Manual Inspection
                   </div>
                 )}
                 <div className="mt-2">

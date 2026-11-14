@@ -25,56 +25,10 @@ export default function MyPoliciesView() {
     setError(null);
     try {
       const response = await apiClient.get('/policies');
-      if (Array.isArray(response.data) && response.data.length > 0) {
-        setPolicies(response.data);
-      } else {
-        // Fallback demo policies if user has not yet purchased a policy on this account
-        setPolicies([
-          {
-            id: 101,
-            policyNo: 'POL-2026-4W-0091',
-            applicationId: 9021,
-            planName: 'SafeShield Comprehensive 4W',
-            productType: 'MOTOR',
-            status: 'ACTIVE',
-            premium: 8450.0,
-            startDate: '2026-04-01',
-            endDate: '2027-03-31',
-            issuedAt: '2026-04-01T10:00:00Z',
-            documentId: 101,
-          },
-          {
-            id: 102,
-            policyNo: 'POL-2025-HL-0012',
-            applicationId: 8812,
-            planName: 'Bharat Care Swasthya Family Floater',
-            productType: 'HEALTH',
-            status: 'EXPIRING_SOON',
-            premium: 14200.0,
-            startDate: '2025-11-03',
-            endDate: '2026-11-02',
-            issuedAt: '2025-11-03T14:30:00Z',
-            documentId: 102,
-          },
-        ]);
-      }
+      setPolicies(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
-      console.warn('Backend /policies unavailable, displaying portfolio fallback:', err);
-      setPolicies([
-        {
-          id: 101,
-          policyNo: 'POL-2026-4W-0091',
-          applicationId: 9021,
-          planName: 'SafeShield Comprehensive 4W',
-          productType: 'MOTOR',
-          status: 'ACTIVE',
-          premium: 8450.0,
-          startDate: '2026-04-01',
-          endDate: '2027-03-31',
-          issuedAt: '2026-04-01T10:00:00Z',
-          documentId: 101,
-        },
-      ]);
+      setPolicies([]);
+      setError(err.response?.data?.message || err.message || 'Failed to load policies.');
     } finally {
       setLoading(false);
     }
@@ -125,17 +79,20 @@ export default function MyPoliciesView() {
   return (
     <PortalLayout
       title="My Policies & Documents"
-      subtitle="Issued insurance policies, OpenPDF official schedules, and lifecycle management (INS-F-008, P3-05/P3-06)"
+      subtitle="View your active insurance policies and download official policy documents."
       badgeText="My Policies"
       badgeClass="bg-info text-dark"
     >
-      {import.meta.env.DEV && (
-        <div className="dev-hook-box mb-4">
-          <span className="dev-hook-badge">Person 3 Ownership (Policy Lifecycle C5)</span>
-          <p className="mb-0">
-            Connected to <code>GET /api/v1/policies</code> and <code>GET /api/v1/policies/&#123;id&#125;/document</code> (OpenPDF).
-            Policy schedules are generated automatically upon successful payment and cryptographically tracked in FileStore.
-          </p>
+
+      {error && (
+        <div className="alert alert-danger mb-4 d-flex justify-content-between align-items-center" role="alert">
+          <div>
+            <i className="bi bi-exclamation-triangle-fill me-2"></i>
+            <span>{error}</span>
+          </div>
+          <button type="button" className="btn btn-outline-danger btn-sm ms-2" onClick={fetchPolicies}>
+            Retry
+          </button>
         </div>
       )}
 
@@ -157,7 +114,7 @@ export default function MyPoliciesView() {
             <div>
               <div className="text-muted small text-uppercase fw-semibold">Active Policies</div>
               <div className="fs-3 fw-bold text-success">
-                {policies.filter((p) => p.status === 'ACTIVE').length || policies.length}
+                {policies.filter((p) => p.status === 'ACTIVE').length}
               </div>
             </div>
           </div>
@@ -206,7 +163,7 @@ export default function MyPoliciesView() {
           ) : policies.length === 0 ? (
             <div className="text-center py-5">
               <i className="bi bi-folder2-open text-muted fs-1 mb-2"></i>
-              <h5 className="fw-bold">No Policies Found</h5>
+              <h5 className="fw-bold">No policies yet</h5>
               <p className="text-muted small mb-3">You do not currently have any active insurance policies.</p>
               <Link to={ROUTES.CUSTOMER_QUOTE_MOTOR} className="btn btn-primary btn-sm me-2">
                 Get a Motor Quote

@@ -1,10 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PortalLayout from '../../components/layout/PortalLayout';
 import apiClient from '../../api/apiClient';
 
 const STAFF_ROLES = ['INSURER_ADMIN', 'UNDERWRITER', 'CLAIMS_OFFICER'];
 
 export default function SystemAdminDashboardView() {
+  // Audit log feed state
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [auditLoading, setAuditLoading] = useState(true);
+  const [auditError, setAuditError] = useState(null);
+
+  const fetchAuditLogs = async () => {
+    setAuditLoading(true);
+    setAuditError(null);
+    try {
+      const res = await apiClient.get('/audit', { params: { page: 0, size: 5 } });
+      const items = res.data?.items || (Array.isArray(res.data) ? res.data : []);
+      setAuditLogs(items);
+    } catch (err) {
+      setAuditLogs([]);
+      setAuditError(err.response?.data?.message || err.message || 'Failed to load audit logs.');
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAuditLogs();
+  }, []);
+
   // Insurer form state
   const [insurerName, setInsurerName] = useState('');
   const [insurerLoading, setInsurerLoading] = useState(false);
@@ -63,7 +87,7 @@ export default function SystemAdminDashboardView() {
     }
 
     if (isStaffRole && (!userInsurerId || Number(userInsurerId) <= 0)) {
-      setUserError(`Staff role "${userRole}" must be linked to a valid Insurer ID (SAD §4.3.6).`);
+      setUserError(`Staff role "${userRole}" must be linked to a valid Insurer ID.`);
       return;
     }
 
@@ -103,20 +127,10 @@ export default function SystemAdminDashboardView() {
   return (
     <PortalLayout
       title="System Administration & Audit Portal"
-      subtitle="Multi-insurer governance, business reporting, and immutable audit logs (SAD Section 4.3.6)"
+      subtitle="Multi-insurer governance, business reporting, and immutable audit logs."
       badgeText="System Admin"
       badgeClass="bg-danger"
     >
-      {import.meta.env.DEV && (
-        <div className="dev-hook-box mb-4">
-          <span className="dev-hook-badge">Shared Administration Module C11</span>
-          <p className="mb-0">
-            Connects to <code>POST /api/v1/admin/insurers</code> and <code>POST /api/v1/admin/users</code>.
-            Enforces staff insurer isolation (<code>INS-SR-003</code>) and 5-year audit retention (<code>INS-NF-007</code>).
-          </p>
-        </div>
-      )}
-
       {/* Admin Action Forms */}
       <div className="row g-4 mb-4">
         {/* Onboard Insurer Form */}
@@ -290,7 +304,7 @@ export default function SystemAdminDashboardView() {
                   />
                   {isStaffRole && (
                     <div className="form-text small text-muted">
-                      Staff must belong to exactly one insurer (INS-SR-003).
+                      Staff must belong to exactly one insurer.
                     </div>
                   )}
                 </div>
@@ -340,27 +354,52 @@ export default function SystemAdminDashboardView() {
 
         <div className="col-12 col-md-6">
           <div className="dashboard-card h-100">
-            <div className="dashboard-card-header">
+            <div className="dashboard-card-header d-flex justify-content-between align-items-center">
               <span className="fw-bold">Audit Log Feed Preview</span>
               <span className="badge bg-dark">Append-Only</span>
             </div>
             <div className="dashboard-card-body p-0">
-              <ul className="list-group list-group-flush small">
-                <li className="list-group-item">
-                  <div className="d-flex justify-content-between text-muted small">
-                    <span>user: underwriter.priya</span>
-                    <span>13 Oct 2026 14:22</span>
+              {auditLoading && (
+                <div className="text-center py-4 text-muted small">
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Loading audit logs...
+                </div>
+              )}
+              {auditError && (
+                <div className="p-3">
+                  <div className="alert alert-danger mb-0 small d-flex justify-content-between align-items-center">
+                    <span>{auditError}</span>
+                    <button
+                      type="button"
+                      className="btn btn-outline-danger btn-sm py-0 ms-2"
+                      onClick={fetchAuditLogs}
+                    >
+                      Retry
+                    </button>
                   </div>
-                  <div className="fw-medium">action: DECIDE_APPLICATION [APP-2026-9021: APPROVED]</div>
-                </li>
-                <li className="list-group-item">
-                  <div className="d-flex justify-content-between text-muted small">
-                    <span>user: customer.asha</span>
-                    <span>13 Oct 2026 14:15</span>
-                  </div>
-                  <div className="fw-medium">action: CHARGE_PREMIUM [POL-2026-4W-0091: ₹8,450]</div>
-                </li>
-              </ul>
+                </div>
+              )}
+              {!auditLoading && !auditError && auditLogs.length === 0 && (
+                <div className="text-muted text-center py-4 small">
+                  No audit logs available.
+                </div>
+              )}
+              {!auditLoading && !auditError && auditLogs.length > 0 && (
+                <ul className="list-group list-group-flush small">
+                  {auditLogs.map((log) => (
+                    <li key={log.id} className="list-group-item">
+                      <div className="d-flex justify-content-between text-muted small">
+                        <span>user: {log.userId ? `ID ${log.userId}` : 'system'}</span>
+                        <span>{log.timestamp ? new Date(log.timestamp).toLocaleString() : '—'}</span>
+                      </div>
+                      <div className="fw-medium">
+                        action: {log.action} [{log.entity}: {log.entityId || 'N/A'}]
+                      </div>
+                      {log.details && <div className="text-muted extra-small">{log.details}</div>}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </div>

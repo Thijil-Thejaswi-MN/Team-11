@@ -43,7 +43,6 @@ export default function Header() {
           <Link to={ROUTES.HOME} className="brand-logo-text" id="navbar-brand-link">
             <i className="bi bi-shield-check text-info fs-4"></i>
             <span>InsureFlow</span>
-            <span className="brand-badge ms-1 d-none d-sm-inline">Team 11</span>
           </Link>
 
           {/* Mobile Viewport Toggle Button (Accessible & Unique ID) */}
@@ -156,28 +155,30 @@ export default function Header() {
               )}
             </ul>
 
-            {/* Right side controls: Role Switcher & User Profile Stub */}
+            {/* Right side controls: Role Switcher & User Profile */}
             <div className="d-flex align-items-center flex-wrap gap-2 mt-2 mt-lg-0">
-              {/* Role Switcher Toolbar for Team Testing */}
-              <div className="d-flex align-items-center gap-1">
-                <label htmlFor="role-select" className="text-light small d-none d-md-inline">
-                  <i className="bi bi-person-badge me-1"></i>Role:
-                </label>
-                <select
-                  id="role-select"
-                  className="role-switcher-select form-select form-select-sm"
-                  value={currentUser.role}
-                  onChange={handleRoleChange}
-                  title="Switch Role Portal (Testing Shell Feature)"
-                >
-                  <option value={ROLES.CUSTOMER}>Customer (Asha)</option>
-                  <option value={ROLES.INSURER_ADMIN}>Insurer Admin (SafeShield)</option>
-                  <option value={ROLES.UNDERWRITER}>Underwriter (SafeShield)</option>
-                  <option value={ROLES.CLAIMS_OFFICER}>Claims Officer (SafeShield)</option>
-                  <option value={ROLES.SYSTEM_ADMIN}>System Admin</option>
-                  <option value={ROLES.GUEST}>Guest / Anonymous</option>
-                </select>
-              </div>
+              {/* Optional Demo Role Switcher (Default: Off) */}
+              {import.meta.env.VITE_DEMO_ROLE_SWITCHER === 'true' && (
+                <div className="d-flex align-items-center gap-1">
+                  <label htmlFor="role-select" className="text-light small d-none d-md-inline">
+                    <i className="bi bi-person-badge me-1"></i>Role:
+                  </label>
+                  <select
+                    id="role-select"
+                    className="role-switcher-select form-select form-select-sm"
+                    value={currentUser.role}
+                    onChange={handleRoleChange}
+                    title="Switch Role Portal"
+                  >
+                    <option value={ROLES.CUSTOMER}>Customer (Asha)</option>
+                    <option value={ROLES.INSURER_ADMIN}>Insurer Admin (SafeShield)</option>
+                    <option value={ROLES.UNDERWRITER}>Underwriter (SafeShield)</option>
+                    <option value={ROLES.CLAIMS_OFFICER}>Claims Officer (SafeShield)</option>
+                    <option value={ROLES.SYSTEM_ADMIN}>System Admin</option>
+                    <option value={ROLES.GUEST}>Guest / Anonymous</option>
+                  </select>
+                </div>
+              )}
 
               {/* Login / User Indicator */}
               {currentUser.role === ROLES.GUEST ? (
@@ -187,21 +188,27 @@ export default function Header() {
                   id="nav-login-btn"
                   onClick={() => setIsNavCollapsed(true)}
                 >
-                  <i className="bi bi-box-arrow-in-right me-1"></i>Login
+                  <i className="bi bi-box-arrow-in-right me-1"></i>Sign in
                 </Link>
               ) : (
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary btn-sm text-light ms-1"
-                  id="nav-logout-btn"
-                  onClick={() => {
-                    logout();
-                    setIsNavCollapsed(true);
-                  }}
-                  title="Sign out of current session"
-                >
-                  <i className="bi bi-box-arrow-right"></i>
-                </button>
+                <div className="d-flex align-items-center">
+                  <span className="text-light small me-2 d-none d-sm-inline">
+                    <i className="bi bi-person-circle me-1"></i>
+                    {currentUser.name}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm text-light ms-1"
+                    id="nav-logout-btn"
+                    onClick={() => {
+                      logout();
+                      setIsNavCollapsed(true);
+                    }}
+                    title="Sign out of current session"
+                  >
+                    <i className="bi bi-box-arrow-right me-1"></i>Sign out
+                  </button>
+                </div>
               )}
             </div>
           </div>
