@@ -199,7 +199,7 @@ describe('CustomerClaimsView Component (P4-16 / INS-F-012, INS-F-013, INS-F-015,
     await waitFor(() => {
       expect(screen.getByTestId('claim-duplicate-badge')).toBeInTheDocument();
       expect(screen.getByTestId('duplicate-alert-banner')).toBeInTheDocument();
-      expect(screen.getByTestId('duplicate-alert-banner')).toHaveTextContent(/Possible Duplicate Detected \(INS-F-023\)/i);
+      expect(screen.getByTestId('duplicate-alert-banner')).toHaveTextContent(/Possible Duplicate Detected/i);
     });
   });
 

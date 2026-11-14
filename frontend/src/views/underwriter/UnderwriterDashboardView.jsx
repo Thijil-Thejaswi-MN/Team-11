@@ -157,21 +157,10 @@ export default function UnderwriterDashboardView() {
   return (
     <PortalLayout
       title="Underwriter Assessment Queue"
-      subtitle="Manual referral decisioning, risk evaluation & IRDAI compliance (SAD §4.3.7, INS-F-011)"
+      subtitle="Review referred applications, evaluate risk, and record underwriting decisions."
       badgeText="Underwriter Portal"
       badgeClass="bg-success"
     >
-      {/* Dev Hook Box */}
-      {import.meta.env.DEV && (
-        <div className="dev-hook-box mb-4">
-          <span className="dev-hook-badge">Person 1 Scope: P1-11 Manual Underwriter Desk</span>
-          <p className="mb-0 small">
-            Active API: <code>GET /api/v1/applications/referred</code> &amp; <code>POST /api/v1/applications/&#123;id&#125;/decision</code>.
-            Enforces tenant isolation (INS-SR-003), immutability audit trail, and customer notification dispatch.
-          </p>
-        </div>
-      )}
-
       {/* Global Success Banner */}
       {successMessage && (
         <div className="alert alert-success alert-dismissible fade show mb-4 shadow-sm" role="alert" id="underwriter-success-alert">
@@ -247,7 +236,7 @@ export default function UnderwriterDashboardView() {
       <div className="dashboard-card mb-4">
         <div className="dashboard-card-header d-flex justify-content-between align-items-center">
           <span className="fw-bold">Applications Awaiting Underwriter Review</span>
-          <span className="text-muted small">Rule-Triggered Cases (TC-UW-04)</span>
+          <span className="text-muted small">Rule-Triggered Cases</span>
         </div>
 
         <div className="dashboard-card-body p-0">

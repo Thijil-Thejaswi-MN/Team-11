@@ -79,19 +79,10 @@ export default function MyPoliciesView() {
   return (
     <PortalLayout
       title="My Policies & Documents"
-      subtitle="Issued insurance policies, OpenPDF official schedules, and lifecycle management (INS-F-008, P3-05/P3-06)"
+      subtitle="View your active insurance policies and download official policy documents."
       badgeText="My Policies"
       badgeClass="bg-info text-dark"
     >
-      {import.meta.env.DEV && (
-        <div className="dev-hook-box mb-4">
-          <span className="dev-hook-badge">Person 3 Ownership (Policy Lifecycle C5)</span>
-          <p className="mb-0">
-            Connected to <code>GET /api/v1/policies</code> and <code>GET /api/v1/policies/&#123;id&#125;/document</code> (OpenPDF).
-            Policy schedules are generated automatically upon successful payment and cryptographically tracked in FileStore.
-          </p>
-        </div>
-      )}
 
       {error && (
         <div className="alert alert-danger mb-4 d-flex justify-content-between align-items-center" role="alert">

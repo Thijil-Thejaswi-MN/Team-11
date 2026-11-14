@@ -116,7 +116,7 @@ export default function MotorQuoteView() {
   return (
     <PortalLayout
       title="Motor Insurance Instant Quote"
-      subtitle="Server-side rating engine with detailed premium breakdown (INS-F-005, SRS §4.4.1)"
+      subtitle="Calculate instant premium quotes with a detailed breakdown."
       badgeText="Instant Quote"
       badgeClass="bg-success"
     >
@@ -450,7 +450,7 @@ export default function MotorQuoteView() {
                       <i className="bi bi-arrow-right-circle me-2"></i>Proceed to Application with Quote #{quoteData.quoteId}
                     </button>
                     <span className="extra-small text-muted text-center d-block mt-2">
-                      Passes quote reference to application submission (P3-04a integration)
+                      Proceed to submit your policy application with this quote
                     </span>
                   </div>
                 </div>

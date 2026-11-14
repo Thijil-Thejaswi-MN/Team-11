@@ -35,7 +35,7 @@ export default function CustomerDashboardView() {
   return (
     <PortalLayout
       title={`Welcome back, ${currentUser?.name || 'Customer'}`}
-      subtitle="Customer Dashboard (SAD Section 4.5 / GET /api/v1/policies)"
+      subtitle="Overview of your active insurance coverage and policies."
       badgeText="Customer Portal"
       badgeClass="bg-primary"
     >

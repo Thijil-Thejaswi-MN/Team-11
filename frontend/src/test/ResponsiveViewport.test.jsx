@@ -34,10 +34,10 @@ describe('Responsive Viewport 360px Inspection (SRS INS-NF-005)', () => {
     const mainRegion = container.querySelector('#main-content-region');
     expect(mainRegion).toBeInTheDocument();
 
-    // Verify portal links render cleanly
-    expect(screen.getByText(/Role-Based Portals/i)).toBeInTheDocument();
-    expect(screen.getByText(/Customer Portal/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/Claims Officer/i).length).toBeGreaterThanOrEqual(1);
+    // Verify feature section renders cleanly
+    expect(screen.getByText(/What you can do/i)).toBeInTheDocument();
+    expect(screen.getByText(/Instant motor & health quotes/i)).toBeInTheDocument();
+    expect(screen.getByText(/File and track claims/i)).toBeInTheDocument();
 
     // Check container styles ensure no horizontal overflow
     const appWrapper = container.querySelector('.app-wrapper');

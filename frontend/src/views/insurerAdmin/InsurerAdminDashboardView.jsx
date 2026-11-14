@@ -39,20 +39,10 @@ export default function InsurerAdminDashboardView() {
   return (
     <PortalLayout
       title="Insurer Administration Desk"
-      subtitle="SafeShield General management portal (SAD Section 4.3.2, 4.3.4, 4.5)"
+      subtitle="Manage insurance plans, underwriting operations, and policy cancellations."
       badgeText="Insurer Admin"
       badgeClass="bg-warning text-dark"
     >
-      {/* Dev Hook Box */}
-      {import.meta.env.DEV && (
-        <div className="dev-hook-box mb-4">
-          <span className="dev-hook-badge">Plan Management & Operations</span>
-          <p className="mb-0">
-            Plan Management (<code>GET/POST/PUT /api/v1/plans</code>) and underwriting parameters.
-            Portfolio metrics (<code>INS-F-021</code>) deferred per Decision D-10.
-          </p>
-        </div>
-      )}
 
       {/* Tabs */}
       <ul className="nav nav-tabs mb-4">
@@ -88,17 +78,17 @@ export default function InsurerAdminDashboardView() {
       {/* Overview Tab */}
       {activeTab === 'OVERVIEW' && (
         <div>
-          {/* Deferred Metrics Notice (Decision D-10) */}
+          {/* Deferred Metrics Notice */}
           <div className="alert alert-info border-0 shadow-sm mb-4" data-testid="metrics-deferred-notice">
             <div className="d-flex align-items-start">
               <i className="bi bi-info-circle-fill fs-4 me-3 text-info"></i>
               <div>
                 <h5 className="alert-heading fw-bold mb-1">
-                  Portfolio metrics are not part of this release (dashboards deferred, decision D-10)
+                  Portfolio metrics are not available in this release
                 </h5>
                 <p className="mb-0 text-muted small">
                   Executive KPI dashboards and aggregated portfolio metrics (Policies Issued, Loss Ratio, Settled Payouts)
-                  under requirement <code>INS-F-021</code> were deferred for Sprint 2 to maintain core transactional focus.
+                  are scheduled for a future release to maintain core transactional focus.
                   Active plan configurations and underwriting workflows remain live and operational below.
                 </p>
               </div>
@@ -136,11 +126,11 @@ export default function InsurerAdminDashboardView() {
             <div className="col-12 col-md-6 col-lg-8">
               <div className="dashboard-card h-100">
                 <div className="dashboard-card-body">
-                  <span className="text-muted small text-uppercase fw-semibold">Release Scope Notice</span>
-                  <h5 className="fw-bold mt-1 text-dark">Sprint 2 Verified Capabilities</h5>
+                  <span className="text-muted small text-uppercase fw-semibold">Overview</span>
+                  <h5 className="fw-bold mt-1 text-dark">Core Capabilities</h5>
                   <ul className="small text-muted mb-0 ps-3 mt-2">
-                    <li><strong>Plan Catalog &amp; Editor:</strong> Authoring motor and health premium rules, add-ons, and coverage boundaries (<code>INS-F-003</code>).</li>
-                    <li><strong>Underwriting Queue:</strong> Manual review of referred applications exceeding rule thresholds (<code>INS-F-011</code>).</li>
+                    <li><strong>Plan Catalog &amp; Editor:</strong> Authoring motor and health premium rules, add-ons, and coverage boundaries.</li>
+                    <li><strong>Underwriting Queue:</strong> Manual review of referred applications exceeding rule thresholds.</li>
                     <li><strong>Policy Lifecycle:</strong> Online issuance, policy document generation, and renewals.</li>
                   </ul>
                 </div>
@@ -225,7 +215,7 @@ export default function InsurerAdminDashboardView() {
             <i className="bi bi-inbox fs-2 text-secondary d-block mb-2"></i>
             <p className="fw-semibold mb-1">No pending policy cancellation requests</p>
             <p className="small mb-0">
-              When customers submit cancellation requests (<code>INS-F-020</code>), they will appear here for statutory refund review and approval.
+              When customers submit cancellation requests, they will appear here for statutory refund review and approval.
             </p>
           </div>
         </div>
