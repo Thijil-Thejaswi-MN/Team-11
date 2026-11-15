@@ -26,6 +26,11 @@ class TestClockControllerIntegrationTest {
     @Autowired
     private MutableTestClock clock;
 
+    @org.junit.jupiter.api.AfterEach
+    void tearDown() {
+        clock.reset();
+    }
+
     @Test
     @DisplayName("GET /api/v1/test/clock returns current virtual time and status SUCCESS")
     void testGetVirtualTime() throws Exception {
