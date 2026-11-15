@@ -87,7 +87,7 @@ export default function SystemAdminDashboardView() {
     }
 
     if (isStaffRole && (!userInsurerId || Number(userInsurerId) <= 0)) {
-      setUserError(`Staff role "${userRole}" must be linked to a valid Insurer ID (SAD §4.3.6).`);
+      setUserError(`Staff role "${userRole}" must be linked to a valid Insurer ID.`);
       return;
     }
 
@@ -127,20 +127,10 @@ export default function SystemAdminDashboardView() {
   return (
     <PortalLayout
       title="System Administration & Audit Portal"
-      subtitle="Multi-insurer governance, business reporting, and immutable audit logs (SAD Section 4.3.6)"
+      subtitle="Multi-insurer governance, business reporting, and immutable audit logs."
       badgeText="System Admin"
       badgeClass="bg-danger"
     >
-      {import.meta.env.DEV && (
-        <div className="dev-hook-box mb-4">
-          <span className="dev-hook-badge">Shared Administration Module C11</span>
-          <p className="mb-0">
-            Connects to <code>POST /api/v1/admin/insurers</code> and <code>POST /api/v1/admin/users</code>.
-            Enforces staff insurer isolation (<code>INS-SR-003</code>) and 5-year audit retention (<code>INS-NF-007</code>).
-          </p>
-        </div>
-      )}
-
       {/* Admin Action Forms */}
       <div className="row g-4 mb-4">
         {/* Onboard Insurer Form */}
@@ -314,7 +304,7 @@ export default function SystemAdminDashboardView() {
                   />
                   {isStaffRole && (
                     <div className="form-text small text-muted">
-                      Staff must belong to exactly one insurer (INS-SR-003).
+                      Staff must belong to exactly one insurer.
                     </div>
                   )}
                 </div>

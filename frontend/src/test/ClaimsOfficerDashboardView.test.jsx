@@ -225,7 +225,7 @@ describe('ClaimsOfficerDashboardView (INS-F-014, TC-Clm-03, P1-12)', () => {
     // Prominent duplicate warning banner per INS-F-023
     expect(screen.getByTestId('duplicate-warning-banner')).toBeInTheDocument();
     expect(
-      screen.getByText(/Possible Duplicate Claim Detected \(INS-F-023\)/i)
+      screen.getByText(/Possible Duplicate Claim Detected/i)
     ).toBeInTheDocument();
   });
 

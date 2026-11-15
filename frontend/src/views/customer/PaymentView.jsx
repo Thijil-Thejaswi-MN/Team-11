@@ -150,19 +150,10 @@ export default function PaymentView() {
   return (
     <PortalLayout
       title="Premium Payment"
-      subtitle="Complete payment to issue your insurance policy (INS-F-009 / SAD Section 4.3.4)"
+      subtitle="Complete payment to issue your insurance policy."
       badgeText="Secure Checkout"
       badgeClass="bg-primary text-white"
     >
-      {import.meta.env.DEV && (
-        <div className="dev-hook-box mb-4">
-          <span className="dev-hook-badge">Person 4 Payment Adapter (INS-F-009)</span>
-          <p className="mb-0">
-            Connects to <code>POST /api/v1/payments</code> with payload <code>&#123; "applicationId": {cleanId || '...'} &#125;</code>.
-            Amount and idempotency keys are derived strictly server-side.
-          </p>
-        </div>
-      )}
 
       <div className="row g-4">
         {/* Left Column: Application Details & States */}

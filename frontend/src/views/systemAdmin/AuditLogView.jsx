@@ -67,7 +67,7 @@ export default function AuditLogView() {
       setTotalElements(data.totalElements || 0);
     } catch (err) {
       if (err.status === 403 || err.response?.status === 403) {
-        setError('Access denied: SYSTEM_ADMIN privileges required to inspect audit trail (INS-SR-003).');
+        setError('Access denied: SYSTEM_ADMIN privileges required to inspect audit trail.');
       } else if (err.status === 401 || err.response?.status === 401) {
         setError('Authentication required: please log in with a System Admin account.');
       } else {
@@ -129,21 +129,10 @@ export default function AuditLogView() {
   return (
     <PortalLayout
       title="System Audit Log"
-      subtitle="Immutable, append-only security and workflow audit trail (INS-F-018, INS-SR-008, SAD §4.3.6)"
+      subtitle="Immutable, append-only security and workflow audit trail."
       badgeText="System Admin"
       badgeClass="bg-danger"
     >
-      {/* Dev Hook Information Banner */}
-      {import.meta.env.DEV && (
-        <div className="dev-hook-box mb-4">
-          <span className="dev-hook-badge">P2-18 Audit Hardening</span>
-          <p className="mb-0">
-            Connects to <code>GET /api/v1/audit</code>. Enforces <code>SYSTEM_ADMIN</code> RBAC (<code>ACCESS-403</code>),
-            server-side PII scrubbing, and append-only database semantics (<code>TC-Aud-01</code>, <code>TC-Sec-08</code>).
-          </p>
-        </div>
-      )}
-
       {/* Filter Card */}
       <div className="dashboard-card mb-4 p-3 p-md-4">
         <div className="dashboard-card-header mb-3 pb-2 border-bottom d-flex justify-content-between align-items-center">

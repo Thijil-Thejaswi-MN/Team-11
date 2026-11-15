@@ -2,185 +2,104 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import AppLayout from '../../components/layout/AppLayout';
 import { ROUTES } from '../../routes/routePaths';
-import { useAuth, ROLES } from '../../context/AuthContext';
 
 export default function HomeView() {
-  const { switchRole } = useAuth();
-
   return (
     <AppLayout>
       {/* Hero Section */}
-      <div className="p-4 p-md-5 mb-4 rounded-3 text-white" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}>
+      <div
+        className="p-4 p-md-5 mb-4 rounded-3 text-white"
+        style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}
+      >
         <div className="container-fluid py-2">
-          <div className="d-flex align-items-center gap-2 mb-2">
-            <span className="badge bg-info text-dark fw-bold">Team 11</span>
-            <span className="badge bg-secondary">Deliverable 2</span>
-          </div>
-          <h1 className="display-6 fw-bold">Insurance Workflow Automation System</h1>
+          <h1 className="display-6 fw-bold">InsureFlow</h1>
           <p className="col-md-9 fs-6 text-light mb-4">
-            End-to-end automation for 2-wheeler, 4-wheeler, and personal health insurance workflows:
-            from automated rule-based underwriting to instant policy issuance, renewals, and claims processing.
+            Smart digital insurance management — explore plans, calculate instant quotes, and manage policies and claims in one place.
           </p>
           <div className="d-flex flex-wrap gap-2">
             <Link to={ROUTES.PLANS} className="btn btn-primary btn-sm px-3" id="home-browse-btn">
-              <i className="bi bi-search me-1"></i>Browse Insurance Plans
+              <i className="bi bi-search me-1"></i>Browse plans
             </Link>
             <Link to={ROUTES.PLANS_COMPARE} className="btn btn-outline-light btn-sm px-3" id="home-compare-btn">
-              <i className="bi bi-arrow-left-right me-1"></i>Compare Plans
+              <i className="bi bi-arrow-left-right me-1"></i>Compare plans
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Role Portal Cards (Easy Testing for Reviewers & Team Members - Dev demo only) */}
-      {import.meta.env.DEV && (
-        <section aria-labelledby="dev-portals-heading" className="dev-portals-wrapper mb-4">
-          <div className="d-flex align-items-center gap-2 mb-3">
-            <h2 className="h4 fw-bold mb-0" id="dev-portals-heading">Role-Based Portals (SAD Section 4.5)</h2>
-            <span className="badge bg-warning text-dark">Dev demo only</span>
-          </div>
-          <div className="row g-3">
-            {/* Customer Portal */}
-            <div className="col-12 col-md-6 col-lg-4">
-              <div className="dashboard-card h-100">
-                <div className="dashboard-card-header">
-                  <span className="fw-bold">Customer Portal</span>
-                  <span className="badge bg-primary">Person 1, 3, 4</span>
-                </div>
-                <div className="dashboard-card-body d-flex flex-column">
-                  <p className="text-muted small">
-                    Explore plans, calculate motor/health quotes, submit KYC, pay premiums, download policy PDFs, and track claims.
-                  </p>
-                  <div className="mt-auto">
-                    <Link
-                      to={ROUTES.CUSTOMER_DASHBOARD}
-                      className="btn btn-outline-primary btn-sm w-100"
-                      onClick={() => switchRole(ROLES.CUSTOMER)}
-                    >
-                      Enter as Customer (Asha)
-                    </Link>
-                  </div>
-                </div>
+      {/* What You Can Do Section */}
+      <section aria-labelledby="features-heading" className="mb-4">
+        <h2 className="h4 fw-bold mb-3" id="features-heading">What you can do</h2>
+        <div className="row g-3">
+          {/* Card 1: Compare plans */}
+          <div className="col-12 col-md-6 col-lg-3">
+            <div className="dashboard-card h-100 p-3 d-flex flex-column">
+              <div className="text-primary fs-3 mb-2">
+                <i className="bi bi-layout-split"></i>
               </div>
-            </div>
-
-            {/* Insurer Admin Portal */}
-            <div className="col-12 col-md-6 col-lg-4">
-              <div className="dashboard-card h-100">
-                <div className="dashboard-card-header">
-                  <span className="fw-bold">Insurer Admin</span>
-                  <span className="badge bg-warning text-dark">Person 1 & 3</span>
-                </div>
-                <div className="dashboard-card-body d-flex flex-column">
-                  <p className="text-muted small">
-                    Configure insurance plans, premium rating rules, underwriting parameters, add-ons, and review cancellation requests.
-                  </p>
-                  <div className="mt-auto">
-                    <Link
-                      to={ROUTES.INSURER_ADMIN_DASHBOARD}
-                      className="btn btn-outline-warning btn-sm w-100 text-dark"
-                      onClick={() => switchRole(ROLES.INSURER_ADMIN)}
-                    >
-                      Enter as Insurer Admin
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Underwriter Portal */}
-            <div className="col-12 col-md-6 col-lg-4">
-              <div className="dashboard-card h-100">
-                <div className="dashboard-card-header">
-                  <span className="fw-bold">Underwriter Portal</span>
-                  <span className="badge bg-success">Person 1</span>
-                </div>
-                <div className="dashboard-card-body d-flex flex-column">
-                  <p className="text-muted small">
-                    Review referred applications (e.g. vehicle age &gt; 15, customer age &gt;= 60, pre-existing diseases) and record decisions.
-                  </p>
-                  <div className="mt-auto">
-                    <Link
-                      to={ROUTES.UNDERWRITER_DASHBOARD}
-                      className="btn btn-outline-success btn-sm w-100"
-                      onClick={() => switchRole(ROLES.UNDERWRITER)}
-                    >
-                      Enter as Underwriter (Priya)
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Claims Officer Portal */}
-            <div className="col-12 col-md-6 col-lg-4">
-              <div className="dashboard-card h-100">
-                <div className="dashboard-card-header">
-                  <span className="fw-bold">Claims Officer</span>
-                  <span className="badge bg-info text-dark">Person 4</span>
-                </div>
-                <div className="dashboard-card-body d-flex flex-column">
-                  <p className="text-muted small">
-                    Enforce claim state machine, document verification, duplicate detection check, assessment, and claim payout authorization.
-                  </p>
-                  <div className="mt-auto">
-                    <Link
-                      to={ROUTES.CLAIMS_OFFICER_DASHBOARD}
-                      className="btn btn-outline-info btn-sm w-100 text-dark"
-                      onClick={() => switchRole(ROLES.CLAIMS_OFFICER)}
-                    >
-                      Enter as Claims Officer (Manoj)
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* System Admin Portal */}
-            <div className="col-12 col-md-6 col-lg-4">
-              <div className="dashboard-card h-100">
-                <div className="dashboard-card-header">
-                  <span className="fw-bold">System Admin</span>
-                  <span className="badge bg-danger">Shared</span>
-                </div>
-                <div className="dashboard-card-body d-flex flex-column">
-                  <p className="text-muted small">
-                    System health overview, multi-insurer marketplace management, aggregated business reports, and immutable audit logs.
-                  </p>
-                  <div className="mt-auto">
-                    <Link
-                      to={ROUTES.SYSTEM_ADMIN_DASHBOARD}
-                      className="btn btn-outline-danger btn-sm w-100"
-                      onClick={() => switchRole(ROLES.SYSTEM_ADMIN)}
-                    >
-                      Enter as System Admin
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Team Architecture Specs */}
-            <div className="col-12 col-md-6 col-lg-4">
-              <div className="dashboard-card h-100 bg-light">
-                <div className="dashboard-card-header">
-                  <span className="fw-bold">Architecture Specs</span>
-                  <span className="badge bg-secondary">SAD v1.1</span>
-                </div>
-                <div className="dashboard-card-body small">
-                  <ul className="list-unstyled mb-0 text-muted">
-                    <li><i className="bi bi-check2 text-success me-1"></i>Modular Monolith (ADR-001)</li>
-                    <li><i className="bi bi-check2 text-success me-1"></i>REST /api/v1 (ADR-002)</li>
-                    <li><i className="bi bi-check2 text-success me-1"></i>MySQL 8 InnoDB (ADR-003)</li>
-                    <li><i className="bi bi-check2 text-success me-1"></i>State Machines (ADR-008)</li>
-                    <li><i className="bi bi-check2 text-success me-1"></i>360px Mobile Layout (INS-NF-005)</li>
-                  </ul>
-                </div>
-              </div>
+              <h3 className="h6 fw-bold">Compare plans</h3>
+              <p className="text-muted small mb-0">
+                Browse policies across top insurers and compare coverage, deductibles, and benefits side by side.
+              </p>
             </div>
           </div>
-        </section>
-      )}
+
+          {/* Card 2: Instant quotes */}
+          <div className="col-12 col-md-6 col-lg-3">
+            <div className="dashboard-card h-100 p-3 d-flex flex-column">
+              <div className="text-success fs-3 mb-2">
+                <i className="bi bi-calculator"></i>
+              </div>
+              <h3 className="h6 fw-bold">Instant motor & health quotes</h3>
+              <p className="text-muted small mb-0">
+                Get real-time premium estimates for two-wheeler, four-wheeler, and comprehensive health insurance.
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: Buy & download policy */}
+          <div className="col-12 col-md-6 col-lg-3">
+            <div className="dashboard-card h-100 p-3 d-flex flex-column">
+              <div className="text-info fs-3 mb-2">
+                <i className="bi bi-file-earmark-check"></i>
+              </div>
+              <h3 className="h6 fw-bold">Buy and download your policy</h3>
+              <p className="text-muted small mb-0">
+                Complete application verification, pay securely, and immediately download your official certified policy schedule.
+              </p>
+            </div>
+          </div>
+
+          {/* Card 4: File & track claims */}
+          <div className="col-12 col-md-6 col-lg-3">
+            <div className="dashboard-card h-100 p-3 d-flex flex-column">
+              <div className="text-warning fs-3 mb-2">
+                <i className="bi bi-clipboard2-pulse"></i>
+              </div>
+              <h3 className="h6 fw-bold">File and track claims</h3>
+              <p className="text-muted small mb-0">
+                Submit claims with required documentation and monitor progress through verification, loss assessment, and payout.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="dashboard-card p-4 text-center my-4">
+        <h3 className="h5 fw-bold mb-2">Ready to get started?</h3>
+        <p className="text-muted small mb-3">
+          Sign in to access your portal, view your policy portfolio, or file a claim.
+        </p>
+        <div className="d-flex justify-content-center gap-2">
+          <Link to={ROUTES.LOGIN} className="btn btn-primary btn-sm px-4">
+            Sign in
+          </Link>
+          <Link to={ROUTES.REGISTER} className="btn btn-outline-secondary btn-sm px-4">
+            Create account
+          </Link>
+        </div>
+      </section>
     </AppLayout>
   );
 }

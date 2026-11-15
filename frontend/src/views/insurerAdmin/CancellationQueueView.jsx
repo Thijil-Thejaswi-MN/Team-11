@@ -52,7 +52,7 @@ export default function CancellationQueueView() {
   return (
     <PortalLayout
       title="Policy Cancellation Queue"
-      subtitle="Review customer cancellation requests and process pro-rata / free-look refunds (P3-10 / INS-F-020)"
+      subtitle="Review customer cancellation requests and process eligible refunds."
       badgeText="Insurer Admin"
       badgeClass="bg-warning text-dark"
     >

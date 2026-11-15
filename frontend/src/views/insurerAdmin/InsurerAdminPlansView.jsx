@@ -255,20 +255,10 @@ export default function InsurerAdminPlansView() {
   return (
     <PortalLayout
       title="Plan Management & Rating Rules"
-      subtitle="Configure insurance plans, premium rating formulas, underwriting rules, and add-ons (INS-F-003, SAD §4.3.2)"
+      subtitle="Configure insurance plans, premium rating formulas, underwriting rules, and add-ons."
       badgeText="Insurer Admin"
       badgeClass="bg-warning text-dark"
     >
-      {import.meta.env.DEV && (
-        <div className="dev-hook-box mb-4">
-          <span className="dev-hook-badge">Person 1 Module C4 (INS-F-003)</span>
-          <p className="mb-0">
-            Enforces insurer isolation (<code>INS-SR-003</code>). Insurer Admins can create and edit plans for their own insurer
-            (<code>POST /api/v1/plans</code>, <code>PUT /api/v1/plans/&#123;id&#125;</code>) and deactivate them (<code>PATCH /api/v1/plans/&#123;id&#125;</code>).
-            Cross-insurer modifications are rejected with <code>403 Forbidden</code>.
-          </p>
-        </div>
-      )}
 
       {/* Global Alerts */}
       {successMessage && (
@@ -311,7 +301,7 @@ export default function InsurerAdminPlansView() {
         <div className="dashboard-card mb-4 border border-primary shadow-sm" id="plan-editor-card">
           <div className="dashboard-card-header bg-light d-flex justify-content-between align-items-center">
             <span className="fw-bold fs-6">
-              {formMode === 'CREATE' ? 'Create New Insurance Plan (INS-F-003)' : `Edit Plan: ${formData.code}`}
+              {formMode === 'CREATE' ? 'Create New Insurance Plan' : `Edit Plan: ${formData.code}`}
             </span>
             <button
               type="button"

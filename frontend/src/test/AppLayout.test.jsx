@@ -18,13 +18,13 @@ describe('AppLayout Component', () => {
     );
 
     // Verify brand text in Header
-    expect(screen.getByText(/InsureFlow/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/InsureFlow/i).length).toBeGreaterThanOrEqual(1);
 
     // Verify child content
     expect(screen.getByTestId('test-child-content')).toHaveTextContent('Child Dashboard Content');
 
     // Verify footer text
-    expect(screen.getByText(/Insurance Workflow Automation System/i)).toBeInTheDocument();
+    expect(screen.getByText(/SE Mini-Project/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Team 11/i).length).toBeGreaterThanOrEqual(1);
   });
 });

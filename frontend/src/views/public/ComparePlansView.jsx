@@ -52,20 +52,9 @@ export default function ComparePlansView() {
       <div className="mb-4">
         <h1 className="h3 fw-bold">Compare Insurance Plans</h1>
         <p className="text-muted small">
-          Side-by-side comparison for up to 3 plans (SAD Section 4.3.2 / <code>GET /api/v1/plans/compare?ids=...</code>).
+          Compare up to 3 plans side by side.
         </p>
       </div>
-
-      {/* Developer Integration Hook */}
-      {import.meta.env.DEV && (
-        <div className="dev-hook-box mb-4">
-          <span className="dev-hook-badge">Person 1 Ownership (Plan Comparison C4)</span>
-          <p className="mb-0">
-            This view connects to <code>GET /api/v1/plans/compare?ids=...</code>.
-            Enforces maximum 3 plans boundary (returns <code>VALID-422 / 400</code> if more than 3 selected).
-          </p>
-        </div>
-      )}
 
       {/* Error Alert with Retry */}
       {error && (
