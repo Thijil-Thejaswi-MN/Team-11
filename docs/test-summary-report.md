@@ -62,7 +62,15 @@
 | Newman API Assertions | Sharana Newman re-run (`docs/test-evidence/2026-11-02-newman-eb6dd25-rerun.xml`) | 70 | 68 | 2 | 0 | 0 |
 | Selenium E2E Smoke | Sharana Selenium run (`docs/test-evidence/2026-11-02-selenium-eb6dd25.xml`) | 3 | 3 | 0 | 0 | 0 |
 | STP Independent Test Cases | `docs/test-execution-matrix.md` | 52 | 0 | 0 | 0 | Blocked / Deferred / Not Run |
-| UAT Scenarios | `docs/uat-29-oct.md` (UAT-01..UAT-08) | 8 | _(to fill)_ | _(to fill)_ | 0 | _(to fill)_ |
+| UAT Scenarios | docs/uat-29-oct.md (UAT-01..UAT-08) on build ee22962 (8 Nov walkthrough) | 8 | 0 | 0 | 0 | 0 demonstrated (8 Not demonstrated, re-run pending) |
+
+### UAT Execution Results (8 Nov Walkthrough — Invalidated)
+
+The 8 Nov walkthrough recorded in PR #193 was evaluated and invalidated by the QA Lead on 15 Nov 2026: the walkthrough ran entirely under the dev role switcher as Customer (Asha) prior to the fabricated data fix (PR #191). All staff steps returned HTTP 403/404 errors, and customer screens displayed static mock/fallback data (APP-2026-9021, POL-2026-4W-0091, client-side fallback quote ₹14,080).
+
+- **Total Scenarios Evaluated:** 8
+- **Demonstrated:** 0 / 8 (re-run pending on current main)
+- **Not Demonstrated:** 8 / 8
 
 ### STP Coverage (Thijil's Assigned STP Rows)
 
@@ -108,18 +116,14 @@
 
 ---
 
-## 5. Open Defects at Code Freeze (`type:bug`)
+## 5. Open Defects at Final Release (`type:bug`)
 
-*Source: `gh issue list --label type:bug --state open` on 2 Nov 2026:*
+*Source: `gh issue list --label type:bug --state open` on 15 Nov 2026 (resolved UI bugs #175–#179 and #190 closed via PR #191):*
 
 | Issue # | Severity | Summary | Module | Status |
 |:---:|:---:|---|---|:---:|
+| **#195** | High | GET /cancellations returns 404 on the Insurer Admin cancellation queue | Cancellations | OPEN |
 | **#187** | High | [Audit API] Unauthenticated GET /api/v1/audit returns 403 ACCESS-403 instead of 401 AUTH-401 (TC-Aud-01 / TC-Sec-03) | Admin / Audit | OPEN |
-| **#179** | Medium | [System Admin] Hardcoded sample audit records in SystemAdminDashboardView.jsx | Admin | OPEN |
-| **#178** | Medium | [Customer Policies] Fallback synthetic policies in MyPoliciesView.jsx | Policies | OPEN |
-| **#177** | Medium | [Customer Dashboard] Hardcoded portfolio metrics and sample policy in CustomerDashboardView.jsx | Customer | OPEN |
-| **#176** | Medium | [Customer Claims] Hardcoded sample claim records in ClaimsPlaceholder.jsx | Claims | OPEN |
-| **#175** | Medium | [Customer Applications] Hardcoded sample application records in ApplicationsPlaceholder.jsx | Applications | OPEN |
 | **#172** | Low | [Notifications] Audit logging not recorded for notification events | Notifications | OPEN |
 | **#171** | Low | [Policies] Audit logging not recorded for policy lifecycle | Policies | OPEN |
 | **#170** | Low | [Claims] Audit logging not recorded for claim actions | Claims | OPEN |
