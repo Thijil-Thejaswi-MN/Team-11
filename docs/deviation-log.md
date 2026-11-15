@@ -205,6 +205,20 @@
 | Evidence | `docs/test-evidence/uat-2026-11-08/uat-results.md`; `docs/uat-29-oct.md`; `docs/decisions.md` (Decision D-11) |
 | Status | Open (deferred to Sprint 3) |
 
+---
+
+### D-UAT-INVALID-EVIDENCE — 8 Nov UAT walkthrough results not supported by evidence
+
+| Field | Detail |
+|-------|--------|
+| Category | Quality / Process |
+| Description | UAT results recorded on 8 Nov (#193) were not supported by the evidence; corrected 15 Nov in this PR; UAT re-run on current main required. All 16 screenshots were captured under `Customer (Asha)` via dev role switcher before fake-data removal (#191): staff routes returned HTTP 403/404 and customer screens showed sample/fallback data. |
+| Root cause | Walkthrough executed without real multi-role authentication logins and prior to merging fake-data cleanup PR #191. |
+| Impact | All 8 UAT scenarios set to "Not demonstrated" in `docs/test-evidence/uat-2026-11-08/uat-results.md` and `docs/uat-29-oct.md`; UAT re-run on current main required. |
+| Mitigation | Results invalidated in documentation; new defect #195 filed for cancellation 404; formal re-run scheduled on updated main. |
+| Evidence | `docs/test-evidence/uat-2026-11-08/`; `docs/uat-29-oct.md`; PR #194 |
+| Status | Open (re-run pending) |
+
 ### D-VID-S2 — Sprint 2 demo video
 
 | Field | Detail |

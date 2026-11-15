@@ -62,17 +62,15 @@
 | Newman API Assertions | Sharana Newman re-run (`docs/test-evidence/2026-11-02-newman-eb6dd25-rerun.xml`) | 70 | 68 | 2 | 0 | 0 |
 | Selenium E2E Smoke | Sharana Selenium run (`docs/test-evidence/2026-11-02-selenium-eb6dd25.xml`) | 3 | 3 | 0 | 0 | 0 |
 | STP Independent Test Cases | `docs/test-execution-matrix.md` | 52 | 0 | 0 | 0 | Blocked / Deferred / Not Run |
-| UAT Scenarios | `docs/uat-29-oct.md` (UAT-01..UAT-08) on build `ee22962` (H2 test profile, single-operator agent-run walkthrough) | 8 | 5 | 0 | 0 | 2 Partial, 1 Blocked |
+| UAT Scenarios | docs/uat-29-oct.md (UAT-01..UAT-08) on build ee22962 (8 Nov walkthrough) | 8 | 0 | 0 | 0 | 0 demonstrated (8 Not demonstrated, re-run pending) |
 
-### UAT Execution Results (Build `ee22962`, H2 Test Profile)
+### UAT Execution Results (8 Nov Walkthrough — Invalidated)
 
-Executed on 8 Nov 2026 as a single-operator agent-run browser walkthrough on Sharana's machine (`sharanabasavagouda113-debug`) playing all roles; finalised and recorded on 15 Nov 2026 (`docs/uat-29-oct.md` and `docs/test-evidence/uat-2026-11-08/uat-results.md`):
+The 8 Nov walkthrough recorded in PR #193 was evaluated and invalidated by the QA Lead on 15 Nov 2026: the walkthrough ran entirely under the dev role switcher as Customer (Asha) prior to the fabricated data fix (PR #191). All staff steps returned HTTP 403/404 errors, and customer screens displayed static mock/fallback data (APP-2026-9021, POL-2026-4W-0091, client-side fallback quote ₹14,080).
 
 - **Total Scenarios Evaluated:** 8
-- **Passed:** 5 (UAT-01, UAT-02, UAT-04, UAT-07, UAT-08)
-- **Partial:** 2 (UAT-03: renewal execution & certificate download not shown in evidence; UAT-06: document re-upload blocked due to missing API)
-- **Blocked:** 1 (UAT-05: automated settlement payout trigger not available on backend; claim stops at Payment Processing per Decision D-11)
-- **Failed:** 0
+- **Demonstrated:** 0 / 8 (re-run pending on current main)
+- **Not Demonstrated:** 8 / 8
 
 ### STP Coverage (Thijil's Assigned STP Rows)
 
@@ -124,6 +122,7 @@ Executed on 8 Nov 2026 as a single-operator agent-run browser walkthrough on Sha
 
 | Issue # | Severity | Summary | Module | Status |
 |:---:|:---:|---|---|:---:|
+| **#195** | High | GET /cancellations returns 404 on the Insurer Admin cancellation queue | Cancellations | OPEN |
 | **#187** | High | [Audit API] Unauthenticated GET /api/v1/audit returns 403 ACCESS-403 instead of 401 AUTH-401 (TC-Aud-01 / TC-Sec-03) | Admin / Audit | OPEN |
 | **#172** | Low | [Notifications] Audit logging not recorded for notification events | Notifications | OPEN |
 | **#171** | Low | [Policies] Audit logging not recorded for policy lifecycle | Policies | OPEN |
