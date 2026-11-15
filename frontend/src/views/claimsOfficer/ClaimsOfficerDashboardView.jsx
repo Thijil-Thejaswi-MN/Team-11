@@ -304,23 +304,10 @@ export default function ClaimsOfficerDashboardView() {
   return (
     <PortalLayout
       title="Claims Officer Queue & Appraisal Desk"
-      subtitle="Verification, loss assessment, adjudication, and decisioning (SAD §4.1.3, §4.3.5, INS-F-014)"
+      subtitle="Review submitted claims, inspect documentation, and record approval or rejection decisions."
       badgeText="Claims Officer Desk"
       badgeClass="bg-info text-dark"
     >
-      {/* Dev Hook Box */}
-      {/* Dev Hook Box — guarded so badge is hidden outside DEV (INS-F-019 responsive) */}
-      {import.meta.env.DEV && (
-        <div className="dev-hook-box mb-4">
-          <span className="dev-hook-badge">Person 1 Ownership: Claims Officer Screens (P1-12, Decision D-11)</span>
-          <p className="mb-0 small">
-            Agreed in Decision D-11: Raghunandan (P4) owns the backend claims entities and service APIs.
-            Person 1 (Thijil) owns the appraisal screens (P1-12), duplicate claim detection review banner (INS-F-023),
-            stale claim auto-close scheduler (P1-19, TC-Clm-06), and STP independent test verification (TC-Clm-01 to TC-Clm-04).
-          </p>
-        </div>
-      )}
-
       {/* Success Notification Banner */}
       {successBanner && (
         <div className="alert alert-success alert-dismissible fade show mb-4 shadow-sm" role="alert">
@@ -400,7 +387,7 @@ export default function ClaimsOfficerDashboardView() {
             <div className="card-body p-3">
               <span className="text-muted extra-small d-block text-uppercase fw-bold">Duplicate Flags</span>
               <h3 className="fw-bold mb-0 text-danger mt-1">{metrics.duplicateCount}</h3>
-              <span className="text-muted extra-small">INS-F-023 Held for review</span>
+              <span className="text-muted extra-small">Held for review</span>
             </div>
           </div>
         </div>
@@ -537,7 +524,7 @@ export default function ClaimsOfficerDashboardView() {
                               <span
                                 className="badge bg-danger text-white extra-small"
                                 data-testid={`duplicate-badge-${claim.id}`}
-                                title="INS-F-023: Duplicate claim flag (same policy, incident date and claimed amount)"
+                                title="Duplicate claim flag (same policy, incident date and claimed amount)"
                               >
                                 ⚠️ Possible Duplicate
                               </span>
@@ -705,7 +692,7 @@ export default function ClaimsOfficerDashboardView() {
                   >
                     <span className="fs-4">⚠️</span>
                     <div>
-                      <strong className="d-block">Possible Duplicate Claim Detected (INS-F-023)</strong>
+                      <strong className="d-block">Possible Duplicate Claim Detected</strong>
                       <div className="small">
                         This claim has the same policy reference, incident date, and claimed amount as an earlier claim filing.
                         It is held for mandatory manual appraisal and fraud scrutiny.
@@ -791,11 +778,6 @@ export default function ClaimsOfficerDashboardView() {
                   <div className="alert alert-info border-info small mb-0">
                     <strong>ℹ️ Settlement Payout Notice:</strong> Claim has been approved for ₹
                     {Number(detailClaim.assessedAmount).toLocaleString('en-IN')}. Awaiting disbursement by payment gateway.
-                    <br />
-                    <em>
-                      (Note: The backend payout trigger endpoint <code>POST /claims/&#123;id&#125;/payout</code> is owned by
-                      Person 4 and pending API controller mapping per Decision D-11).
-                    </em>
                   </div>
                 )}
               </div>
@@ -879,7 +861,7 @@ export default function ClaimsOfficerDashboardView() {
                   {/* Duplicate warning if applicable */}
                   {verifyModalClaim.duplicateFlag && (
                     <div className="alert alert-danger py-2 small mb-3">
-                      ⚠️ <strong>INS-F-023:</strong> Possible duplicate claim. Verify documentation with extra scrutiny.
+                      ⚠️ <strong>Duplicate Warning:</strong> Possible duplicate claim. Verify documentation with extra scrutiny.
                     </div>
                   )}
 
@@ -927,7 +909,7 @@ export default function ClaimsOfficerDashboardView() {
                           📑 Request Additional Documents — Remain in Verification
                         </label>
                         <div className="form-text extra-small ps-1">
-                          Emits CLAIM_DOCUMENTS_REQUESTED notification and starts 15-day auto-close clock (TC-Clm-06).
+                          Emits customer notification and starts 15-day document auto-close clock.
                         </div>
                       </div>
                     </div>
@@ -1039,7 +1021,7 @@ export default function ClaimsOfficerDashboardView() {
                   {/* Duplicate warning if applicable */}
                   {decisionModalClaim.duplicateFlag && (
                     <div className="alert alert-danger py-2 small mb-3">
-                      ⚠️ <strong>INS-F-023:</strong> Potential duplicate claim. Verify loss assessment carefully before approval.
+                      ⚠️ <strong>Duplicate Warning:</strong> Potential duplicate claim. Verify loss assessment carefully before approval.
                     </div>
                   )}
 
@@ -1139,7 +1121,7 @@ export default function ClaimsOfficerDashboardView() {
                       required
                     ></textarea>
                     <div className="form-text extra-small">
-                      Strictly mandatory per P1 contract &amp; SAD §4.3.5. Surfaced as 422 if empty.
+                      Decision reason is mandatory.
                     </div>
                   </div>
                 </div>

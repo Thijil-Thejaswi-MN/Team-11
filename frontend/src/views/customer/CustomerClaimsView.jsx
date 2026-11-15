@@ -324,20 +324,10 @@ export default function CustomerClaimsView() {
   return (
     <PortalLayout
       title="Claims Tracker & Filing Desk"
-      subtitle="Customer claim lifecycle, filing, and status timeline (SAD §4.1.3, §4.3.5, P4-16)"
+      subtitle="File reimbursement claims and track their review and settlement progress in real time."
       badgeText="Claims Center"
       badgeClass="bg-primary text-white"
     >
-      {/* Dev Hook Box */}
-      {import.meta.env.DEV && (
-        <div className="dev-hook-box mb-4">
-          <span className="dev-hook-badge">Person 4 Scope: P4-16 Customer Claims &amp; Timeline</span>
-          <p className="mb-0 small">
-            Connects to <code>POST /api/v1/claims</code> and <code>GET /api/v1/claims/&#123;id&#125;</code>.
-            Visualizes the 5-stage lifecycle: Submitted &rarr; Document Verification &rarr; Loss Assessment &rarr; Payment Processing &rarr; Settled / Rejected.
-          </p>
-        </div>
-      )}
 
       {claimDetailError && (
         <div className="alert alert-warning mb-4 d-flex justify-content-between align-items-center" role="alert">
@@ -471,7 +461,7 @@ export default function CustomerClaimsView() {
                     <span
                       className="badge bg-danger text-white extra-small"
                       data-testid="claim-duplicate-badge"
-                      title="INS-F-023: Duplicate claim flag"
+                      title="Possible duplicate claim flag"
                     >
                       <i className="bi bi-exclamation-triangle-fill me-1"></i>Possible Duplicate
                     </span>
@@ -486,7 +476,7 @@ export default function CustomerClaimsView() {
                 {/* Duplicate Notification Banner */}
                 {selectedClaim.duplicateFlag && (
                   <div className="alert alert-danger py-2 small mb-4" data-testid="duplicate-alert-banner">
-                    <strong>Possible Duplicate Detected (INS-F-023):</strong> This claim was flagged as a potential duplicate (same policy, incident date, and claimed amount). It is currently being reviewed with extra scrutiny by a Claims Officer.
+                    <strong>Possible Duplicate Detected:</strong> This claim was flagged as a potential duplicate (same policy, incident date, and claimed amount). It is currently being reviewed with extra scrutiny by a Claims Officer.
                   </div>
                 )}
 
@@ -537,7 +527,7 @@ export default function CustomerClaimsView() {
                 {/* =========================================================================
                     5-Stage Claim State Machine Progress Timeline (ADR-008 & SAD §4.1.3)
                     ========================================================================= */}
-                <h5 className="h6 fw-bold mb-3">Claim State Machine Progress (ADR-008)</h5>
+                <h5 className="h6 fw-bold mb-3">Claim Progress Timeline</h5>
                 <div className="p-3 bg-light rounded-3 mb-3 border" data-testid="claim-timeline">
                   <div className="row text-center g-3 small">
                     {/* Step 1: Submission */}
@@ -731,7 +721,7 @@ export default function CustomerClaimsView() {
                 {submitResult.duplicateFlag && (
                   <div className="badge bg-danger text-white mb-2 p-2 d-inline-block">
                     <i className="bi bi-exclamation-triangle-fill me-1"></i>
-                    Possible Duplicate Detected (INS-F-023) — Held for Manual Inspection
+                    Possible Duplicate Detected — Held for Manual Inspection
                   </div>
                 )}
                 <div className="mt-2">

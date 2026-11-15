@@ -91,7 +91,7 @@ export default function HealthQuoteView() {
   return (
     <PortalLayout
       title="Health Insurance Instant Quote"
-      subtitle="Medical rating engine with multi-member support and underwriting loading (INS-F-006, TC-Quote-02)"
+      subtitle="Calculate instant health insurance quotes with itemized breakdown."
       badgeText="Instant Quote"
       badgeClass="bg-success"
     >
@@ -405,7 +405,7 @@ export default function HealthQuoteView() {
                       <i className="bi bi-arrow-right-circle me-2"></i>Proceed to Application with Quote #{quoteData.quoteId}
                     </button>
                     <span className="extra-small text-muted text-center d-block mt-2">
-                      Passes quote reference to application submission (P3-04a integration)
+                      Proceed to submit your policy application with this quote
                     </span>
                   </div>
                 </div>

@@ -59,20 +59,9 @@ export default function BrowsePlansView() {
       <div className="mb-4">
         <h1 className="h3 fw-bold">Browse Insurance Plans</h1>
         <p className="text-muted small">
-          Public Plan Browsing (SRS UC-04 / SAD Section 4.3.2). No authentication required.
+          Explore and compare verified motor and health insurance plans.
         </p>
       </div>
-
-      {/* Developer Integration Hook */}
-      {import.meta.env.DEV && (
-        <div className="dev-hook-box">
-          <span className="dev-hook-badge">Person 1 Ownership (Plan Management C4)</span>
-          <p className="mb-0">
-            This view connects to <code>GET /api/v1/plans</code>.
-            Person 1 injects dynamic plan queries and filter state here.
-          </p>
-        </div>
-      )}
 
       {/* Filter and Compare Toolbar */}
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">

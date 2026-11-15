@@ -1,11 +1,18 @@
 import React from 'react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider, ROLES } from '../context/AuthContext';
 import Header from '../components/common/Header';
 
 describe('Responsive Application Shell (SRS INS-NF-005: 360px+ Viewport)', () => {
+  beforeEach(() => {
+    import.meta.env.VITE_DEMO_ROLE_SWITCHER = 'true';
+  });
+
+  afterEach(() => {
+    delete import.meta.env.VITE_DEMO_ROLE_SWITCHER;
+  });
   it('renders mobile navigation toggle button with accessible aria attributes', () => {
     render(
       <BrowserRouter>
