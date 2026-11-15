@@ -28,6 +28,31 @@ describe('End-to-End Quote Flow Integration (P1-08 -> P3-04a)', () => {
       },
     };
 
+    vi.spyOn(apiClient, 'get').mockImplementation((url) => {
+      if (url === '/plans') {
+        return Promise.resolve({
+          data: {
+            items: [
+              {
+                planId: 1,
+                name: 'SafeShield Motor Comprehensive (4W)',
+                insurer: 'SafeShield General (INS-A)',
+                type: 'MOTOR_4W',
+                coverage: 800000,
+                deductible: 1500,
+                basePremium: 8450,
+                addOns: ['Zero Depreciation', 'Roadside Assistance'],
+              },
+            ],
+          },
+        });
+      }
+      if (url === '/applications') {
+        return Promise.resolve({ data: [] });
+      }
+      return Promise.resolve({ data: [] });
+    });
+
     vi.spyOn(apiClient, 'post').mockImplementation((url) => {
       if (url === '/quotes/motor') {
         return Promise.resolve(mockQuoteResponse);
@@ -45,7 +70,7 @@ describe('End-to-End Quote Flow Integration (P1-08 -> P3-04a)', () => {
 
     // Step 1: User arrives at /plans
     expect(screen.getByText(/Browse Insurance Plans/i)).toBeInTheDocument();
-    const calculateButtons = screen.getAllByRole('button', { name: /Calculate Instant Quote/i });
+    const calculateButtons = await screen.findAllByRole('button', { name: /Calculate Instant Quote/i });
     expect(calculateButtons.length).toBeGreaterThan(0);
 
     // Step 2: User clicks "Calculate Instant Quote" on the first plan (Motor 4W)
