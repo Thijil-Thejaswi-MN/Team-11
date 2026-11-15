@@ -45,7 +45,7 @@ import com.team11.insurance.quotes.QuoteRepository;
  * Policy Renewal REST Controller (P3-09 / INS-F-019 / INS-F-024).
  */
 @RestController
-@RequestMapping("/api/v1/policies")
+@RequestMapping("/policies")
 public class PolicyRenewalController {
 
     private final PolicyRepository policyRepository;

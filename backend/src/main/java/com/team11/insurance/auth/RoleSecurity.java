@@ -1,12 +1,13 @@
 package com.team11.insurance.auth;
 
 import com.team11.insurance.common.exception.AccessDeniedException;
+import com.team11.insurance.common.exception.AuthenticationException;
 
 import java.util.Arrays;
 
 /**
  * Authorization and tenant-isolation utility methods for backend controllers and services.
- * Enforces SAD §4.3 and §4.4 (ACCESS-403) and INS-SR-003 (Role-based access control and insurer isolation).
+ * Enforces SAD §4.3 and §4.4 (ACCESS-403 / AUTH-401) and INS-SR-003 (Role-based access control and insurer isolation).
  */
 public final class RoleSecurity {
 
@@ -17,11 +18,12 @@ public final class RoleSecurity {
      *
      * @param user current authenticated user
      * @param allowedRoles roles permitted to access the resource
+     * @throws AuthenticationException if the user context is missing (unauthenticated)
      * @throws AccessDeniedException if the user does not possess any of the allowed roles
      */
     public static void assertRole(CurrentUser user, UserRole... allowedRoles) {
         if (user == null) {
-            throw new AccessDeniedException("Access denied: user context is missing.");
+            throw new AuthenticationException("Authentication required: user context is missing.");
         }
         UserRole currentRole = user.getUserRole();
         if (currentRole == null) {
@@ -40,11 +42,12 @@ public final class RoleSecurity {
      *
      * @param user current authenticated user
      * @param resourceInsurerId the insurer ID associated with the target resource
+     * @throws AuthenticationException if the user context is missing (unauthenticated)
      * @throws AccessDeniedException if staff user attempts cross-insurer access
      */
     public static void assertInsurerAccess(CurrentUser user, Long resourceInsurerId) {
         if (user == null) {
-            throw new AccessDeniedException("Access denied: user context is missing.");
+            throw new AuthenticationException("Authentication required: user context is missing.");
         }
         if (user.isSystemAdmin()) {
             return; // Global system admin has cross-insurer access
@@ -65,11 +68,12 @@ public final class RoleSecurity {
      *
      * @param user current authenticated user
      * @param targetCustomerId customer ID of the record owner
+     * @throws AuthenticationException if the user context is missing (unauthenticated)
      * @throws AccessDeniedException if another customer attempts to access the record
      */
     public static void assertCustomerOrStaffAccess(CurrentUser user, Long targetCustomerId) {
         if (user == null) {
-            throw new AccessDeniedException("Access denied: user context is missing.");
+            throw new AuthenticationException("Authentication required: user context is missing.");
         }
         if (user.isStaff() || user.isSystemAdmin()) {
             return;

@@ -129,6 +129,16 @@ class AuditLogControllerTest {
     }
 
     @Test
+    @DisplayName("Unauthenticated request without Authorization header returns 401 AUTH-401 (TC-Aud-01 / TC-Sec-03 / Defect #187)")
+    void unauthenticatedWithoutAuthHeaderReturns401() throws Exception {
+        TestCurrentUserProvider.clearSyntheticUser();
+
+        mockMvc.perform(get("/audit"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.errorCode", is("AUTH-401")));
+    }
+
+    @Test
     @DisplayName("Filter by userId returns only matched entries")
     void filterByUserId() throws Exception {
         long targetUser = 888123L;
