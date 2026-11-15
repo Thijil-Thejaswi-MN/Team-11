@@ -113,12 +113,12 @@
 | Field | Detail |
 |-------|--------|
 | Category | Timeline / Process |
-| Description | Eight pull requests were reviewed, approved, and merged into `main` after the 30 Oct code freeze: |
-| Details | • **PR #184** (fix TLS environment scripts): merged `2026-11-01T03:21:33Z` by `Thijil-Thejaswi-MN`<br>• **PR #185** (P4-14 database backup and restore procedure): merged `2026-11-01T03:23:35Z` by `Thijil-Thejaswi-MN`<br>• **PR #186** (Customer-role test evidence): merged `2026-11-01T03:25:35Z` by `Thijil-Thejaswi-MN`<br>• **PR #157** (P1-12 Claims Officer desk): merged `2026-11-01T09:40:09Z` by `Samarth-S-Maladkar`<br>• **PR #167** (P3 policies lifecycle & recovery): merged `2026-11-01T17:08:09Z` by `Thijil-Thejaswi-MN`<br>• **PR #183** (P2-16 automated test evidence & UAT checklist): merged `2026-11-02T11:48:28Z` by `Thijil-Thejaswi-MN`<br>• **PR #188** (P4-16 customer claim filing screen & timeline): merged `2026-11-02T11:51:02Z` by `Thijil-Thejaswi-MN`<br>• **PR #182** (P1-14 UAT sheet, QA status & deviation log): merged `2026-11-03T03:03:37Z` by `Thijil-Thejaswi-MN` |
-| Root cause | Final peer reviews, re-authoring, and deliverable completions completed across 1–3 Nov 2026. |
-| Impact | Main branch baseline was updated to `ee22962` after the formal freeze date. |
-| Mitigation | All PRs passed required CI checks and received non-author approvals prior to merge. |
-| Evidence | GitHub PRs #184, #185, #186, #157, #167, #183, #188, #182 merge timestamps (`gh pr view`) |
+| Description | Twelve pull requests were reviewed, approved, and merged into `main` after the 30 Oct code freeze: |
+| Details | • **PR #184** (fix TLS environment scripts): merged `2026-11-01T03:21:33Z` by `Thijil-Thejaswi-MN`<br>• **PR #185** (P4-14 database backup and restore procedure): merged `2026-11-01T03:23:35Z` by `Thijil-Thejaswi-MN`<br>• **PR #186** (Customer-role test evidence): merged `2026-11-01T03:25:35Z` by `Thijil-Thejaswi-MN`<br>• **PR #157** (P1-12 Claims Officer desk): merged `2026-11-01T09:40:09Z` by `Samarth-S-Maladkar`<br>• **PR #167** (P3 policies lifecycle & recovery): merged `2026-11-01T17:08:09Z` by `Thijil-Thejaswi-MN`<br>• **PR #183** (P2-16 automated test evidence & UAT checklist): merged `2026-11-02T11:48:28Z` by `Thijil-Thejaswi-MN`<br>• **PR #188** (P4-16 customer claim filing screen & timeline): merged `2026-11-02T11:51:02Z` by `Thijil-Thejaswi-MN`<br>• **PR #182** (P1-14 UAT sheet, QA status & deviation log): merged `2026-11-03T03:03:37Z` by `Thijil-Thejaswi-MN`<br>• **PR #189** (align D-10 descriptions with SRS, Newman/Selenium counts): merged `2026-11-15T04:42:06Z` by `Thijil-Thejaswi-MN`<br>• **PR #191** (remove fabricated and hard-coded UI data): merged `2026-11-15T04:44:07Z` by `Thijil-Thejaswi-MN`<br>• **PR #192** (remove developer/spec text from UI screens): merged `2026-11-15T04:59:18Z` by `Thijil-Thejaswi-MN`<br>• **PR #193** (UAT walkthrough results 8 Nov): merged `2026-11-15T05:06:26Z` by `Thijil-Thejaswi-MN` |
+| Root cause | Final peer reviews, bug remediation, documentation alignment, UI cleanup, and UAT artifact delivery completed across 1–15 Nov 2026. |
+| Impact | Main branch baseline was updated after the formal freeze date; all critical post-freeze fixes passed CI. |
+| Mitigation | All PRs passed required CI checks and received approvals prior to merge. |
+| Evidence | GitHub PRs #184, #185, #186, #157, #167, #183, #188, #182, #189, #191, #192, #193 merge timestamps (`gh pr view <n> --json mergedAt`) |
 | Status | Closed |
 
 ---
@@ -164,6 +164,46 @@
 | Status | Closed (resolved) |
 
 ---
+
+### D-UAT-PROFILE — UAT executed on H2 test profile instead of MySQL
+
+| Field | Detail |
+|-------|--------|
+| Category | Technical / Environment |
+| Description | UAT walkthrough was executed using Spring Boot `test` profile with in-memory H2 database seeded with canonical fixtures, rather than MySQL 8 production profile. |
+| Root cause | MySQL local root access was denied on the host, and Docker container engine was unavailable to host a containerized database. |
+| Impact | System acceptance verification was performed against H2 in-memory database rather than production target database. |
+| Mitigation | H2 MySQL compatibility mode and canonical test fixtures used; all repository operations validated by JUnit integration test suite. |
+| Evidence | `docs/test-evidence/uat-2026-11-08/uat-results.md`; `docs/uat-29-oct.md` |
+| Status | Closed |
+
+---
+
+### D-UAT-OPERATOR — UAT executed as single-operator agent-run walkthrough
+
+| Field | Detail |
+|-------|--------|
+| Category | Process |
+| Description | UAT was executed as an agent-run browser walkthrough on Sharana's machine (`sharanabasavagouda113-debug`) with a single operator playing all application roles, rather than a multi-person role-play session. |
+| Root cause | Workstation accessibility and team coordination during walkthrough execution. |
+| Impact | Role isolation was tested sequentially by one operator rather than concurrent independent team members. |
+| Mitigation | Role-switching, permissions, and audit logs were verified sequentially across all 8 scenarios. |
+| Evidence | `docs/test-evidence/uat-2026-11-08/uat-results.md`; `docs/uat-29-oct.md` |
+| Status | Closed |
+
+---
+
+### D-UAT-PARTIAL — UAT-03, UAT-05, and UAT-06 not fully demonstrable
+
+| Field | Detail |
+|-------|--------|
+| Category | Scope / Quality |
+| Description | Three UAT scenarios could not be fully demonstrated to their STP expected conclusion: UAT-03 (renewal certificate download and linked renewed policy generation not demonstrable on screen; portfolio view shown), UAT-05 (claim stopped at `PAYMENT_PROCESSING`; automated settlement payout trigger `POST /claims/{id}/payout` blocked on backend per Decision D-11), and UAT-06 (customer claim document re-upload blocked due to missing backend API `POST /claims/{id}/documents`). |
+| Root cause | Backend payout trigger unmapped per Decision D-11; missing claim document upload endpoint; renewal certificate generation not wired in UI. |
+| Impact | UAT-03 and UAT-06 recorded as Partial; UAT-05 recorded as Blocked in official UAT execution sheet. |
+| Mitigation | Documented in `docs/uat-29-oct.md`, `docs/test-summary-report.md`, and `docs/decisions.md`. Full end-to-end automation planned for Sprint 3. |
+| Evidence | `docs/test-evidence/uat-2026-11-08/uat-results.md`; `docs/uat-29-oct.md`; `docs/decisions.md` (Decision D-11) |
+| Status | Open (deferred to Sprint 3) |
 
 ### D-VID-S2 — Sprint 2 demo video
 

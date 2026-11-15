@@ -62,7 +62,17 @@
 | Newman API Assertions | Sharana Newman re-run (`docs/test-evidence/2026-11-02-newman-eb6dd25-rerun.xml`) | 70 | 68 | 2 | 0 | 0 |
 | Selenium E2E Smoke | Sharana Selenium run (`docs/test-evidence/2026-11-02-selenium-eb6dd25.xml`) | 3 | 3 | 0 | 0 | 0 |
 | STP Independent Test Cases | `docs/test-execution-matrix.md` | 52 | 0 | 0 | 0 | Blocked / Deferred / Not Run |
-| UAT Scenarios | `docs/uat-29-oct.md` (UAT-01..UAT-08) | 8 | _(to fill)_ | _(to fill)_ | 0 | _(to fill)_ |
+| UAT Scenarios | `docs/uat-29-oct.md` (UAT-01..UAT-08) on build `ee22962` (H2 test profile, single-operator agent-run walkthrough) | 8 | 5 | 0 | 0 | 2 Partial, 1 Blocked |
+
+### UAT Execution Results (Build `ee22962`, H2 Test Profile)
+
+Executed on 8 Nov 2026 as a single-operator agent-run browser walkthrough on Sharana's machine (`sharanabasavagouda113-debug`) playing all roles; finalised and recorded on 15 Nov 2026 (`docs/uat-29-oct.md` and `docs/test-evidence/uat-2026-11-08/uat-results.md`):
+
+- **Total Scenarios Evaluated:** 8
+- **Passed:** 5 (UAT-01, UAT-02, UAT-04, UAT-07, UAT-08)
+- **Partial:** 2 (UAT-03: renewal execution & certificate download not shown in evidence; UAT-06: document re-upload blocked due to missing API)
+- **Blocked:** 1 (UAT-05: automated settlement payout trigger not available on backend; claim stops at Payment Processing per Decision D-11)
+- **Failed:** 0
 
 ### STP Coverage (Thijil's Assigned STP Rows)
 
@@ -108,18 +118,13 @@
 
 ---
 
-## 5. Open Defects at Code Freeze (`type:bug`)
+## 5. Open Defects at Final Release (`type:bug`)
 
-*Source: `gh issue list --label type:bug --state open` on 2 Nov 2026:*
+*Source: `gh issue list --label type:bug --state open` on 15 Nov 2026 (resolved UI bugs #175–#179 and #190 closed via PR #191):*
 
 | Issue # | Severity | Summary | Module | Status |
 |:---:|:---:|---|---|:---:|
 | **#187** | High | [Audit API] Unauthenticated GET /api/v1/audit returns 403 ACCESS-403 instead of 401 AUTH-401 (TC-Aud-01 / TC-Sec-03) | Admin / Audit | OPEN |
-| **#179** | Medium | [System Admin] Hardcoded sample audit records in SystemAdminDashboardView.jsx | Admin | OPEN |
-| **#178** | Medium | [Customer Policies] Fallback synthetic policies in MyPoliciesView.jsx | Policies | OPEN |
-| **#177** | Medium | [Customer Dashboard] Hardcoded portfolio metrics and sample policy in CustomerDashboardView.jsx | Customer | OPEN |
-| **#176** | Medium | [Customer Claims] Hardcoded sample claim records in ClaimsPlaceholder.jsx | Claims | OPEN |
-| **#175** | Medium | [Customer Applications] Hardcoded sample application records in ApplicationsPlaceholder.jsx | Applications | OPEN |
 | **#172** | Low | [Notifications] Audit logging not recorded for notification events | Notifications | OPEN |
 | **#171** | Low | [Policies] Audit logging not recorded for policy lifecycle | Policies | OPEN |
 | **#170** | Low | [Claims] Audit logging not recorded for claim actions | Claims | OPEN |
