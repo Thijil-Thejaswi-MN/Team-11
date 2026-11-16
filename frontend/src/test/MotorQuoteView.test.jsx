@@ -55,8 +55,6 @@ describe('MotorQuoteView Component (P1-08)', () => {
           ageLoading: 325,
           addOns: { ZERO_DEP: 1080 },
           ncbDiscount: 1300,
-          netPremium: 6605,
-          gst: 1189,
           totalPremium: 8940,
         },
       },
@@ -79,8 +77,10 @@ describe('MotorQuoteView Component (P1-08)', () => {
       expect(screen.getByText(/#QTE-MOTOR-5042/i)).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/₹8,940/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/₹8,940/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Base Own Damage/i)).toBeInTheDocument();
+    expect(screen.queryByText(/GST/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Pre-Tax/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Proceed to Application with Quote #5042/i)).toBeInTheDocument();
   });
 

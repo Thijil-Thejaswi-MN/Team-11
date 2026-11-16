@@ -7,7 +7,7 @@ import apiClient from '../../api/apiClient';
 /**
  * Insurer Administration Desk (INS-F-003, INS-SR-003, Decision D-10).
  * Displays live plan count and management links.
- * Hardcoded metrics (1,420, ₹1.18 Cr, 142, 62.4%) and fake records removed per Issue #168.
+ * Hardcoded sample metrics (policy count, premium volume, claim count, ratio) and fake records removed per Issue #168.
  * Notice displayed for deferred role dashboards (INS-F-021, D-10).
  */
 export default function InsurerAdminDashboardView() {

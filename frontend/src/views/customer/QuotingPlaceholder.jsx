@@ -116,11 +116,11 @@ export default function QuotingPlaceholder({ mode = 'MOTOR' }) {
                     </li>
                     <li className="list-group-item d-flex justify-content-between px-0">
                       <span>Third Party Cover:</span>
-                      <span className="fw-semibold">₹{(calculatedPremium * 0.18).toFixed(0)}</span>
+                      <span className="fw-semibold">₹{(calculatedPremium * 0.3).toFixed(0)}</span>
                     </li>
-                    <li className="list-group-item d-flex justify-content-between px-0">
-                      <span>GST (18%):</span>
-                      <span className="fw-semibold">₹{(calculatedPremium * 0.12).toFixed(0)}</span>
+                    <li className="list-group-item d-flex justify-content-between px-0 border-top">
+                      <span className="fw-semibold">Total Premium:</span>
+                      <span className="fw-bold text-primary">₹{calculatedPremium.toLocaleString()}</span>
                     </li>
                   </ul>
                   <button className="btn btn-success btn-sm w-100">

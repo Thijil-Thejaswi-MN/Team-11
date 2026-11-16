@@ -78,7 +78,7 @@ public class PolicyPdfGenerator {
             addTableRow(table, "Policy Term", startStr + " to " + endStr + " (Midnight)", bodyFont, false);
 
             BigDecimal premium = policy.getPremiumPaid() != null ? policy.getPremiumPaid() : BigDecimal.ZERO;
-            addTableRow(table, "Gross Premium Paid", "Rs. " + premium.toPlainString() + " (Incl. applicable GST)", boldBody, true);
+            addTableRow(table, "Gross Premium Paid", "Rs. " + premium.toPlainString(), boldBody, true);
 
             document.add(table);
 

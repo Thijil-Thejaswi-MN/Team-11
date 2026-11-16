@@ -9,7 +9,7 @@ import apiClient from '../../api/apiClient';
  */
 export default function CustomerKycView() {
   const [kycStatus, setKycStatus] = useState('Loading...');
-  const [loadingStatus, setLoadingStatus] = useState(true);
+  const [fetchingKyc, setFetchingKyc] = useState(true);
 
   const [panNumber, setPanNumber] = useState('');
   const [aadhaarNumber, setAadhaarNumber] = useState('');
@@ -26,7 +26,7 @@ export default function CustomerKycView() {
 
   const fetchKycStatus = async () => {
     try {
-      setLoadingStatus(true);
+      setFetchingKyc(true);
       const res = await apiClient.get('/kyc/status');
       setKycStatus(res.data.status || 'Not Submitted');
     } catch (err) {
@@ -36,7 +36,7 @@ export default function CustomerKycView() {
         setKycStatus('Not Submitted');
       }
     } finally {
-      setLoadingStatus(false);
+      setFetchingKyc(false);
     }
   };
 
@@ -189,7 +189,7 @@ export default function CustomerKycView() {
                   Current Verification Status
                 </span>
                 <div className="d-flex align-items-center gap-2">
-                  {loadingStatus ? (
+                  {fetchingKyc ? (
                     <span className="spinner-border spinner-border-sm text-primary" role="status"></span>
                   ) : (
                     getStatusBadge()
