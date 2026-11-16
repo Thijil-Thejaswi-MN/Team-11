@@ -374,7 +374,6 @@ export default function MotorQuoteView() {
                     <span className="fs-2 fw-bold text-primary" id="total-premium-amount">
                       ₹{Number(quoteData.premium || quoteData.breakdown?.totalPremium || 0).toLocaleString()}
                     </span>
-                    <span className="text-muted extra-small d-block mt-1">Inclusive of 18% Goods & Services Tax (GST)</span>
                   </div>
 
                   {/* Detailed Itemized Breakdown */}
@@ -424,16 +423,9 @@ export default function MotorQuoteView() {
                       )}
 
                       <li className="list-group-item d-flex justify-content-between px-0 py-2 border-top">
-                        <span className="text-secondary">Net Premium (Pre-Tax):</span>
-                        <span className="fw-semibold">
-                          ₹{Number(quoteData.breakdown?.netPremium || (quoteData.premium ? Math.round(quoteData.premium / 1.18) : 0)).toLocaleString()}
-                        </span>
-                      </li>
-
-                      <li className="list-group-item d-flex justify-content-between px-0 py-2">
-                        <span className="text-secondary">Applicable GST (18%):</span>
-                        <span className="fw-semibold">
-                          ₹{Number(quoteData.breakdown?.gst || (quoteData.premium ? Math.round(quoteData.premium - (quoteData.premium / 1.18)) : 0)).toLocaleString()}
+                        <span className="fw-semibold text-secondary">Total Premium:</span>
+                        <span className="fw-bold text-primary">
+                          ₹{Number(quoteData.premium || quoteData.breakdown?.totalPremium || 0).toLocaleString()}
                         </span>
                       </li>
                     </ul>

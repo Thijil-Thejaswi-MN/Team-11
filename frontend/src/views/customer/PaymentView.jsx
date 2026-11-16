@@ -323,15 +323,6 @@ export default function PaymentView() {
               </div>
 
               <div className="p-3 bg-light rounded mb-4">
-                <div className="d-flex justify-content-between mb-2">
-                  <span>Base Premium:</span>
-                  <span>{displayPremium ? `₹${Math.round(displayPremium / 1.18).toLocaleString('en-IN')}` : '—'}</span>
-                </div>
-                <div className="d-flex justify-content-between mb-2">
-                  <span>GST (18%):</span>
-                  <span>{displayPremium ? `₹${(displayPremium - Math.round(displayPremium / 1.18)).toLocaleString('en-IN')}` : '—'}</span>
-                </div>
-                <hr className="my-2" />
                 <div className="d-flex justify-content-between fw-bold fs-5">
                   <span>Total Due:</span>
                   <span className="text-primary" id="total-premium-amount">

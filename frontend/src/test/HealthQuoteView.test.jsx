@@ -38,8 +38,6 @@ describe('HealthQuoteView Component (P1-08)', () => {
           basePremium: 5200,
           ageLoading: 0,
           addOns: { CRITICAL_ILLNESS: 1200 },
-          netPremium: 6400,
-          gst: 1080,
           totalPremium: 7480,
         },
       },
@@ -62,8 +60,10 @@ describe('HealthQuoteView Component (P1-08)', () => {
       expect(screen.getByText(/#QTE-HEALTH-6012/i)).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/₹7,480/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/₹7,480/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Base Medical Cover/i)).toBeInTheDocument();
+    expect(screen.queryByText(/GST/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Pre-Tax/i)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Proceed to Application with Quote #6012/i })).toBeInTheDocument();
   });
 

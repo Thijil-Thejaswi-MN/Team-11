@@ -21,8 +21,6 @@ describe('End-to-End Quote Flow Integration (P1-08 -> P3-04a)', () => {
           basePremium: 6800,
           ageLoading: 340,
           addOns: { ZERO_DEP: 1080 },
-          netPremium: 7322,
-          gst: 1318,
           totalPremium: 8640,
         },
       },
@@ -88,7 +86,8 @@ describe('End-to-End Quote Flow Integration (P1-08 -> P3-04a)', () => {
     // Step 5: Verify itemized breakdown and generated Quote ID
     await waitFor(() => {
       expect(screen.getByText(/#QTE-MOTOR-99123/i)).toBeInTheDocument();
-      expect(screen.getByText(/₹8,640/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/₹8,640/i).length).toBeGreaterThan(0);
+      expect(screen.queryByText(/GST/i)).not.toBeInTheDocument();
     });
 
     // Step 6: Click "Proceed to Application with Quote #99123"
