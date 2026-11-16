@@ -31,11 +31,21 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children, initialUser = null }) {
   const [currentUser, setCurrentUser] = useState(() => {
     if (initialUser) return initialUser;
+    if (typeof sessionStorage !== 'undefined') {
+      const stored = sessionStorage.getItem('auth_user');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          // ignore parsing error
+        }
+      }
+    }
     // Default initial user for shell preview / testing
     return {
-      userId: 101,
+      userId: 1,
       name: 'Asha Verma',
-      email: 'asha@example.com',
+      email: 'asha@example.test',
       role: ROLES.CUSTOMER,
       insurerId: null,
     };
@@ -47,6 +57,9 @@ export function AuthProvider({ children, initialUser = null }) {
   useEffect(() => {
     const unsubscribe = onUnauthorized(() => {
       setAuthToken(null);
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem('auth_user');
+      }
       setCurrentUser(GUEST_USER);
     });
     return unsubscribe;
@@ -58,38 +71,52 @@ export function AuthProvider({ children, initialUser = null }) {
    */
   const switchRole = (newRole) => {
     let name = 'Asha Verma';
-    let email = 'asha@example.com';
+    let email = 'asha@example.test';
     let insurerId = null;
+    let userId = 1;
 
     if (newRole === ROLES.INSURER_ADMIN) {
       name = 'Admin Rajesh (SafeShield)';
-      email = 'admin@safeshield.com';
+      email = 'admin.a@safeshield.test';
       insurerId = 1;
+      userId = 10;
     } else if (newRole === ROLES.UNDERWRITER) {
       name = 'Underwriter Priya';
-      email = 'priya.uw@safeshield.com';
+      email = 'uw.a@safeshield.test';
       insurerId = 1;
+      userId = 11;
     } else if (newRole === ROLES.CLAIMS_OFFICER) {
       name = 'Officer Manoj';
-      email = 'manoj.co@safeshield.com';
+      email = 'claims.a@safeshield.test';
       insurerId = 1;
+      userId = 12;
     } else if (newRole === ROLES.SYSTEM_ADMIN) {
       name = 'SysAdmin Vikram';
-      email = 'sysadmin@portal.gov';
+      email = 'sysadmin@insurance.test';
       insurerId = null;
+      userId = 99;
     } else if (newRole === ROLES.GUEST) {
       name = 'Guest Visitor';
       email = '';
       insurerId = null;
+      userId = null;
     }
 
-    setCurrentUser({
-      userId: newRole === ROLES.GUEST ? null : 101,
+    const updatedUser = {
+      userId,
       name,
       email,
       role: newRole,
       insurerId,
-    });
+    };
+    setCurrentUser(updatedUser);
+    if (typeof sessionStorage !== 'undefined') {
+      if (newRole === ROLES.GUEST) {
+        sessionStorage.removeItem('auth_user');
+      } else {
+        sessionStorage.setItem('auth_user', JSON.stringify(updatedUser));
+      }
+    }
   };
 
   /**
@@ -125,6 +152,9 @@ export function AuthProvider({ children, initialUser = null }) {
     }
 
     setCurrentUser(user);
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem('auth_user', JSON.stringify(user));
+    }
     return user;
   };
 
@@ -147,6 +177,9 @@ export function AuthProvider({ children, initialUser = null }) {
       // Ignore network/logout failure
     } finally {
       setAuthToken(null);
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem('auth_user');
+      }
       setCurrentUser(GUEST_USER);
     }
   };

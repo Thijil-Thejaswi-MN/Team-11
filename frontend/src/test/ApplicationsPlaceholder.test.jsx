@@ -74,4 +74,41 @@ describe('ApplicationsPlaceholder Component (P4-17 Navigation & API rendering)',
     expect(await screen.findByText(/Database connection failed/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Retry/i })).toBeInTheDocument();
   });
+
+  it('forwards regYear and age in details payload upon application submission (Issue #198)', async () => {
+    vi.spyOn(apiClient, 'get').mockResolvedValue({ data: [] });
+    let capturedPayload = null;
+    vi.spyOn(apiClient, 'post').mockImplementation((url, payload) => {
+      if (url === '/applications') {
+        capturedPayload = payload;
+        return Promise.resolve({
+          data: {
+            applicationId: 405,
+            status: 'Approved',
+            details: 'Auto-approved',
+          },
+        });
+      }
+      return Promise.reject(new Error(`Unhandled POST ${url}`));
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/customer/applications?quoteId=505&planId=1&regYear=2021&age=34&vehicleRegNo=KA05CD5678']}>
+        <AuthProvider>
+          <ApplicationsPlaceholder />
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    const submitBtn = await screen.findByRole('button', { name: /Submit Application to Underwriting/i });
+    expect(submitBtn).toBeInTheDocument();
+
+    fireEvent.click(submitBtn);
+
+    expect(capturedPayload).not.toBeNull();
+    expect(capturedPayload.quoteId).toBe(505);
+    expect(capturedPayload.details.regYear).toBe(2021);
+    expect(capturedPayload.details.age).toBe(34);
+    expect(capturedPayload.details.vehicleRegNo).toBe('KA05CD5678');
+  });
 });
