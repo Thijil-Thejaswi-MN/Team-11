@@ -7,12 +7,15 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.team11.insurance.admin.IAuditLog;
 import com.team11.insurance.notifications.NotificationChannel;
 import com.team11.insurance.notifications.NotificationOutbox;
 import com.team11.insurance.notifications.NotificationOutboxRepository;
@@ -39,6 +42,25 @@ public class NotificationDispatcher {
     private final NotificationRetryPolicy retryPolicy;
     private final ObjectMapper objectMapper;
     private final Clock clock;
+    private final IAuditLog auditLog;
+
+    @Autowired
+    public NotificationDispatcher(
+            NotificationOutboxRepository outboxRepository,
+            NotificationTemplateService templateService,
+            INotificationChannelSender channelSender,
+            NotificationRetryPolicy retryPolicy,
+            ObjectMapper objectMapper,
+            Clock clock,
+            ObjectProvider<IAuditLog> auditLogProvider) {
+        this.outboxRepository = outboxRepository;
+        this.templateService = templateService;
+        this.channelSender = channelSender;
+        this.retryPolicy = retryPolicy;
+        this.objectMapper = objectMapper;
+        this.clock = clock;
+        this.auditLog = auditLogProvider != null ? auditLogProvider.getIfAvailable() : null;
+    }
 
     public NotificationDispatcher(
             NotificationOutboxRepository outboxRepository,
@@ -47,12 +69,7 @@ public class NotificationDispatcher {
             NotificationRetryPolicy retryPolicy,
             ObjectMapper objectMapper,
             Clock clock) {
-        this.outboxRepository = outboxRepository;
-        this.templateService = templateService;
-        this.channelSender = channelSender;
-        this.retryPolicy = retryPolicy;
-        this.objectMapper = objectMapper;
-        this.clock = clock;
+        this(outboxRepository, templateService, channelSender, retryPolicy, objectMapper, clock, null);
     }
 
     /**
@@ -104,6 +121,13 @@ public class NotificationDispatcher {
             outbox.setNextRetryAt(null);
             outbox.setUpdatedAt(clock.instant());
             outboxRepository.save(outbox);
+
+            if (auditLog != null) {
+                long actorId = outbox.getRecipientUserId() != null ? outbox.getRecipientUserId() : IAuditLog.SYSTEM_USER_ID;
+                auditLog.record(actorId, "NOTIFICATION_FAILED", "NotificationOutbox", outboxId,
+                        "Validation error: " + e.getMessage());
+            }
+
             return false;
         } catch (Exception e) {
             log.error("Unexpected error rendering template for notification [id={}]: {}", outboxId, e.getMessage(), e);
@@ -113,6 +137,13 @@ public class NotificationDispatcher {
             outbox.setNextRetryAt(null);
             outbox.setUpdatedAt(clock.instant());
             outboxRepository.save(outbox);
+
+            if (auditLog != null) {
+                long actorId = outbox.getRecipientUserId() != null ? outbox.getRecipientUserId() : IAuditLog.SYSTEM_USER_ID;
+                auditLog.record(actorId, "NOTIFICATION_FAILED", "NotificationOutbox", outboxId,
+                        "Validation error: " + e.getMessage());
+            }
+
             return false;
         }
 
@@ -136,6 +167,13 @@ public class NotificationDispatcher {
                 log.info("Notification [id={}] event=[{}] successfully SENT via channel [{}]",
                         outboxId, outbox.getEvent(), outbox.getChannel());
             }
+
+            if (auditLog != null) {
+                long actorId = outbox.getRecipientUserId() != null ? outbox.getRecipientUserId() : IAuditLog.SYSTEM_USER_ID;
+                auditLog.record(actorId, "NOTIFICATION_DISPATCHED", "NotificationOutbox", outboxId,
+                        "Successfully sent event " + outbox.getEvent() + " via " + outbox.getChannel());
+            }
+
             return true;
         } catch (Exception e) {
             handleDeliveryFailure(outbox, e);
@@ -283,6 +321,12 @@ public class NotificationDispatcher {
             outboxRepository.save(outbox);
             log.error("DEAD-LETTER LOG: Notification [id={}] permanently FAILED after {} attempt(s). RecipientUserId=[{}] Event=[{}] Reason: {}",
                     outbox.getId(), outbox.getAttemptCount(), outbox.getRecipientUserId(), outbox.getEvent(), outbox.getFailureReason());
+
+            if (auditLog != null) {
+                long actorId = outbox.getRecipientUserId() != null ? outbox.getRecipientUserId() : IAuditLog.SYSTEM_USER_ID;
+                auditLog.record(actorId, "NOTIFICATION_FAILED", "NotificationOutbox", outbox.getId(),
+                        "Notification delivery permanently failed: " + outbox.getFailureReason());
+            }
         }
     }
 
