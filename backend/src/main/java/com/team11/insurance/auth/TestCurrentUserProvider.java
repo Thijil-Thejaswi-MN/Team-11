@@ -77,13 +77,16 @@ public class TestCurrentUserProvider implements ICurrentUserProvider {
             if (userObj instanceof CurrentUser currentUser) {
                 return currentUser;
             }
+            CurrentUser override = SYNTHETIC_OVERRIDE.get();
+            if (override != null) {
+                return override;
+            }
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring("Bearer ".length()).trim();
                 CurrentUser syntheticUser = resolveSyntheticToken(token);
                 if (syntheticUser != null) {
-                    CurrentUser override = SYNTHETIC_OVERRIDE.get();
-                    return override != null ? override : syntheticUser;
+                    return syntheticUser;
                 }
                 if (isJwtStructure(token)) {
                     throw new AuthenticationException("Authentication required: no active server-side session or valid token found.");
@@ -97,6 +100,10 @@ public class TestCurrentUserProvider implements ICurrentUserProvider {
         }
         // Default synthetic user for local development and smoke tests
         return SEEDED_CUSTOMER;
+    }
+
+    public static boolean hasSyntheticOverride() {
+        return SYNTHETIC_OVERRIDE.get() != null;
     }
 
     private CurrentUser resolveSyntheticToken(String token) {

@@ -38,7 +38,7 @@ import com.team11.insurance.payments.IPaymentService;
  * Policy Cancellation & Refund REST Controller (P3-10 / INS-F-020).
  */
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping
 public class PolicyCancellationController {
 
     private final PolicyRepository policyRepository;

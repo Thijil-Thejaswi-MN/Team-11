@@ -144,4 +144,27 @@ class PolicyControllerIntegrationTest {
         mockMvc.perform(get("/policies/{id}/document", testPolicy.getId()))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    @DisplayName("GET /cancellations resolves and returns 200 for Insurer Admin (Defect #195 fix)")
+    void testGetCancellations_InsurerAdmin() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(new CurrentUser(2001L, UserRole.INSURER_ADMIN, 1L));
+
+        mockMvc.perform(get("/cancellations"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("POST /policies/{id}/cancellation resolves to controller (not 404 route missing)")
+    void testCancellationEndpointRouting() throws Exception {
+        TestCurrentUserProvider.setSyntheticUser(new CurrentUser(customerAId, UserRole.CUSTOMER, null));
+
+        org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder postReq =
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/policies/{id}/cancellation", testPolicy.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\":\"Sold vehicle\"}");
+
+        mockMvc.perform(postReq)
+                .andExpect(status().isCreated());
+    }
 }

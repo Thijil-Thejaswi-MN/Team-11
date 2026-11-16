@@ -5,10 +5,14 @@ import com.team11.insurance.admin.AuditLogRepository;
 import com.team11.insurance.admin.dto.AuditLogEntryResponse;
 import com.team11.insurance.admin.dto.AuditLogPageResponse;
 import com.team11.insurance.auth.CurrentUser;
+import com.team11.insurance.auth.ProductionCurrentUserProvider;
 import com.team11.insurance.auth.RoleSecurity;
+import com.team11.insurance.auth.TestCurrentUserProvider;
 import com.team11.insurance.auth.UserRole;
+import com.team11.insurance.common.exception.AuthenticationException;
 import com.team11.insurance.common.exception.ValidationException;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -76,7 +80,17 @@ public class AuditLogController {
             @RequestParam(name = "to", required = false) String to,
             @RequestParam(name = "page", required = false, defaultValue = "0") Integer page,
             @RequestParam(name = "size", required = false, defaultValue = "20") Integer size,
-            CurrentUser currentUser) {
+            CurrentUser currentUser,
+            HttpServletRequest request) {
+
+        // Enforce Authentication: unauthenticated request denied with AUTH-401 (INS-SR-003, SAD §4.4, TC-Sec-03)
+        if (request != null) {
+            String authHeader = request.getHeader("Authorization");
+            Object userObj = request.getAttribute(ProductionCurrentUserProvider.CURRENT_USER_ATTRIBUTE);
+            if ((authHeader == null || authHeader.isBlank()) && userObj == null && !TestCurrentUserProvider.hasSyntheticOverride()) {
+                throw new AuthenticationException("Authentication required: no active server-side session or valid token found.");
+            }
+        }
 
         // Enforce RBAC: SYSTEM_ADMIN only (INS-SR-003, SAD §4.3.6)
         RoleSecurity.assertRole(currentUser, UserRole.SYSTEM_ADMIN);
