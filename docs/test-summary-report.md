@@ -1,10 +1,10 @@
 # Sprint 2 Test Summary Report
 
-> Build SHA: `eb6dd25869b70542d4724214e8049dd7f8abd74b` (short: `eb6dd25`)  
+> Build SHA: `9d4d1ca93c4e537d9765352c39e24618e47f75fb` (short: `9d4d1ca`)  
 > Branch: main  
 > Prepared by: Thijil Thejaswi M N (QA Lead)  
-> Date: 2 Nov 2026  
-> Status: **DRAFT – result columns to be filled after UAT execution**
+> Date: 16 Nov 2026  
+> Status: **FINAL — Signed off with Conditional Pass (UAT re-run executed 15–16 Nov 2026)**
 
 ---
 
@@ -62,15 +62,17 @@
 | Newman API Assertions | Sharana Newman re-run (`docs/test-evidence/2026-11-02-newman-eb6dd25-rerun.xml`) | 70 | 68 | 2 | 0 | 0 |
 | Selenium E2E Smoke | Sharana Selenium run (`docs/test-evidence/2026-11-02-selenium-eb6dd25.xml`) | 3 | 3 | 0 | 0 | 0 |
 | STP Independent Test Cases | `docs/test-execution-matrix.md` | 52 | 0 | 0 | 0 | Blocked / Deferred / Not Run |
-| UAT Scenarios | docs/uat-29-oct.md (UAT-01..UAT-08) on build ee22962 (8 Nov walkthrough) | 8 | 0 | 0 | 0 | 0 demonstrated (8 Not demonstrated, re-run pending) |
+| UAT Scenarios | docs/uat-29-oct.md (UAT-01..UAT-08) on dev MySQL profile (SHA 9d4d1ca) | 8 | 3 | 0 | 0 | 4 Partial, 1 Blocked (3 Pass, 4 Partial, 1 Blocked, 0 Fail) |
 
-### UAT Execution Results (8 Nov Walkthrough — Invalidated)
+### UAT Execution Results (15–16 Nov 2026 Re-run Walkthrough)
 
-The 8 Nov walkthrough recorded in PR #193 was evaluated and invalidated by the QA Lead on 15 Nov 2026: the walkthrough ran entirely under the dev role switcher as Customer (Asha) prior to the fabricated data fix (PR #191). All staff steps returned HTTP 403/404 errors, and customer screens displayed static mock/fallback data (APP-2026-9021, POL-2026-4W-0091, client-side fallback quote ₹14,080).
+The invalidated 8 Nov walkthrough was superseded by the authentic STP re-run executed on 15 Nov 2026 (SHA `9a5c712`) on the Spring Boot `dev` profile with local MySQL 8.0, and verified on 16 Nov 2026 on SHA `9d4d1ca` following PR #197. All 5 roles were authenticated via `/login` using real seeded credentials. All 34 screenshots are recorded in `docs/test-evidence/uat-2026-11-15/` and documented in `docs/uat-29-oct.md`.
 
 - **Total Scenarios Evaluated:** 8
-- **Demonstrated:** 0 / 8 (re-run pending on current main)
-- **Not Demonstrated:** 8 / 8
+- **Pass:** 3 / 8 (UAT-02, UAT-07, UAT-08)
+- **Partial:** 4 / 8 (UAT-01, UAT-03, UAT-04, UAT-06)
+- **Blocked:** 1 / 8 (UAT-05)
+- **Fail:** 0 / 8
 
 ### STP Coverage (Thijil's Assigned STP Rows)
 
@@ -98,7 +100,7 @@ The 8 Nov walkthrough recorded in PR #193 was evaluated and invalidated by the Q
 |------|-------------|----------------------------|--------------------------------|
 | Transport Security | INS-SR-001 | HTTPS and TLS 1.2+ configuration (TC-Sec-01) | **PASS** — Verified via Nginx TLS 1.2/1.3 reverse proxy config and TLS verification script suite (`PR #184` / `scripts/verify-tls-environment.sh`): TLS 1.0/1.1 disabled, HTTP->HTTPS 301 redirect and HSTS header active. |
 | Password Storage | INS-SR-002 | BCrypt work factor >= 12 (TC-Sec-02) | **PASS** — Verified via `PasswordServiceTest` (6/6 JUnit tests passing on `eb6dd25`): BCrypt cost factor 12 (`$2a$12$` prefix) enforced; plaintext passwords never persisted. |
-| RBAC Matrix | INS-SR-003 | Deny by default, role scoping (TC-Sec-03) | **PASS (with Defect #187 noted)** — Verified via `SecurityConfig`, Newman `TC-Acc-02`, and `pen-test-checklist.md` §1.1–1.6: cross-role requests return `403 ACCESS-403`; unauthenticated requests denied (note open Defect #187: unauthenticated `GET /api/v1/audit` returns 403 instead of 401). |
+| RBAC Matrix | INS-SR-003 | Deny by default, role scoping (TC-Sec-03) | **PASS** — Verified via `SecurityConfig`, Newman `TC-Acc-02`, and `pen-test-checklist.md` §1.1–1.6: cross-role requests return `403 ACCESS-403`; unauthenticated requests return `401 AUTH-401` (Defect #187 resolved in PR #197). |
 | Encryption at Rest | INS-SR-004 | AES-256 for documents and sensitive PII (TC-Sec-04) | **PASS** — Verified via `DiskFileStoreTest` (10/10 JUnit tests passing on `eb6dd25`): uploaded KYC, application, and policy PDF documents encrypted on disk with AES-256-GCM (unique 12-byte IV + 128-bit auth tag) and SHA-256 checksum verification. |
 | Account Lockout | INS-SR-005 | Lockout after 5 failed attempts (TC-Sec-05) | **PASS** — Verified via `AuthControllerIntegrationTest#testLoginFiveFailuresTriggers423Locked` on `eb6dd25`: 5 consecutive failed login attempts lock the account for 15 minutes and return `423 Locked` (`AUTH-423`) even with valid credentials. |
 | Injection & XSS | INS-SR-006 | OWASP ZAP automated scan (TC-Sec-06) | **PASS (Code/Integration) / ZAP Scan Not Verified** — Parameterized Spring Data JPA queries, React JSX escaping, and security headers (`CSP`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`) verified on `eb6dd25`; live OWASP ZAP container scan not executed (`Not verified`). |
@@ -118,16 +120,18 @@ The 8 Nov walkthrough recorded in PR #193 was evaluated and invalidated by the Q
 
 ## 5. Open Defects at Final Release (`type:bug`)
 
-*Source: `gh issue list --label type:bug --state open` on 15 Nov 2026 (resolved UI bugs #175–#179 and #190 closed via PR #191):*
+*Source: `gh issue list --label type:bug --state open` on 16 Nov 2026 (defects #187 and #195 closed via PR #197; UI bugs #175–#179 and #190 closed via PR #191):*
 
 | Issue # | Severity | Summary | Module | Status |
 |:---:|:---:|---|---|:---:|
-| **#195** | High | GET /cancellations returns 404 on the Insurer Admin cancellation queue | Cancellations | OPEN |
-| **#187** | High | [Audit API] Unauthenticated GET /api/v1/audit returns 403 ACCESS-403 instead of 401 AUTH-401 (TC-Aud-01 / TC-Sec-03) | Admin / Audit | OPEN |
+| **#198** | Medium | [Applications] Applications recorded under synthetic Customer #1001 in dev profile and missing submission fields (regYear / age) | Applications / Auth | OPEN |
+| **#199** | Low | [Quote UI] Frontend calculates fabricated 18% GST split not defined in SRS rating formula | Quote UI | OPEN |
 | **#172** | Low | [Notifications] Audit logging not recorded for notification events | Notifications | OPEN |
 | **#171** | Low | [Policies] Audit logging not recorded for policy lifecycle | Policies | OPEN |
 | **#170** | Low | [Claims] Audit logging not recorded for claim actions | Claims | OPEN |
 | **#169** | Low | [Payment] Audit logging not recorded for payment transactions | Payment | OPEN |
+
+*Note: High-severity defects #187 (audit unauthenticated 403 instead of 401) and #195 (cancellation queue 404 route prefix duplication) were verified resolved and closed in PR #197 on 16 Nov 2026.*
 
 ---
 
@@ -146,13 +150,25 @@ Per `docs/decisions.md`:
 
 ---
 
-## 7. Conclusion
+## 7. Sign-off & Recommendation
 
-> **To be completed after UAT execution.**  
-> Do not fill until all UAT rows have been executed and evidence recorded.
+### Overall Test Result: Conditional Pass
 
-Overall test result: _(PASS / FAIL / CONDITIONAL PASS — to fill)_
+### Evaluated & Signed Off By:
+- **Prepared by:** Thijil Thejaswi M N (QA Lead, Person 1)
+- **Reviewed by:** Thijil Thejaswi M N (QA Lead, Person 1)
+- **Date:** 16 Nov 2026
 
-Prepared by: Thijil Thejaswi M N  
-Reviewed by: _(to fill)_  
-Date: _(to fill after UAT)_
+### Sign-off Justification & Reasons:
+The Sprint 2 test lifecycle is granted a **Conditional Pass** based on the following verified facts:
+
+1. **UAT STP Walkthrough (3 Pass, 4 Partial, 1 Blocked, 0 Fail):**
+   The formal UAT re-run executed on 15–16 Nov 2026 against a live MySQL 8.0 database (`dev` profile, SHA `9d4d1ca`) successfully demonstrated 3 complete STP scenarios (UAT-02 senior citizen health quote & underwriter referral, UAT-07 multi-tenant plan management & isolation, UAT-08 system admin onboarding & immutable audit trail). Four scenarios are recorded as Partial (UAT-01 motor application referral due to missing `regYear` payload and deferred plan filters; UAT-03 customer renewal self-service UI deferred per D-10; UAT-04 admin cancellation queue verified operational with HTTP 200 following PR #197 fix but customer submission screen not implemented; UAT-06 duplicate claim flagged and clock advanced, but customer doc re-upload endpoint unmapped). UAT-05 is Blocked at payment processing due to unmapped backend payout trigger per Decision D-11.
+2. **Automated Regression Suite (100% Green on Main):**
+   All 622 Maven backend tests, 92 Vitest frontend component tests, and 3/3 Selenium E2E smoke tests pass without errors. Newman API tests verify core workflows. All 4 GitHub Actions CI workflows are green.
+3. **Non-Functional Testing Scope Limitations:**
+   Non-functional performance, load, and availability targets (INS-NF-001, INS-NF-002, INS-NF-003) remain marked **Not verified** because a multi-host load-generation environment and a 10,000-policy volume dataset (STP §6) were not provisioned in the single-host academic project environment. JMeter test plans have been prepared for execution when staging infrastructure is available. Cross-browser testing is partially verified on Chrome and Edge; Safari was not verified due to lack of Apple hardware.
+4. **Known Open Defects:**
+   Zero Critical/High severity defects remain open. Defect #195 (cancellation 404) and Defect #187 (audit 401) were verified resolved and closed via PR #197. Exactly 6 Low/Medium defects remain open: Defect #198 (synthetic Customer #1001 fallback in dev profile and missing submission fields), Defect #199 (frontend 18% GST display split not in SRS formula), and Defects #169–#172 (missing audit logging hooks for notifications, policies, claims, payments).
+5. **Deferred Scope Tracked:**
+   All 5 deferred requirements (INS-F-017 renewal reminders, INS-F-021 role-specific dashboards, INS-F-022 search & filter plans, INS-F-025 admin reports, INS-NF-007 5-year audit retention) are formally documented under Decision D-10 in `docs/decisions.md` and scheduled for Sprint 3.

@@ -113,12 +113,12 @@
 | Field | Detail |
 |-------|--------|
 | Category | Timeline / Process |
-| Description | Twelve pull requests were reviewed, approved, and merged into `main` after the 30 Oct code freeze: |
-| Details | • **PR #184** (fix TLS environment scripts): merged `2026-11-01T03:21:33Z` by `Thijil-Thejaswi-MN`<br>• **PR #185** (P4-14 database backup and restore procedure): merged `2026-11-01T03:23:35Z` by `Thijil-Thejaswi-MN`<br>• **PR #186** (Customer-role test evidence): merged `2026-11-01T03:25:35Z` by `Thijil-Thejaswi-MN`<br>• **PR #157** (P1-12 Claims Officer desk): merged `2026-11-01T09:40:09Z` by `Samarth-S-Maladkar`<br>• **PR #167** (P3 policies lifecycle & recovery): merged `2026-11-01T17:08:09Z` by `Thijil-Thejaswi-MN`<br>• **PR #183** (P2-16 automated test evidence & UAT checklist): merged `2026-11-02T11:48:28Z` by `Thijil-Thejaswi-MN`<br>• **PR #188** (P4-16 customer claim filing screen & timeline): merged `2026-11-02T11:51:02Z` by `Thijil-Thejaswi-MN`<br>• **PR #182** (P1-14 UAT sheet, QA status & deviation log): merged `2026-11-03T03:03:37Z` by `Thijil-Thejaswi-MN`<br>• **PR #189** (align D-10 descriptions with SRS, Newman/Selenium counts): merged `2026-11-15T04:42:06Z` by `Thijil-Thejaswi-MN`<br>• **PR #191** (remove fabricated and hard-coded UI data): merged `2026-11-15T04:44:07Z` by `Thijil-Thejaswi-MN`<br>• **PR #192** (remove developer/spec text from UI screens): merged `2026-11-15T04:59:18Z` by `Thijil-Thejaswi-MN`<br>• **PR #193** (UAT walkthrough results 8 Nov): merged `2026-11-15T05:06:26Z` by `Thijil-Thejaswi-MN` |
-| Root cause | Final peer reviews, bug remediation, documentation alignment, UI cleanup, and UAT artifact delivery completed across 1–15 Nov 2026. |
+| Description | Fifteen pull requests were reviewed, approved, and merged into `main` after the 30 Oct code freeze: |
+| Details | • **PR #184** (fix TLS environment scripts): merged `2026-11-01T03:21:33Z` by `Thijil-Thejaswi-MN`<br>• **PR #185** (P4-14 database backup and restore procedure): merged `2026-11-01T03:23:35Z` by `Thijil-Thejaswi-MN`<br>• **PR #186** (Customer-role test evidence): merged `2026-11-01T03:25:35Z` by `Thijil-Thejaswi-MN`<br>• **PR #157** (P1-12 Claims Officer desk): merged `2026-11-01T09:40:09Z` by `Samarth-S-Maladkar`<br>• **PR #167** (P3 policies lifecycle & recovery): merged `2026-11-01T17:08:09Z` by `Thijil-Thejaswi-MN`<br>• **PR #183** (P2-16 automated test evidence & UAT checklist): merged `2026-11-02T11:48:28Z` by `Thijil-Thejaswi-MN`<br>• **PR #188** (P4-16 customer claim filing screen & timeline): merged `2026-11-02T11:51:02Z` by `Thijil-Thejaswi-MN`<br>• **PR #182** (P1-14 UAT sheet, QA status & deviation log): merged `2026-11-03T03:03:37Z` by `Thijil-Thejaswi-MN`<br>• **PR #189** (align D-10 descriptions with SRS, Newman/Selenium counts): merged `2026-11-15T04:42:06Z` by `Thijil-Thejaswi-MN`<br>• **PR #191** (remove fabricated and hard-coded UI data): merged `2026-11-15T04:44:07Z` by `Thijil-Thejaswi-MN`<br>• **PR #192** (remove developer/spec text from UI screens): merged `2026-11-15T04:59:18Z` by `Thijil-Thejaswi-MN`<br>• **PR #193** (UAT walkthrough results 8 Nov): merged `2026-11-15T05:06:26Z` by `Thijil-Thejaswi-MN`<br>• **PR #194** (finalize UAT results, update test summary report and deviation log): merged `2026-11-15T15:49:57Z` by `Thijil-Thejaswi-MN`<br>• **PR #196** (docs(qa): record STP UAT re-run walkthrough results on dev MySQL profile): merged `2026-11-15T15:52:32Z` by `Thijil-Thejaswi-MN`<br>• **PR #197** (fix(policies,admin): resolve cancellation 404 route prefix (#195) and unauthenticated audit 401 response (#187)): merged `2026-11-16T14:24:27Z` by `Thijil-Thejaswi-MN` |
+| Root cause | Final peer reviews, bug remediation, documentation alignment, UI cleanup, authentic UAT re-run delivery, and regression fixes completed across 1–16 Nov 2026. |
 | Impact | Main branch baseline was updated after the formal freeze date; all critical post-freeze fixes passed CI. |
 | Mitigation | All PRs passed required CI checks and received approvals prior to merge. |
-| Evidence | GitHub PRs #184, #185, #186, #157, #167, #183, #188, #182, #189, #191, #192, #193 merge timestamps (`gh pr view <n> --json mergedAt`) |
+| Evidence | GitHub PRs #184, #185, #186, #157, #167, #183, #188, #182, #189, #191, #192, #193, #194, #196, #197 merge timestamps (`gh pr view <n> --json mergedAt`) |
 | Status | Closed |
 
 ---
@@ -212,12 +212,12 @@
 | Field | Detail |
 |-------|--------|
 | Category | Quality / Process |
-| Description | UAT results recorded on 8 Nov (#193) were not supported by the evidence; corrected 15 Nov in this PR; UAT re-run on current main required. All 16 screenshots were captured under `Customer (Asha)` via dev role switcher before fake-data removal (#191): staff routes returned HTTP 403/404 and customer screens showed sample/fallback data. |
+| Description | UAT results recorded on 8 Nov (#193) were not supported by the evidence; invalidated on 15 Nov in PR #194. All 16 original screenshots were captured under `Customer (Asha)` via dev role switcher before fake-data removal (#191): staff routes returned HTTP 403/404 and customer screens showed sample/fallback data. Authentic STP re-run executed on 15–16 Nov 2026. |
 | Root cause | Walkthrough executed without real multi-role authentication logins and prior to merging fake-data cleanup PR #191. |
-| Impact | All 8 UAT scenarios set to "Not demonstrated" in `docs/test-evidence/uat-2026-11-08/uat-results.md` and `docs/uat-29-oct.md`; UAT re-run on current main required. |
-| Mitigation | Results invalidated in documentation; new defect #195 filed for cancellation 404; formal re-run scheduled on updated main. |
-| Evidence | `docs/test-evidence/uat-2026-11-08/`; `docs/uat-29-oct.md`; PR #194 |
-| Status | Open (re-run pending) |
+| Impact | All 8 original UAT scenarios set to "Not demonstrated" in `docs/test-evidence/uat-2026-11-08/uat-results.md`. Authentic re-run executed on dev MySQL profile (SHA `9a5c712`), with UAT-04 verified on SHA `9d4d1ca` following PR #197. |
+| Mitigation | Authentic STP re-run walkthrough completed on dev MySQL profile with 34 screenshots across 5 authenticated roles; recorded in PR #196; UAT-04 re-tested and verified operational in PR #197; official sheet `docs/uat-29-oct.md` updated. |
+| Evidence | `docs/test-evidence/uat-2026-11-15/`; `docs/uat-29-oct.md`; PR #196, PR #197 |
+| Status | Closed (authentic re-run completed and verified) |
 
 ### D-VID-S2 — Sprint 2 demo video
 
