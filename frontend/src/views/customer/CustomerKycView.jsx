@@ -28,7 +28,7 @@ export default function CustomerKycView() {
     try {
       setFetchingKyc(true);
       const res = await apiClient.get('/kyc/status');
-      setKycStatus(res.data.status || 'Not Submitted');
+      setKycStatus(res.data?.kycStatus || res.data?.status || 'Not Submitted');
     } catch (err) {
       if (err.status === 404) {
         setKycStatus('Not Submitted');
@@ -104,7 +104,7 @@ export default function CustomerKycView() {
         },
       });
 
-      const updatedStatus = res.data?.status || 'Pending';
+      const updatedStatus = res.data?.kycStatus || res.data?.status || 'Pending';
       setKycStatus(updatedStatus);
 
       if (updatedStatus === 'Verified') {

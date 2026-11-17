@@ -237,6 +237,25 @@ describe('P2-08 Authentication & KYC Screens (INS-F-001, INS-F-002, INS-NF-005)'
       });
     });
 
+    it('parses kycStatus field correctly from backend contract response', async () => {
+      vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
+        data: { kycStatus: 'Verified' },
+      });
+
+      render(
+        <MemoryRouter initialEntries={['/customer/kyc']}>
+          <AuthProvider>
+            <CustomerKycView />
+          </AuthProvider>
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Verified')).toBeInTheDocument();
+        expect(screen.getByText(/Your KYC is verified/i)).toBeInTheDocument();
+      });
+    });
+
     it('submits valid KYC document and updates status to Verified', async () => {
       vi.spyOn(apiClient, 'get').mockResolvedValueOnce({
         data: { status: 'Not Submitted' },

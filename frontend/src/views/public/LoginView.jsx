@@ -15,9 +15,25 @@ export default function LoginView() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
 
-  const { login } = useAuth();
+  const { login, currentUser, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const getPortalRoute = () => {
+    switch (currentUser?.role) {
+      case ROLES.INSURER_ADMIN:
+        return ROUTES.INSURER_ADMIN_DASHBOARD;
+      case ROLES.UNDERWRITER:
+        return ROUTES.UNDERWRITER_DASHBOARD;
+      case ROLES.CLAIMS_OFFICER:
+        return ROUTES.CLAIMS_OFFICER_DASHBOARD;
+      case ROLES.SYSTEM_ADMIN:
+        return ROUTES.SYSTEM_ADMIN_DASHBOARD;
+      case ROLES.CUSTOMER:
+      default:
+        return ROUTES.CUSTOMER_DASHBOARD;
+    }
+  };
 
   // Flash message passed via navigation state (e.g., registration success or session timeout)
   const flashMessage = location.state?.message || null;
@@ -88,6 +104,31 @@ export default function LoginView() {
               <span className="badge bg-primary">Secure Auth</span>
             </div>
             <div className="dashboard-card-body">
+              {/* Already authenticated banner */}
+              {isAuthenticated && (
+                <div className="alert alert-info py-2 small mb-3" role="alert" id="already-logged-in-alert">
+                  <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                      <i className="bi bi-info-circle me-1"></i>
+                      You are already signed in as <strong>{currentUser?.name}</strong>.
+                    </div>
+                    <div className="d-flex gap-2">
+                      <Link to={getPortalRoute()} className="btn btn-primary btn-sm px-2 py-1" id="login-portal-link">
+                        Go to Portal
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={logout}
+                        className="btn btn-outline-secondary btn-sm px-2 py-1"
+                        id="login-signout-btn"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Flash alert banner (e.g. session timeout redirect or registration success) */}
               {flashMessage && (
                 <div className="alert alert-info py-2 small mb-3" role="alert" id="login-flash-message">

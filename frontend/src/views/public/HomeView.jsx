@@ -1,9 +1,27 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import AppLayout from '../../components/layout/AppLayout';
+import { useAuth, ROLES } from '../../context/AuthContext';
 import { ROUTES } from '../../routes/routePaths';
 
 export default function HomeView() {
+  const { currentUser, isAuthenticated } = useAuth();
+
+  const getPortalRoute = () => {
+    switch (currentUser?.role) {
+      case ROLES.INSURER_ADMIN:
+        return ROUTES.INSURER_ADMIN_DASHBOARD;
+      case ROLES.UNDERWRITER:
+        return ROUTES.UNDERWRITER_DASHBOARD;
+      case ROLES.CLAIMS_OFFICER:
+        return ROUTES.CLAIMS_OFFICER_DASHBOARD;
+      case ROLES.SYSTEM_ADMIN:
+        return ROUTES.SYSTEM_ADMIN_DASHBOARD;
+      case ROLES.CUSTOMER:
+      default:
+        return ROUTES.CUSTOMER_DASHBOARD;
+    }
+  };
   return (
     <AppLayout>
       {/* Hero Section */}
@@ -87,18 +105,34 @@ export default function HomeView() {
 
       {/* Call to Action */}
       <section className="dashboard-card p-4 text-center my-4">
-        <h3 className="h5 fw-bold mb-2">Ready to get started?</h3>
-        <p className="text-muted small mb-3">
-          Sign in to access your portal, view your policy portfolio, or file a claim.
-        </p>
-        <div className="d-flex justify-content-center gap-2">
-          <Link to={ROUTES.LOGIN} className="btn btn-primary btn-sm px-4">
-            Sign in
-          </Link>
-          <Link to={ROUTES.REGISTER} className="btn btn-outline-secondary btn-sm px-4">
-            Create account
-          </Link>
-        </div>
+        {isAuthenticated ? (
+          <>
+            <h3 className="h5 fw-bold mb-2">Welcome back, {currentUser?.name}!</h3>
+            <p className="text-muted small mb-3">
+              You are signed in as <strong>{currentUser?.name}</strong>. Access your policy portfolio, file claims, or review quotes directly in your portal.
+            </p>
+            <div className="d-flex justify-content-center gap-2">
+              <Link to={getPortalRoute()} className="btn btn-primary btn-sm px-4" id="home-portal-cta-btn">
+                <i className="bi bi-speedometer2 me-1"></i>Go to My Portal
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <h3 className="h5 fw-bold mb-2">Ready to get started?</h3>
+            <p className="text-muted small mb-3">
+              Sign in to access your portal, view your policy portfolio, or file a claim.
+            </p>
+            <div className="d-flex justify-content-center gap-2">
+              <Link to={ROUTES.LOGIN} className="btn btn-primary btn-sm px-4" id="home-signin-btn">
+                Sign in
+              </Link>
+              <Link to={ROUTES.REGISTER} className="btn btn-outline-secondary btn-sm px-4" id="home-register-btn">
+                Create account
+              </Link>
+            </div>
+          </>
+        )}
       </section>
     </AppLayout>
   );
