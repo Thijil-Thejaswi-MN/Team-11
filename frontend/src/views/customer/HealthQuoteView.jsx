@@ -85,7 +85,8 @@ export default function HealthQuoteView() {
 
   const handleProceedToApplication = () => {
     if (!quoteData || !quoteData.quoteId) return;
-    navigate(`${ROUTES.CUSTOMER_APPLICATIONS}?quoteId=${quoteData.quoteId}&planId=${selectedPlanId}`);
+    // Pass quoteId, planId, and primary age to application submission page (Issue #198)
+    navigate(`${ROUTES.CUSTOMER_APPLICATIONS}?quoteId=${quoteData.quoteId}&planId=${selectedPlanId}&age=${primaryAge}`);
   };
 
   return (

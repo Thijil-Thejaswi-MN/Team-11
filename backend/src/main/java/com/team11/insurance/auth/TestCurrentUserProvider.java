@@ -111,6 +111,9 @@ public class TestCurrentUserProvider implements ICurrentUserProvider {
             return null;
         }
         String clean = token.trim();
+        if (clean.equalsIgnoreCase("asha") || clean.equalsIgnoreCase("asha-verma") || clean.equalsIgnoreCase("cust-1") || clean.equalsIgnoreCase("customer-1") || clean.equals("1")) {
+            return new CurrentUser(1L, UserRole.CUSTOMER, null);
+        }
         if (clean.equals("<customer-bearer-token-placeholder>") || clean.equals("{{customerToken}}")) {
             return SEEDED_CUSTOMER;
         }

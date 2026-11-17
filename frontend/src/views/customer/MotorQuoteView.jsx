@@ -109,8 +109,8 @@ export default function MotorQuoteView() {
 
   const handleProceedToApplication = () => {
     if (!quoteData || !quoteData.quoteId) return;
-    // Pass quoteId and planId to Samarth's application submission page (P3-04a)
-    navigate(`${ROUTES.CUSTOMER_APPLICATIONS}?quoteId=${quoteData.quoteId}&planId=${selectedPlanId}`);
+    // Pass quoteId, planId, regYear, and vehicle parameters to application submission page (Issue #198)
+    navigate(`${ROUTES.CUSTOMER_APPLICATIONS}?quoteId=${quoteData.quoteId}&planId=${selectedPlanId}&regYear=${regYear}&vehicleRegNo=KA01AB1234`);
   };
 
   return (

@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.team11.insurance.admin.IAuditLog;
 import com.team11.insurance.applications.Application;
 import com.team11.insurance.applications.ApplicationHistory;
 import com.team11.insurance.applications.ApplicationHistoryRepository;
@@ -62,6 +63,7 @@ public class PaymentService {
     private final PolicyRepository policyRepository;
     private final IPaymentService paymentAdapter;
     private final PolicyService policyService;
+    private final IAuditLog auditLog;
     private final Clock clock;
 
     private final ConcurrentHashMap<Long, AtomicInteger> attemptCounters = new ConcurrentHashMap<>();
@@ -75,14 +77,16 @@ public class PaymentService {
             PolicyRepository policyRepository,
             IPaymentService paymentAdapter,
             ObjectProvider<PolicyService> policyServiceProvider,
+            ObjectProvider<IAuditLog> auditLogProvider,
             ObjectProvider<Clock> clockProvider) {
         this.applicationRepository = Objects.requireNonNull(applicationRepository, "applicationRepository must not be null");
         this.applicationHistoryRepository = Objects.requireNonNull(applicationHistoryRepository, "applicationHistoryRepository must not be null");
         this.quoteRepository = Objects.requireNonNull(quoteRepository, "quoteRepository must not be null");
         this.policyRepository = Objects.requireNonNull(policyRepository, "policyRepository must not be null");
         this.paymentAdapter = Objects.requireNonNull(paymentAdapter, "paymentAdapter must not be null");
-        this.policyService = policyServiceProvider.getIfAvailable();
-        this.clock = clockProvider.getIfAvailable(Clock::systemDefaultZone);
+        this.policyService = policyServiceProvider != null ? policyServiceProvider.getIfAvailable() : null;
+        this.auditLog = auditLogProvider != null ? auditLogProvider.getIfAvailable() : null;
+        this.clock = clockProvider != null ? clockProvider.getIfAvailable(Clock::systemDefaultZone) : Clock.systemDefaultZone();
     }
 
     public PaymentService(
@@ -92,7 +96,7 @@ public class PaymentService {
             PolicyRepository policyRepository,
             IPaymentService paymentAdapter,
             Clock clock) {
-        this(applicationRepository, applicationHistoryRepository, quoteRepository, policyRepository, paymentAdapter, null, clock);
+        this(applicationRepository, applicationHistoryRepository, quoteRepository, policyRepository, paymentAdapter, (PolicyService) null, null, clock);
     }
 
     public PaymentService(
@@ -103,12 +107,25 @@ public class PaymentService {
             IPaymentService paymentAdapter,
             PolicyService policyService,
             Clock clock) {
+        this(applicationRepository, applicationHistoryRepository, quoteRepository, policyRepository, paymentAdapter, policyService, null, clock);
+    }
+
+    public PaymentService(
+            ApplicationRepository applicationRepository,
+            ApplicationHistoryRepository applicationHistoryRepository,
+            QuoteRepository quoteRepository,
+            PolicyRepository policyRepository,
+            IPaymentService paymentAdapter,
+            PolicyService policyService,
+            IAuditLog auditLog,
+            Clock clock) {
         this.applicationRepository = applicationRepository;
         this.applicationHistoryRepository = applicationHistoryRepository;
         this.quoteRepository = quoteRepository;
         this.policyRepository = policyRepository;
         this.paymentAdapter = paymentAdapter;
         this.policyService = policyService;
+        this.auditLog = auditLog;
         this.clock = clock != null ? clock : Clock.systemDefaultZone();
     }
 
@@ -199,6 +216,16 @@ public class PaymentService {
                         : "Payment processing failed; retry allowed";
                 log.warn("Payment failed for application {}: reason={}, code={}",
                         applicationId, failureMessage, result.errorCode());
+                Long actorId = currentUser != null ? currentUser.getUserId() : null;
+                if (auditLog != null) {
+                    auditLog.record(
+                            actorId != null ? actorId : IAuditLog.SYSTEM_USER_ID,
+                            "PAYMENT_FAILED",
+                            "Application",
+                            applicationId,
+                            "Payment failed: " + failureMessage + " (code: " + result.errorCode() + ")"
+                    );
+                }
                 // Crucial: Application status remains APPROVED, allowing future retries
                 throw new PaymentFailedException(failureMessage);
             }
@@ -218,6 +245,16 @@ public class PaymentService {
                     actorId,
                     auditReason
             ));
+
+            if (auditLog != null) {
+                auditLog.record(
+                        actorId != null ? actorId : IAuditLog.SYSTEM_USER_ID,
+                        "PAYMENT_PROCESSED",
+                        "Application",
+                        application.getId(),
+                        "Payment successful (Txn: " + result.transactionReference() + ", Amount: " + payableAmount + ")"
+                );
+            }
 
             // Issue policy idempotently (delegating to PolicyService with OpenPDF schedule generation)
             Policy policy = null;

@@ -7,12 +7,14 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.team11.insurance.admin.IAuditLog;
 import com.team11.insurance.auth.entity.User;
 import com.team11.insurance.auth.repository.UserRepository;
 import com.team11.insurance.notifications.dispatcher.NotificationAsyncService;
@@ -37,6 +39,23 @@ public class NotificationService implements INotify {
     private final ObjectProvider<UserRepository> userRepositoryProvider;
     private final ObjectMapper objectMapper;
     private final Clock clock;
+    private final IAuditLog auditLog;
+
+    @Autowired
+    public NotificationService(
+            NotificationOutboxRepository outboxRepository,
+            NotificationAsyncService asyncService,
+            ObjectProvider<UserRepository> userRepositoryProvider,
+            ObjectMapper objectMapper,
+            Clock clock,
+            ObjectProvider<IAuditLog> auditLogProvider) {
+        this.outboxRepository = outboxRepository;
+        this.asyncService = asyncService;
+        this.userRepositoryProvider = userRepositoryProvider;
+        this.objectMapper = objectMapper;
+        this.clock = clock;
+        this.auditLog = auditLogProvider != null ? auditLogProvider.getIfAvailable() : null;
+    }
 
     public NotificationService(
             NotificationOutboxRepository outboxRepository,
@@ -44,11 +63,7 @@ public class NotificationService implements INotify {
             ObjectProvider<UserRepository> userRepositoryProvider,
             ObjectMapper objectMapper,
             Clock clock) {
-        this.outboxRepository = outboxRepository;
-        this.asyncService = asyncService;
-        this.userRepositoryProvider = userRepositoryProvider;
-        this.objectMapper = objectMapper;
-        this.clock = clock;
+        this(outboxRepository, asyncService, userRepositoryProvider, objectMapper, clock, null);
     }
 
     @Override
@@ -130,6 +145,12 @@ public class NotificationService implements INotify {
 
             log.info("Enqueued notification outbox [id={}] event=[{}] recipientUserId=[{}] channel=[{}] correlationId=[{}]",
                     outboxId, request.event(), request.recipientUserId(), outbox.getChannel(), request.correlationId());
+
+            if (auditLog != null) {
+                long actorId = request.recipientUserId() != null ? request.recipientUserId() : IAuditLog.SYSTEM_USER_ID;
+                auditLog.record(actorId, "NOTIFICATION_ENQUEUED", "NotificationOutbox", outboxId,
+                        "Event: " + request.event() + ", Channel: " + outbox.getChannel());
+            }
 
             // 4. Trigger asynchronous dispatch after caller transaction commits (or immediately if non-transactional)
             if (TransactionSynchronizationManager.isActualTransactionActive()) {

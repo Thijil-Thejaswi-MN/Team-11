@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.team11.insurance.admin.IAuditLog;
 import com.team11.insurance.applications.Application;
 import com.team11.insurance.auth.CurrentUser;
 import com.team11.insurance.auth.UserRole;
@@ -48,6 +49,7 @@ public class PolicyService {
     private final ObjectProvider<INotify> notifyProvider;
     private final ObjectProvider<PlanRepository> planRepositoryProvider;
     private final ObjectProvider<UserRepository> userRepositoryProvider;
+    private final IAuditLog auditLog;
     private final Clock clock;
 
     @Autowired
@@ -58,14 +60,27 @@ public class PolicyService {
             ObjectProvider<INotify> notifyProvider,
             ObjectProvider<PlanRepository> planRepositoryProvider,
             ObjectProvider<UserRepository> userRepositoryProvider,
-            ObjectProvider<Clock> clockProvider) {
+            ObjectProvider<Clock> clockProvider,
+            ObjectProvider<IAuditLog> auditLogProvider) {
         this.policyRepository = Objects.requireNonNull(policyRepository, "policyRepository must not be null");
         this.policyPdfGenerator = Objects.requireNonNull(policyPdfGenerator, "policyPdfGenerator must not be null");
         this.fileStore = Objects.requireNonNull(fileStore, "fileStore must not be null");
         this.notifyProvider = notifyProvider;
         this.planRepositoryProvider = planRepositoryProvider;
         this.userRepositoryProvider = userRepositoryProvider;
-        this.clock = clockProvider.getIfAvailable(Clock::systemDefaultZone);
+        this.clock = clockProvider != null ? clockProvider.getIfAvailable(Clock::systemDefaultZone) : Clock.systemDefaultZone();
+        this.auditLog = auditLogProvider != null ? auditLogProvider.getIfAvailable() : null;
+    }
+
+    public PolicyService(
+            PolicyRepository policyRepository,
+            PolicyPdfGenerator policyPdfGenerator,
+            IFileStore fileStore,
+            ObjectProvider<INotify> notifyProvider,
+            ObjectProvider<PlanRepository> planRepositoryProvider,
+            ObjectProvider<UserRepository> userRepositoryProvider,
+            ObjectProvider<Clock> clockProvider) {
+        this(policyRepository, policyPdfGenerator, fileStore, notifyProvider, planRepositoryProvider, userRepositoryProvider, clockProvider, null);
     }
 
     public PolicyService(
@@ -73,13 +88,23 @@ public class PolicyService {
             PolicyPdfGenerator policyPdfGenerator,
             IFileStore fileStore,
             Clock clock) {
-        this.policyRepository = policyRepository;
-        this.policyPdfGenerator = policyPdfGenerator;
-        this.fileStore = fileStore;
+        this(policyRepository, policyPdfGenerator, fileStore, null, null, null, null, null);
+    }
+
+    public PolicyService(
+            PolicyRepository policyRepository,
+            PolicyPdfGenerator policyPdfGenerator,
+            IFileStore fileStore,
+            Clock clock,
+            IAuditLog auditLog) {
+        this.policyRepository = Objects.requireNonNull(policyRepository, "policyRepository must not be null");
+        this.policyPdfGenerator = Objects.requireNonNull(policyPdfGenerator, "policyPdfGenerator must not be null");
+        this.fileStore = Objects.requireNonNull(fileStore, "fileStore must not be null");
         this.notifyProvider = null;
         this.planRepositoryProvider = null;
         this.userRepositoryProvider = null;
         this.clock = clock != null ? clock : Clock.systemDefaultZone();
+        this.auditLog = auditLog;
     }
 
     /**
@@ -142,6 +167,12 @@ public class PolicyService {
 
         // Dispatch notification
         sendNotification(savedPolicy);
+
+        if (auditLog != null) {
+            long actorId = savedPolicy.getCustomerId() != null ? savedPolicy.getCustomerId() : IAuditLog.SYSTEM_USER_ID;
+            auditLog.record(actorId, "POLICY_ISSUED", "Policy", savedPolicy.getId(),
+                    "Policy issued: " + savedPolicy.getPolicyNo() + " for application #" + application.getId());
+        }
 
         return savedPolicy;
     }
