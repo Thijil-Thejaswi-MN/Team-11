@@ -32,10 +32,17 @@ const apiClient = axios.create({
   },
 });
 
-let inMemoryToken = null;
+let inMemoryToken = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('auth_token') : null;
 
 export function setAuthToken(token) {
   inMemoryToken = token || null;
+  if (typeof sessionStorage !== 'undefined') {
+    if (token) {
+      sessionStorage.setItem('auth_token', token);
+    } else {
+      sessionStorage.removeItem('auth_token');
+    }
+  }
 }
 
 export function getAuthToken() {

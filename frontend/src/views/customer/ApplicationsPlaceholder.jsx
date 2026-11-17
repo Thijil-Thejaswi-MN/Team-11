@@ -9,8 +9,13 @@ export default function ApplicationsPlaceholder() {
   const [searchParams] = useSearchParams();
   const quoteIdParam = searchParams.get('quoteId');
   const planIdParam = searchParams.get('planId');
+  const regYearParam = searchParams.get('regYear');
+  const ageParam = searchParams.get('age');
+  const vehicleRegNoParam = searchParams.get('vehicleRegNo') || searchParams.get('regNo');
 
-  const [vehicleRegNo, setVehicleRegNo] = useState('KA01AB1234');
+  const [vehicleRegNo, setVehicleRegNo] = useState(vehicleRegNoParam || 'KA01AB1234');
+  const [regYear, setRegYear] = useState(regYearParam || '2022');
+  const [age, setAge] = useState(ageParam || '32');
   const [documentIds, setDocumentIds] = useState('301, 302');
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadMessage, setUploadMessage] = useState(null);
@@ -74,12 +79,21 @@ export default function ApplicationsPlaceholder() {
       .map((id) => Number(id.trim()))
       .filter((n) => !isNaN(n) && n > 0);
 
+    const details = {
+      vehicleRegNo,
+      submittedVia: 'Customer Quoting Portal',
+    };
+    if (regYear) {
+      details.regYear = Number(regYear);
+    }
+    if (age) {
+      details.age = Number(age);
+      details.applicantAge = Number(age);
+    }
+
     const payload = {
       quoteId: Number(quoteIdParam),
-      details: {
-        vehicleRegNo,
-        submittedVia: 'Customer Quoting Portal',
-      },
+      details,
       documentIds: docList.length > 0 ? docList : [301],
     };
 
@@ -311,6 +325,35 @@ export default function ApplicationsPlaceholder() {
                       value={vehicleRegNo}
                       onChange={(e) => setVehicleRegNo(e.target.value)}
                       required
+                    />
+                  </div>
+                </div>
+
+                <div className="row g-3 mb-3">
+                  <div className="col-12 col-md-6">
+                    <label htmlFor="app-reg-year" className="form-label small fw-semibold text-secondary">
+                      Vehicle Registration Year (Motor STP)
+                    </label>
+                    <input
+                      type="number"
+                      id="app-reg-year"
+                      className="form-control form-control-sm"
+                      value={regYear}
+                      onChange={(e) => setRegYear(e.target.value)}
+                      placeholder="e.g. 2022"
+                    />
+                  </div>
+                  <div className="col-12 col-md-6">
+                    <label htmlFor="app-age" className="form-label small fw-semibold text-secondary">
+                      Primary Applicant Age (Health)
+                    </label>
+                    <input
+                      type="number"
+                      id="app-age"
+                      className="form-control form-control-sm"
+                      value={age}
+                      onChange={(e) => setAge(e.target.value)}
+                      placeholder="e.g. 32"
                     />
                   </div>
                 </div>
