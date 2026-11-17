@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AppLayout from '../../components/layout/AppLayout';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, ROLES } from '../../context/AuthContext';
 import { ROUTES } from '../../routes/routePaths';
 
 /**
@@ -19,8 +19,24 @@ export default function RegisterView() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
 
-  const { register } = useAuth();
+  const { register, currentUser, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+
+  const getPortalRoute = () => {
+    switch (currentUser?.role) {
+      case ROLES.INSURER_ADMIN:
+        return ROUTES.INSURER_ADMIN_DASHBOARD;
+      case ROLES.UNDERWRITER:
+        return ROUTES.UNDERWRITER_DASHBOARD;
+      case ROLES.CLAIMS_OFFICER:
+        return ROUTES.CLAIMS_OFFICER_DASHBOARD;
+      case ROLES.SYSTEM_ADMIN:
+        return ROUTES.SYSTEM_ADMIN_DASHBOARD;
+      case ROLES.CUSTOMER:
+      default:
+        return ROUTES.CUSTOMER_DASHBOARD;
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -84,6 +100,31 @@ export default function RegisterView() {
               <span className="badge bg-primary">Customer Registration</span>
             </div>
             <div className="dashboard-card-body">
+              {/* Already authenticated banner */}
+              {isAuthenticated && (
+                <div className="alert alert-info py-2 small mb-3" role="alert" id="already-registered-alert">
+                  <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                      <i className="bi bi-info-circle me-1"></i>
+                      You are already signed in as <strong>{currentUser?.name}</strong>.
+                    </div>
+                    <div className="d-flex gap-2">
+                      <Link to={getPortalRoute()} className="btn btn-primary btn-sm px-2 py-1" id="register-portal-link">
+                        Go to Portal
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={logout}
+                        className="btn btn-outline-secondary btn-sm px-2 py-1"
+                        id="register-signout-btn"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Error Alert */}
               {errorMessage && (
                 <div className="alert alert-danger py-2 small mb-3" role="alert" id="register-error-alert">
