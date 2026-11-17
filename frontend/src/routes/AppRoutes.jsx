@@ -38,6 +38,7 @@ import ClaimsOfficerDashboardView from '../views/claimsOfficer/ClaimsOfficerDash
 
 // System Admin Views
 import SystemAdminDashboardView from '../views/systemAdmin/SystemAdminDashboardView';
+import SystemAdminReportsView from '../views/systemAdmin/SystemAdminReportsView';
 import AuditLogView from '../views/systemAdmin/AuditLogView';
 
 // Fallback View
@@ -155,11 +156,11 @@ export default function AppRoutes() {
         />
         <Route
           path={ROUTES.SYSTEM_ADMIN_REPORTS}
-          element={<SystemAdminDashboardView />}
+          element={<SystemAdminReportsView />}
         />
         <Route
           path={ROUTES.SYSTEM_ADMIN_AUDIT}
-          element={<SystemAdminDashboardView />}
+          element={<AuditLogView />}
         />
 
         {/* =================================================== */}
