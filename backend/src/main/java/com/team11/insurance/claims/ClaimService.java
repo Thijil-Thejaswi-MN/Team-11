@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.team11.insurance.admin.IAuditLog;
 import com.team11.insurance.auth.CurrentUser;
 import com.team11.insurance.auth.RoleSecurity;
 import com.team11.insurance.auth.UserRole;
@@ -50,6 +51,7 @@ public class ClaimService implements IClaimService {
     private final ObjectProvider<PolicyRepository> policyRepositoryProvider;
     private final ObjectProvider<INotify> notifyProvider;
     private final ObjectProvider<IPaymentService> paymentServiceProvider;
+    private final IAuditLog auditLog;
     private final Clock clock;
     private final AtomicLong claimSeq = new AtomicLong(System.currentTimeMillis() % 100000);
 
@@ -61,16 +63,29 @@ public class ClaimService implements IClaimService {
             ObjectProvider<PolicyRepository> policyRepositoryProvider,
             ObjectProvider<INotify> notifyProvider,
             ObjectProvider<Clock> clockProvider,
-            ObjectProvider<IPaymentService> paymentServiceProvider) {
+            ObjectProvider<IPaymentService> paymentServiceProvider,
+            ObjectProvider<IAuditLog> auditLogProvider) {
         this.claimRepository = claimRepository;
         this.claimHistoryRepository = claimHistoryRepository;
         this.policyQueryProvider = policyQueryProvider;
         this.policyRepositoryProvider = policyRepositoryProvider;
         this.notifyProvider = notifyProvider;
         this.paymentServiceProvider = paymentServiceProvider;
+        this.auditLog = auditLogProvider != null ? auditLogProvider.getIfAvailable() : null;
         this.clock = clockProvider != null
                 ? clockProvider.getIfAvailable(Clock::systemDefaultZone)
                 : Clock.systemDefaultZone();
+    }
+
+    public ClaimService(
+            ClaimRepository claimRepository,
+            ClaimHistoryRepository claimHistoryRepository,
+            ObjectProvider<IPolicyQuery> policyQueryProvider,
+            ObjectProvider<PolicyRepository> policyRepositoryProvider,
+            ObjectProvider<INotify> notifyProvider,
+            ObjectProvider<Clock> clockProvider,
+            ObjectProvider<IPaymentService> paymentServiceProvider) {
+        this(claimRepository, claimHistoryRepository, policyQueryProvider, policyRepositoryProvider, notifyProvider, clockProvider, paymentServiceProvider, null);
     }
 
     // Constructor for testing with explicit clock and dependencies (without payment service)
@@ -81,7 +96,7 @@ public class ClaimService implements IClaimService {
             PolicyRepository policyRepository,
             INotify notify,
             Clock clock) {
-        this(claimRepository, claimHistoryRepository, policyQuery, policyRepository, notify, clock, null);
+        this(claimRepository, claimHistoryRepository, policyQuery, policyRepository, notify, clock, null, null);
     }
 
     // Constructor for testing with explicit clock, payment service and dependencies
@@ -93,12 +108,25 @@ public class ClaimService implements IClaimService {
             INotify notify,
             Clock clock,
             IPaymentService paymentService) {
+        this(claimRepository, claimHistoryRepository, policyQuery, policyRepository, notify, clock, paymentService, null);
+    }
+
+    public ClaimService(
+            ClaimRepository claimRepository,
+            ClaimHistoryRepository claimHistoryRepository,
+            IPolicyQuery policyQuery,
+            PolicyRepository policyRepository,
+            INotify notify,
+            Clock clock,
+            IPaymentService paymentService,
+            IAuditLog auditLog) {
         this.claimRepository = claimRepository;
         this.claimHistoryRepository = claimHistoryRepository;
         this.policyQueryProvider = new SimpleObjectProvider<>(policyQuery);
         this.policyRepositoryProvider = new SimpleObjectProvider<>(policyRepository);
         this.notifyProvider = new SimpleObjectProvider<>(notify);
         this.paymentServiceProvider = new SimpleObjectProvider<>(paymentService);
+        this.auditLog = auditLog;
         this.clock = clock != null ? clock : Clock.systemDefaultZone();
     }
 
@@ -212,6 +240,12 @@ public class ClaimService implements IClaimService {
                 "claimedAmount", claim.getClaimAmount().toPlainString()
         ));
 
+        if (auditLog != null) {
+            long actorId = currentUser != null && currentUser.getUserId() != null ? currentUser.getUserId() : IAuditLog.SYSTEM_USER_ID;
+            auditLog.record(actorId, "CLAIM_FILED", "Claim", claim.getId(),
+                    "Claim filed for policy #" + claim.getPolicyId() + " amount: " + claim.getClaimAmount());
+        }
+
         String message = isDuplicate
                 ? "Claim submitted and under document verification (flagged as possible duplicate)"
                 : "Claim submitted successfully and under document verification";
@@ -320,6 +354,11 @@ public class ClaimService implements IClaimService {
                     claim.getId(), previousStatus, ClaimStatus.ASSESSMENT, currentUser.getUserId(),
                     request.notes() != null ? request.notes() : "Documents verified complete"));
 
+            if (auditLog != null) {
+                auditLog.record(currentUser.getUserId(), "CLAIM_VERIFIED", "Claim", claim.getId(),
+                        request.notes() != null ? request.notes() : "Documents verified complete; moved to Assessment");
+            }
+
             return new ClaimResponse(
                     claim.getId(), claim.getClaimNo(), claim.getPolicyId(), claim.getStatus(),
                     claim.getClaimAmount(), claim.getAssessedAmount(), claim.isDuplicateFlag(),
@@ -340,6 +379,11 @@ public class ClaimService implements IClaimService {
                     "claimNo", claim.getClaimNo() != null ? claim.getClaimNo() : "",
                     "missing", missingDocs
             ));
+
+            if (auditLog != null) {
+                auditLog.record(currentUser.getUserId(), "CLAIM_DOCUMENTS_REQUESTED", "Claim", claim.getId(),
+                        "Documents requested: " + missingDocs);
+            }
 
             return new ClaimResponse(
                     claim.getId(), claim.getClaimNo(), claim.getPolicyId(), claim.getStatus(),
@@ -393,6 +437,11 @@ public class ClaimService implements IClaimService {
                     "reason", request.reason()
             ));
 
+            if (auditLog != null) {
+                auditLog.record(currentUser.getUserId(), "CLAIM_APPROVED", "Claim", claim.getId(),
+                        "Claim approved for amount " + request.assessedAmount() + ": " + request.reason());
+            }
+
             return new ClaimResponse(
                     claim.getId(), claim.getClaimNo(), claim.getPolicyId(), claim.getStatus(),
                     claim.getClaimAmount(), claim.getAssessedAmount(), claim.isDuplicateFlag(),
@@ -412,6 +461,11 @@ public class ClaimService implements IClaimService {
                     "claimNo", claim.getClaimNo(),
                     "reason", request.reason()
             ));
+
+            if (auditLog != null) {
+                auditLog.record(currentUser.getUserId(), "CLAIM_REJECTED", "Claim", claim.getId(),
+                        "Claim rejected: " + request.reason());
+            }
 
             return new ClaimResponse(
                     claim.getId(), claim.getClaimNo(), claim.getPolicyId(), claim.getStatus(),
@@ -462,6 +516,11 @@ public class ClaimService implements IClaimService {
                         "reason", "15 days inactivity on document request"
                 ));
 
+                if (auditLog != null) {
+                    auditLog.recordSystem("CLAIM_AUTO_CLOSED", "Claim", claim.getId(),
+                            "Closed due to 15 days inactivity on document request");
+                }
+
                 closedCount++;
             }
         }
@@ -511,6 +570,11 @@ public class ClaimService implements IClaimService {
                     "reason", e.getMessage() != null ? e.getMessage() : "Payment timeout or communication failure"
             ));
 
+            if (auditLog != null) {
+                auditLog.record(currentUser.getUserId(), "CLAIM_PAYOUT_FAILED", "Claim", claim.getId(),
+                        "Payout failed with error: " + e.getMessage());
+            }
+
             return new ClaimResponse(
                     claim.getId(), claim.getClaimNo(), claim.getPolicyId(), claim.getStatus(),
                     claim.getClaimAmount(), claim.getAssessedAmount(), claim.isDuplicateFlag(),
@@ -533,6 +597,11 @@ public class ClaimService implements IClaimService {
                     "settledAmount", claim.getSettledAmount() != null ? claim.getSettledAmount().toPlainString() : ""
             ));
 
+            if (auditLog != null) {
+                auditLog.record(currentUser.getUserId(), "CLAIM_SETTLED", "Claim", claim.getId(),
+                        "Payout settled via transaction reference: " + result.transactionReference());
+            }
+
             return new ClaimResponse(
                     claim.getId(), claim.getClaimNo(), claim.getPolicyId(), claim.getStatus(),
                     claim.getClaimAmount(), claim.getAssessedAmount(), claim.isDuplicateFlag(),
@@ -548,6 +617,11 @@ public class ClaimService implements IClaimService {
                     "claimNo", claim.getClaimNo() != null ? claim.getClaimNo() : "",
                     "reason", reason
             ));
+
+            if (auditLog != null) {
+                auditLog.record(currentUser.getUserId(), "CLAIM_PAYOUT_FAILED", "Claim", claim.getId(),
+                        "Payout rejected: " + reason);
+            }
 
             return new ClaimResponse(
                     claim.getId(), claim.getClaimNo(), claim.getPolicyId(), claim.getStatus(),
